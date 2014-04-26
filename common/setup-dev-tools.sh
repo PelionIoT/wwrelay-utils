@@ -1,6 +1,5 @@
 #!/bin/bash
 
-
 # Use like this:
 # 
 # THISDIR=$(getScriptDir "${BASH_SOURCE[0]}")
@@ -19,11 +18,35 @@ echo "$__MYDIR"
 THISDIR=$(getScriptDir "${BASH_SOURCE[0]}")
 . $THISDIR/../common/common.sh
 
-eval $COLOR_BOLD
-echo "Setting up WWRelay (rev 5) GPIO ports"
-eval $COLOR_NORMAL
+#################
 
 
-### add here
+TOOLS="/usr/bin/arm-poky-linux-gnueabi-"
 
+pushd /usr/bin
 
+for VAR in `ls $TOOLS*`; do
+if [ ! -e "${VAR/\/usr\/bin\/arm\-poky\-linux\-gnueabi\-/}" ]; then
+    eval $COLOR_BOLD
+    echo "softlink $VAR -> ${VAR/\/usr\/bin\/arm\-poky\-linux\-gnueabi\-/}"
+    eval $COLOR_NORMAL
+    ln -s $VAR ${VAR/\/usr\/bin\/arm\-poky\-linux\-gnueabi\-/}
+else
+    eval $COLOR_YELLOW
+    echo "softlink for ${VAR/\/usr\/bin\/arm\-poky\-linux\-gnueabi\-/} exists already"
+    eval $COLOR_NORMAL
+fi
+done
+
+if [ ! -e "cc" ]; then
+    eval $COLOR_BOLD
+    echo "softlink ${TOOLS}gcc -> cc"
+    eval $COLOR_NORMAL
+    ln -s ${TOOLS}gcc cc
+else
+    eval $COLOR_YELLOW
+    echo "softlink for 'cc' exists already"
+    eval $COLOR_NORMAL
+fi    
+
+popd

@@ -1,1 +1,4 @@
 *~
+*.o
+6BSMD/mc1322x-load
+6BSMD/tunslip6

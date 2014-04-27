@@ -16,12 +16,12 @@ local __MYDIR="$( cd -P "$( dirname "$__SOURCE" )" && pwd )"
 echo "$__MYDIR"
 }
 
-THISDIR=$(getScriptDir "${BASH_SOURCE[0]}")
-. $THISDIR/../common/common.sh
+GPIO_THISDIR=$(getScriptDir "${BASH_SOURCE[0]}")
+. $GPIO_THISDIR/../common/common.sh
 
-eval $COLOR_BOLD
-echo "Setting up WWRelay (rev 5) GPIO ports"
-eval $COLOR_NORMAL
+#eval $COLOR_BOLD
+#echo "Setting up WWRelay (rev 5) GPIO ports"
+#eval $COLOR_NORMAL
 
 
 ### add here
@@ -40,7 +40,7 @@ GP[10]=gpio10_pi12
 
 
 
-function modprobe_driver() {
+function modprobe_gpiodriver() {
 modprobe gpio-sunxi
 }
 
@@ -68,6 +68,9 @@ GP_D=$GP_PATH${GP[1]}/direction
 echo in > $GP_D
 }
 
-modprobe_driver
-exportGPIOs
-setdirection
+if [ "$#" -lt 1 ]; then
+    modprobe_gpiodriver
+    exportGPIOs
+    setdirection    
+fi
+

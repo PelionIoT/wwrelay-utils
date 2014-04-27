@@ -39,7 +39,7 @@ TUNSLIP_LOG=$THISDIR/../../log/tunslip6.log
 IP6_ROUTE="aaaa::1/64"
 
 # supports 1-5 or nothing for basic
-TUNSLIP_LOG_LEVEL="1"
+TUNSLIP_LOG_LEVEL="5"
 
 if [ "$1" == "start" ]; then
     killall tunslip6
@@ -65,8 +65,11 @@ if [ "$1" == "start" ]; then
 	# some trivial log rotation
 	mv $TUNSLIP_LOG $TUNSLIP_LOG.1
     fi
-
+    echo "CMD: $TUNSLIP -v$TUNSLIP_LOG_LEVEL -s $TUNSLIP_SERIAL $IP6_ROUTE > $TUNSLIP_LOG 2>&1 &"
     $TUNSLIP -v$TUNSLIP_LOG_LEVEL -s $TUNSLIP_SERIAL $IP6_ROUTE > $TUNSLIP_LOG 2>&1 &
+    sleep 3
+    echo "Resetting 6BSMD"
+    $THISDIR/6Bcontrol.sh reset
 fi
 
 if [ "$1" == "stop" ]; then

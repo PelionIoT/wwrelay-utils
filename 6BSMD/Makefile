@@ -1,5 +1,5 @@
 
-CC=gcc
+CC=gcc -g
 
 %.o: %.c
 	$(CC) $(CFLAGS) $(TGT_CFLAGS) -c $< -o $@

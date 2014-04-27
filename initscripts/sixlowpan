@@ -1,0 +1,40 @@
+#! /bin/sh
+# /etc/init.d/sixlowpan: starts 6LoWPAN services
+
+### BEGIN INIT INFO
+# Provides:             sixlowpan
+# Required-Start:       $remote_fs $time
+# Required-Stop:        $remote_fs $time
+# Should-Start:         $network
+# Should-Stop:          $network
+# Default-Start:        2 3 4 5
+# Default-Stop:         0 1 6
+# Short-Description:    System logger
+### END INIT INFO
+
+# Source function library.
+. /etc/init.d/functions
+
+SIXLOWPAN_DIR="/wigwag/wwrelay-utils/6BSMD"
+
+case "$1" in
+    start)
+	echo "Starting 6LOWPAN"
+    	$SIXLOWPAN_DIR/start-sixlowpan.sh start
+	;;	
+    stop)
+	echo "Stopping 6LOWPAN"
+	$SIXLOWPAN_DIR/start-sixlowpan.sh stop
+	;;
+    restart) 
+	$SIXLOWPAN_DIR/start-sixlowpan.sh stop
+	$SIXLOWPAN_DIR/start-sixlowpan.sh start
+  	;;
+      *)
+	log_success_msg "Usage: /etc/init.d/sysklogd {start|stop|restart}"
+    exit 1
+esac
+
+exit 0
+
+     

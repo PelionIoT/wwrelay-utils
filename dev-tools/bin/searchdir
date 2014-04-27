@@ -1,0 +1,89 @@
+#!/bin/bash                     
+          
+
+function print_usage () {
+	echo "searches directory for pattern"
+	echo "$0 pattern [-d specific-dir [search-dir] [search-dir]...]"
+	echo "Default is current directory" 
+}
+
+
+SYSTYPE="$(eval "uname | cut -c 1-4")"
+
+case "$SYSTYPE" in 
+    Darw)
+#	COLOR_BOLD="echo -n '\\[1m'"
+#	COLOR_RED="echo -n '\\[31m'"
+#	COLOR_MAGENTA="echo -n '\\[35m;'"
+#	COLOR_YELLOW="echo -n '\\[33m'"
+#	COLOR_GREEN="echo -n '\\[32m'"
+#	COLOR_NORMAL="echo -n '\\[0m'"
+	;;
+    Linu|CYGW)   
+		
+#    CYGW)
+	COLOR_BOLD="echo -ne '\E[1m'"
+	COLOR_RED="echo -ne '\E[31m'"
+	COLOR_MAGENTA="echo -ne '\E[35m'"
+	COLOR_YELLOW="echo -ne '\E[33m'"
+	COLOR_GREEN="echo -ne '\E[32m'"
+	COLOR_NORMAL="echo -ne '\E[0m'"
+	;;
+esac
+       
+# Script settitle
+# Usage:  settitle title
+#
+#if [ $# == 0 ]; then
+#  echo "Usage:  settitle title"
+#else
+#  echo -n "^[]2;$1^G"
+#fi
+
+if [ $# == 0 ]; then
+    print_usage
+    exit
+fi
+
+PATTERN=$1    
+shift
+DIRSEARCH="."
+CURRD="`pwd`"
+
+
+####### ENTRY POINT ######
+while getopts  "d:" flag 
+do
+	case "${flag}" in
+		d)
+			#DIRSEARCH=${OPTARG} 
+			shift
+			DIRSEARCH=$@
+			;;
+        *)
+			print_usage
+			exit
+			;;
+	esac
+done            
+
+eval $COLOR_BOLD            
+echo "In $CURRD"
+eval $COLOR_MAGENTA
+echo "pattern: ${PATTERN}"
+eval $COLOR_NORMAL
+
+
+if [ "$PATTERN" != "" ]; then                     
+	for d in $DIRSEARCH; do
+		eval $COLOR_BOLD
+		echo "searching: $d"
+		eval $COLOR_NORMAL
+		cd $d 
+		grep --color -n -r -A 2 -B 2 -e "${PATTERN}" *
+		cd $CURRD  
+	done
+else                 
+	print_usage
+	exit
+fi

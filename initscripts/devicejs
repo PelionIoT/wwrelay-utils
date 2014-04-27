@@ -40,7 +40,7 @@ case "$1" in
 	echo "Starting DeviceJS services."
 	eval $COLOR_NORMAL
 	run_devjs
-	;;	
+	;;
     stop)
 	echo "Stopping DeviceJS"
 	killall node

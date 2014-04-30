@@ -1,9 +1,6 @@
 #!/bin/bash
 COMMAND=$1
 
-
-
-
 # Use like this:
 # 
 # THISDIR=$(getScriptDir "${BASH_SOURCE[0]}")
@@ -52,9 +49,11 @@ fi
 
 burner=$THISDIR/mc1322x-load
 t=/dev/ttyS1
+#t=/dev/ttyUSB1
 f=$THISDIR/flasher_redbee-econotag.bin
 b=115200
-burnercmd="$burner -t $t -f $f -b $b -s $2"
+#burnercmd="$burner -t $t -f $f -b $b -s $2"
+burnercmd="$burner -t $t -f $f -s $2 -e"
 
 Reset=/sys/class/gpio/gpio5_pb8
 RTS=/sys/class/gpio/gpio7_ph8

@@ -1,10 +1,10 @@
 
-CC=gcc -g
+CC?=gcc -g
 
 %.o: %.c
 	$(CC) $(CFLAGS) $(TGT_CFLAGS) -c $< -o $@
 
-all: mc1322x-load
+all: mc1322x-load tunslip6
 
 mc1322x-load: mc1322x-load.o
 	$(CC) $@.o -o $@

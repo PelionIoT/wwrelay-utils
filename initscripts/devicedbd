@@ -1,0 +1,53 @@
+#! /bin/sh
+# /etc/init.d/devicedbd: starts WigWag Device Database
+
+### BEGIN INIT INFO
+# Provides:             devicedbd
+# Required-Start:       $remote_fs $time
+# Required-Stop:        $remote_fs $time
+# Should-Start:         $network
+# Should-Stop:          $network
+# Default-Start:        2 3 4 5
+# Default-Stop:         0 1 6
+# Short-Description:    Device Database for WigWag
+### END INIT INFO
+
+# Source function library.
+. /etc/init.d/functions
+
+DEVICEDB_DIR="/wigwag/devicedb"
+DEVICEDB_CMD="/usr/bin/devicedbd"
+DEVICEDB_LOG="/wigwag/log/devicedbd.log"
+
+
+function run_devicedb() {
+    
+    pushd $DEVICEDB_DIR
+    $DEVICEDB_CMD > $DEVICEDB_LOG 2>&1 &
+    popd
+}
+
+case "$1" in
+    start)
+	killall node
+	eval $COLOR_BOLD
+	echo "Starting DeviceJS services."
+	eval $COLOR_NORMAL
+	run_devicedb
+	;;
+    stop)
+	echo "Stopping DeviceJS"
+	killall devicedbd
+	;;
+    restart) 
+	killall devicedbd
+	run_devicedb
+  	;;
+      *)
+	log_success_msg "Usage: $0 {start|stop|restart}"
+    exit 1
+esac
+
+exit 0
+
+     

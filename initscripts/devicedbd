@@ -29,7 +29,6 @@ function run_devicedb() {
 
 case "$1" in
     start)
-	killall node
 	eval $COLOR_BOLD
 	echo "Starting DeviceJS services."
 	eval $COLOR_NORMAL

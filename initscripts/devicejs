@@ -5,8 +5,8 @@
 # Provides:             devicejs
 # Required-Start:       $remote_fs $time
 # Required-Stop:        $remote_fs $time
-# Should-Start:         $network
-# Should-Stop:          $network
+# Should-Start:         $network $devicedbd
+# Should-Stop:          $network $devicedbd
 # Default-Start:        2 3 4 5
 # Default-Stop:         0 1 6
 # Short-Description:    System logger

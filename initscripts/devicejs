@@ -16,7 +16,7 @@
 . /etc/init.d/functions
 
 DEVICEJS_DIR="/wigwag/devicejs/web_applications"
-DEVICEJS_CMD="./run-on-relay.sh webAppServer.js"
+DEVICEJS_CMD="./run-on-relay.sh webserver.js"
 
 DEVICEJS_LOG="/wigwag/log/devicejs.log"
 

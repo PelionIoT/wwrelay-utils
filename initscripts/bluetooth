@@ -1,0 +1,34 @@
+### BEGIN INIT INFO
+# Provides:             bluetooth
+# Required-Start:       $remote_fs $time
+# Required-Stop:        $remote_fs $time
+# Should-Start:         $network
+# Should-Stop:          $network
+# Default-Start:        2 3 4 5
+# Default-Stop:         0 1 6
+# Short-Description:    Bluetooth Daemon
+### END INIT INFO
+
+# Source function library.
+. /etc/init.d/functions
+
+case "$1" in
+    start)
+	echo "Starting Bluetooth"
+        /usr/sbin/bluetoothd
+	;;	
+    stop)
+	echo "Stopping Bluetooth"
+        killall bluetoothd
+	;;
+    restart) 
+        killall bluetoothd
+        /usr/sbin/bluetoothd
+  	;;
+      *)
+	echo "Usage: /etc/init.d/bluetooth {start|stop|restart}"
+    exit 1
+esac
+
+exit 0
+

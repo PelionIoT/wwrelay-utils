@@ -30,12 +30,12 @@ function run_devicedb() {
 case "$1" in
     start)
 	eval $COLOR_BOLD
-	echo "Starting DeviceJS services."
+	echo "Starting DeviceDB services."
 	eval $COLOR_NORMAL
 	run_devicedb
 	;;
     stop)
-	echo "Stopping DeviceJS"
+	echo "Stopping DeviceDB"
 	killall devicedbd
 	;;
     restart) 

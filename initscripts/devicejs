@@ -15,8 +15,9 @@
 # Source function library.
 . /etc/init.d/functions
 
-DEVICEJS_DIR="/wigwag/devicejs/web_applications"
-DEVICEJS_CMD="./run-on-relay.sh webserver.js"
+DEVICEJS_DIR="/wigwag/devicejs"
+DEVJS_START_CMD="./bin/devjs -i test -b -c conf/test-logmonitor.conf.json"
+DEVJS_STOP_CMD="./bin/devjs --shutdown -i test"
 
 DEVICEJS_LOG="/wigwag/log/devicejs.log"
 
@@ -26,6 +27,11 @@ function congig_cpu_scaling() {
    cat $MAX_FREQ > $MIN_FREQ
 }
 
+function stop_devjs() {
+    pushd $DEVICEJS_DIR
+    $DEVJS_STOP_CMD > $DEVICEJS_LOG 2>&1 &
+    popd
+}
 function run_devjs() {
     if [ -e $DEVICEJS_LOG ]; then
 	# some trivial log rotation
@@ -33,14 +39,13 @@ function run_devjs() {
     fi
     
     pushd $DEVICEJS_DIR
-    $DEVICEJS_CMD > $DEVICEJS_LOG 2>&1 &
-#	$TUNSLIP -v$TUNSLIP_LOG_LEVEL -s $TUNSLIP_SERIAL $IP6_ROUTE > $TUNSLIP_LOG 2>&1 &
+    $DEVJS_START_CMD > $DEVICEJS_LOG 2>&1 &
     popd
 }
 
 case "$1" in
     start)
-	killall node
+	stop_devjs
 	eval $COLOR_BOLD
 	echo "Starting DeviceJS services."
 	eval $COLOR_NORMAL
@@ -49,10 +54,11 @@ case "$1" in
 	;;
     stop)
 	echo "Stopping DeviceJS"
-	killall node
-	;;
+        stop_devjs
+        ;;
     restart) 
-	killall node
+	echo "Restarting DeviceJS"
+	stop_devjs
         congig_cpu_scaling
 	run_devjs
   	;;

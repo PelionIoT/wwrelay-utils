@@ -23,13 +23,12 @@ THISDIR=$(getScriptDir "${BASH_SOURCE[0]}")
 . $THISDIR/../GPIO/setup-gpio.sh funcsonly
 
 if [ "$#" -lt 1 ]; then
-    echo "Usage: $0 [start|stop]"
+    echo "Usage: $0 [start|stop|debug (ttyport)]"
     
 fi
 
 
-GPIO_PATH=/sys/class/gpio
-TR=$GPIO_PATH/gpio2_pc21
+
 
 
 TUNSLIP_SERIAL=/dev/ttyS1
@@ -42,11 +41,13 @@ IP6_ROUTE="aaaa::1/64"
 TUNSLIP_LOG_LEVEL="5"
 
 if [ "$1" == "start" ]; then
+    echo "Starting Developer mode stuff (inside start-sixlowpan.sh)"
+    /wigwag/wwrelay-utils/dev-tools/bin/devinits.sh
     killall tunslip6
     eval $COLOR_BOLD
     echo "Starting SixLowPAN services."
     eval $COLOR_NORMAL
-    if [ ! -e $TR ]; then
+    if [ ! -e $SBMC_RESET ]; then
 	eval $COLOR_BOLD
 	echo "GPIO not ready - setting up."
 	eval $COLOR_NORMAL
@@ -65,6 +66,8 @@ if [ "$1" == "start" ]; then
 	# some trivial log rotation
 	mv $TUNSLIP_LOG $TUNSLIP_LOG.1
     fi
+    echo "I am told to exit now" 
+    exit
     echo "CMD: $TUNSLIP -v$TUNSLIP_LOG_LEVEL -s $TUNSLIP_SERIAL $IP6_ROUTE > $TUNSLIP_LOG 2>&1 &"
     $TUNSLIP -v$TUNSLIP_LOG_LEVEL -s $TUNSLIP_SERIAL $IP6_ROUTE > $TUNSLIP_LOG 2>&1 &
     sleep 3
@@ -77,3 +80,13 @@ if [ "$1" == "stop" ]; then
     killall tunslip6
 fi
 
+if [ "$1" == "debug" ]; then
+    killall tunslip6
+    eval $COLOR_BOLD
+    echo "Starting SixLowPAN services on command line with -t $1"
+    eval $COLOR_NORMAL
+    echo "CMD: $TUNSLIP -v$TUNSLIP_LOG_LEVEL -s $2 $IP6_ROUTE"
+    $TUNSLIP -v$TUNSLIP_LOG_LEVEL -s $2 $IP6_ROUTE
+    
+
+fi

@@ -19,12 +19,12 @@ echo "$__MYDIR"
 THISDIR=$(getScriptDir "${BASH_SOURCE[0]}")
 . $THISDIR/../common/common.sh
 
-# bring GPIO functions
+# bring GPIO functions and the important varriables
 . $THISDIR/../GPIO/setup-gpio.sh funcsonly
 
 
 
-AVAILABLE="reset erase RTSlow RTShigh program"
+AVAILABLE="reset erase ramburn RTSlow RTShigh RTSstatus RESETlow RESEThigh RESETstatus ERASEstatus program debug"
 fail=0
 [[ $AVAILABLE =~ $COMMAND ]] || fail=1
 if [ -z $1 ]
@@ -42,90 +42,170 @@ fi
 
 if [ "$fail" -eq 1 ]
 then
-    echo "Usage: ./6Bcontrol.sh [reset|erase|RTSlow|RTShigh|program [file]"]
+    echo "Usage: ./6Bcontrol.sh [reset | erase | RTSlow | RTShigh | RTSstatus | RESETsatus | ERASEstatus | program [file]"]
     exit
 fi
 
 
 burner=$THISDIR/mc1322x-load
-t=/dev/ttyS1
+burner=$THISDIR/mctest
+t=$SBMC_TTY
+#t=/dev/ttyUSB0
+#t=/dev/ttyS2
+#t=/dev/ttyS0
 #t=/dev/ttyUSB1
 f=$THISDIR/flasher_redbee-econotag.bin
 b=115200
 #burnercmd="$burner -t $t -f $f -b $b -s $2"
-burnercmd="$burner -t $t -f $f -s $2 -e"
+burnercmd="$burner -v -t $t -f $f -s $2 -u 115200 -e"
+ramburncmd="$burner -v -t $t -f $2 -u 115200 -e"
 
-Reset=/sys/class/gpio/gpio5_pb8
-RTS=/sys/class/gpio/gpio7_ph8
-Erase=/sys/class/gpio/gpio6_pb13
-
+function setReset() {
+    if [ "$1" = "0" ]
+    then
+        echo -e "setting Reset Pin low\n"
+        echo 0 > $SBMC_RESET/value
+    else
+        echo -e "setting Reset Pin high\n"
+        echo 1 > $SBMC_RESET/value
+    fi
+}
 
 function 6Breset () {
-echo -e "Reseting 6Bee\n"
-echo 0 > $Reset/value
-sleep 1
-echo 1 > $Reset/value
+    echo -e "Reseting 6Bee\n"
+    if [ -z "$1" ]
+    then
+        sleeptime=1
+    else
+        sleeptime=$1
+    fi
+    setReset 0
+    sleep $sleeptime
+    setReset 1
 }
 
 function 6Berase () {
 echo -e "Erasing 6Bee\n"
-echo 1 > $Erase/value
+echo 1 > $SBMC_ERASE/value
 6Breset
-sleep 5
-echo 0 > $Erase/value
+sleep 3
+echo 0 > $SBMC_ERASE/value
 }
 
-function toggleRTS() {
+function setRTS() {
 if [ "$1" = "0" ]
 then
-    echo -e "RTS set low\n"
-    echo 0 > $RTS/value
+    echo -e "setting RTS low\n"
+    echo 0 > $SBMC_RTS/value
 else
-    echo -e "RTS set high\n"
-    echo 1 > $RTS/value
+    echo -e "setting RTS high\n"
+    echo 1 > $SBMC_RTS/value
 fi
+}
+
+function getRTS() {
+    val=$(cat $SBMC_RTS/value)
+    echo "RTS is set to $val"
+}
+
+function getRESET() {
+    val=$(cat $SBMC_RESET/value)
+    echo "RESET is set to $val"
+}
+
+function getERASE() {
+    val=$(cat $SBMC_ERASE/value)
+    echo "ERASE is set to $val (1=ready to erase upon reset)"
 }
 
 burnpid=""
 function burn() {
 echo -e "burning with $burnercmd\n"
-$burnercmd &
+$1 &
 burnpid=$!
 }
 
 function 6Bprogram () {
-echo -e "Programming the 6Bee\n"
-6Berase
-toggleRTS 0
-burn
-6Breset
-sleep 1
-wait $burnpid
-toggleRTS 1
+    echo -e "Programming the 6Bee\n"
+    6Berase
+    setRTS 0
+    burn "$burnercmd"
+    6Breset
+    sleep 1
+    wait $burnpid
+    setRTS 1
 }
 
-
-
-if [ "$COMMAND" = "reset" ]
-then
-    6Breset
-fi
-
-if [ "$COMMAND" = "erase" ]
-then
+function ramburn () {
+    echo -e "Ramburn the 6Bee\n"
     6Berase
-fi
+    setRTS 0
+    burn "$ramburncmd"
+    sleep 1
+    wait $burnpid
+    setRTS 1
+}
 
-if [ "$COMMAND" = "RTSlow" ]
-then
-    toggleRTS 0
-fi
+function main () {
+    echo "Command Received: $COMMAND"
+    case "$COMMAND" in
+        "reset") 6Breset
+            ;;
+        "ramburn") ramburn
+            ;;
 
-if [ "$COMMAND" = "RTShigh" ]
-then
-    toggleRTS 1
-fi
-if [ "$COMMAND" = "program" ]
-then
-    6Bprogram
-fi
+        "erase") 6Berase
+            ;;
+        "RTSlow") setRTS 0
+            ;;
+        "RTShigh") setRTS 1
+            ;;
+        "RESETlow") setReset 0
+            ;;
+        "RESEThigh") setReset 1
+            ;;
+        "program") 6Bprogram
+            ;;
+        "debug") if [ "$2" = "resetloop" ]
+            then
+                for i in  $(seq 1 10)
+                    do
+                        echo "$i) Reset"
+                        6Breset 5
+                    done
+            fi
+            ;;
+        "RTSstatus") getRTS
+            ;;
+        "RESETstatus") getRESET
+            ;;
+        "ERASEstatus") getERASE
+            ;;
+        esac
+}
+
+main
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+

@@ -27,45 +27,89 @@ GPIO_THISDIR=$(getScriptDir "${BASH_SOURCE[0]}")
 ### add here
 
 
-GP[1]=gpio1_ph12
-GP[2]=gpio2_pc21
-GP[3]=gpio3_pc20
-GP[4]=gpio4_pc19
-GP[5]=gpio5_pb8
-GP[6]=gpio6_pb13
-GP[7]=gpio7_ph8
-GP[8]=gpio8_pb4
-GP[9]=gpio9_pb2
-GP[10]=gpio10_pi12
+#Boardtype defines the layout for the board.  This will become useful when we produce other version.   Eventually we need a function here to read the board definition file, or the .fex file.
+BOARDTYPE=Relay
+#BOARDTYPE=Relay-Pro
+GPIOpath=/sys/class/gpio
+LEDspath=/sys/class/leds
 
+if [ "$BOARDTYPE" = "Relay" ]
+  then
+    let TotalGPIO_outputs=11
+    let TotalGPIO_inputs=1
+    declare -a GPoutputs=(gpio1_pd0 gpio2_pd1 gpio3_pd2 gpio4_pd3 gpio5_pd4 gpio6_pd5 gpio7_pd6 gpio8_pd7 gpio9_pd8 gpio10_pd9 gpio12_pb8)
+    declare -a GPinputs=(gpio11_ph12)
+    TopRed="$LEDspath/red"
+    TopBlue="$LEDspath/blue"
+    TopGreen="$LEDspath/green"
+    RED_OFF="$GPIOpath/gpio12_pb8"
+    SBMC_RESET="$GPIOpath/gpio1_pd0"
+    SBMC_RTS="$GPIOpath/gpio2_pd1"
+    SBMC_ERASE="$GPIOpath/gpio3_pd2"
+    SBMC_TTY="/dev/ttyS2"
+    SBKW_RESET="$GPIOpath/gpio4_pd3"
+    SBCC1_RESET="$GPIOpath/gpio5_pd4"
+    SBCC1_CLK="$GPIOpath/gpio6_pd5"
+    SBCC1_DATA="$GPIOpath/gpio7_pd6"
+    SBCC2_RESET="$GPIOpath/gpio8_pd7"
+    SBCC2_CLK="$GPIOpath/gpio9_pd8"
+    SBCC2_DATA="$GPIOpath/gpio10_pd9"
+  else
+    declare -a GP=(gpio1_ph12 gpio2_pc21 pio3_pc20 gpio4_pc19 gpio5_pb8 gpio6_pb13 gpio7_ph8 gpio8_pb4 gpio9_pb2 gpio10_pi12)
+    TotalGPIOs_outputs=9
+    TotalGPIO_inputs=1
+fi
 
+TotalGPIOs=$(($TotalGPIO_inputs+$TotalGPIO_outputs))
 
 function modprobe_gpiodriver() {
 modprobe gpio-sunxi
 }
 
 
-function exportGPIOs () {
-    for i in 1 2 3 4 5 6 7 8 9 10
-    do
-	echo $i > /sys/class/gpio/export
-    done
+
+
+function LoopthroughGPIOs() {
+  debug "LoopthroughGPIOs($1)" 1
+ for i in $(seq 1 $TotalGPIOs) 
+ do 
+  debug "setting: 'echo $i > $1'" 2
+  echo $i > $1
+ done
 }
 
+
+function exportGPIOs() {
+  LoopthroughGPIOs "/sys/class/gpio/export" 
+}
+
+function unexportGPIOs() {
+  LoopthroughGPIOs "/sys/class/gpio/unexport" 
+}
+
+
+
+
+
+
 function setdirection () {
-GP_PATH=/sys/class/gpio/
-
-#outputs
-for i in  2 3 4 5 6 7 8 9 10
-do
-    GP_D=$GP_PATH${GP[$i]}/direction
-    echo $GP_D
-    echo out > $GP_D    
-done
-
-#inputs
-GP_D=$GP_PATH${GP[1]}/direction
-echo in > $GP_D
+  debug "setdirection()" 1
+  let count=TotalGPIO_outputs-1
+  #outputs
+  for i in  $(seq 0 $count)
+  do
+    GP_D=$GPIOpath/${GPoutputs[$i]}/direction
+    debug "setting: '$i) echo out > $GP_D" 2
+    echo out > $GP_D
+  done
+   let count=TotalGPIO_inputs-1
+  #inputs
+  for i in  $(seq 0 $count)
+  do
+    GP_D=$GPIOpath/${GPinputs[i]}/direction
+    debug "setting: '$i) echo in > $GP_D" 2
+    echo "in" > $GP_D
+  done  
 }
 
 if [ "$#" -lt 1 ]; then

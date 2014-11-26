@@ -94,18 +94,21 @@ int main(int argc, char **argv) {
         verbose = 1;
         break;
       case 'u':
-        if (strcmp(optarg, "115200")) {
+	printf("case u: %s res: %i\n",optarg,strcmp(optarg, "9600"));
+        if (! strcmp(optarg, "115200")) {
           baud = B115200;
-        } else if (strcmp(optarg, "57600")) {
+        } else if (! strcmp(optarg, "57600")) {
           baud = B115200;
-        } else if (strcmp(optarg, "19200")) {
+        } else if (! strcmp(optarg, "19200")) {
           baud = B19200;
-        } else if (strcmp(optarg, "9600")) {
+        } else if (! strcmp(optarg, "9600")) {
           baud = B9600;
+	  printf ("got in here");
         } else {
           printf("Unknown baud rate %s!\n", optarg);
           return -1;
         }
+        printf("Baudrate set %i\n",baud);
         break;
       case 'r':
         rts = optarg;

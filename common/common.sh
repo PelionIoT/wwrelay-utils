@@ -5,6 +5,12 @@
 # source this for common functions...
 # make sure you use bash - not the default, which is ash on some systems. So so so annoying.
 
+#Debug levels
+#0 off
+#1 screen
+debug_level=1
+
+
 COLOR_BOLD="echo -ne '\E[1m'"
 COLOR_RED="echo -ne '\E[31m'"
 COLOR_MAGENTA="echo -ne '\E[35m'"
@@ -42,6 +48,24 @@ esac
 
 }
 
+function debug() {
+	string="$1"
+	tablevel="$2"
+	tabspace=""
+	if [ "$debug_level" = "1" ]; then
+		case $tablevel in
+			1)
+				eval $COLOR_YELLOW
+			;;
+			2) 
+				eval $COLOR_GREEN
+				tabspace="$tabsapce\t"
+			;;
+		esac
+		echo -e "$tabspace$string"
+		eval $COLOR_NORMAL
+	fi
+}
 
 # Use like this:
 # 

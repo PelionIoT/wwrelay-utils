@@ -69,7 +69,6 @@ function setup_colors() {
 	C_UND=`tput smul`
 	#useage: echo -e "${C_RED} say stuff ${C_NORM}"
 }
-setup_colors
 
 function debug() {
 	string="$1"
@@ -251,5 +250,8 @@ function mksoftlinkfiles_inform() {
 
     popd
 }
+
+setup_colors
+SCRIPT=`basename ${BASH_SOURCE[0]}`
 
 

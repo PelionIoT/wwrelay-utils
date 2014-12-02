@@ -21,10 +21,102 @@ THISDIR=$(getScriptDir "${BASH_SOURCE[0]}")
 
 # bring GPIO functions and the important varriables
 . $THISDIR/../GPIO/setup-gpio.sh funcsonly
-
-
+SCRIPT=`basename ${BASH_SOURCE[0]}`
 
 AVAILABLE="reset erase ramburn RTSlow RTShigh RTSstatus RESETlow RESEThigh RESETstatus ERASEstatus program debug"
+SETABLES="High Low"
+
+
+
+#Help function
+function HELP {
+    echo -e \\n"${C_UND}${C_BOLD}Help documentation${C_UND} for ${SCRIPT}.${C_NORM}"\\n
+    echo -e "Commands the 6BSMD_MC13224 (6BMC13)"\\n
+    echo -e "Usage: $SCRIPT [OPTIONS] [PARAMATERS]"\\n
+    echo -e "Options:"
+    echo -e "\t-E, --ErasePin [${SETABLES// /|}]\tsets erase pin. (Default: Low)"
+    echo -e "\t-R, --RTSPin [${SETABLES// /|}]\t\tsets RTS pin. (Default: Low)"
+    echo -e "\t-r, --ResetPin [${SETABLES// /|}]\tsets reset pin. (Default: High)"
+    echo -e "\t-S, --Status \t\t\tDisplays all pins' status"
+    echo -e "\t-P, --Program [File] \t\tPrograms the given file into the 6BMC13"
+    echo -e "\t-h, --Help \t\t\tdisplays this help message."\\n
+    echo -e "Examples:"
+    echo -e "\t$SCRIPT --Status \t\tPrints the status of each pin"
+    echo -e "\t$SCRIPT --Program file \tPrograms the file into the 6BMC13224"\\n
+  exit 1
+}
+
+
+#Check the number of arguments. If none are passed, print help and exit.
+function checkargs(){
+    NUMARGS=$1
+      echo -e \\n"Number of arguments: $NUMARGS"
+    if [ $NUMARGS -eq 0 ]; then
+        echo -e \\n"Number of arguments: $NUMARGS"
+        HELP
+    fi
+}
+ echo -e "HI Number of arguments: $#"
+checkargs $#
+exit
+
+### Start getopts code ###
+
+#Parse command line flags
+#If an option should be followed by an argument, it should be followed by a ":".
+#Notice there is no ":" after "h". The leading ":" suppresses error messages from
+#getopts. This is required to get my unrecognized option code to work.
+
+while getopts :f:t:m:h FLAG; do
+    TEST="$OPTARG "
+    case $FLAG in
+    f)
+        if [[ "$COLORS" =~ "$TEST" ]]; then
+            OPT_F=$OPTARG 
+        else    
+            echo "${C_RED}${C_BOLD}-f $OPTARG invalid${C_NORM}"
+            HELP
+        fi
+        ;;
+    t)
+        if [[ "$COLORS" =~ "$TEST" ]]; then
+            OPT_T=$OPTARG 
+        else    
+            echo "${C_RED}${C_BOLD}-f $OPTARG invalid${C_NORM}"
+            HELP
+        fi
+        ;;
+        
+    m)
+        if [[ "$MODES" =~ "$TEST" ]]; then
+            OPT_M=$OPTARG 
+        else    
+            echo "${C_RED}${C_BOLD}-f $OPTARG invalid${C_NORM}"
+            HELP
+        fi
+        ;;
+
+    h)  #show help
+        HELP
+        ;;
+    \?) #unrecognized option - show help
+        echo -e \\n"${C_RED}Option -${C_BOLD}$OPTARG${C_NORM}${C_RED} not allowed.${C_NORM}"
+        HELP
+        ;;
+  esac
+done
+debug "at shift" 1
+shift $((OPTIND-1))  #This tells getopts to move on to the next argument.
+
+### End getopts code ###
+debug "done shift" 1
+
+
+
+
+
+
+
 fail=0
 [[ $AVAILABLE =~ $COMMAND ]] || fail=1
 if [ -z $1 ]

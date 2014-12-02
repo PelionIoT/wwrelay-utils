@@ -22,7 +22,6 @@ THISDIR=$(getScriptDir "${BASH_SOURCE[0]}")
 SCRIPT=`basename ${BASH_SOURCE[0]}`
 
 
-
 #Initialize
 MODES="heartbeat mmc0 timer TEST none"
 COLORS="red green blue cyan magenta yellow white off black nochange"

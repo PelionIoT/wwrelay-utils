@@ -24,29 +24,52 @@ FRZ_MANIFEST_LST="manifest.lst"
 FRZ_EXPAND_CFG="prereq-setup.cfg"
 
 function setup_colors() {
-SYSTYPE="$(eval "uname | cut -c 1-4")"
-
-case "$SYSTYPE" in 
-    Darw)
-	COLOR_BOLD="echo -ne '\033[1m'"
-	COLOR_RED="echo -ne '\033[31m'"
-	COLOR_MAGENTA="echo -ne '\033[35m'"
-	COLOR_YELLOW="echo -ne '\033[33m'"
-	COLOR_GREEN="echo -ne '\033[32m'"
-	COLOR_NORMAL="echo -ne '\033[0m'"
-	;;
-    Linu|CYGW)   		
-#    CYGW)
-	COLOR_BOLD="echo -ne '\E[1m'"
-	COLOR_RED="echo -ne '\E[31m'"
-	COLOR_MAGENTA="echo -ne '\E[35m'"
-	COLOR_YELLOW="echo -ne '\E[33m'"
-	COLOR_GREEN="echo -ne '\E[32m'"
-	COLOR_NORMAL="echo -ne '\E[0m'"
-	;;
-esac
-
+	# OLDER color definitions
+	SYSTYPE="$(eval "uname | cut -c 1-4")"
+	case "$SYSTYPE" in 
+    	Darw)
+			COLOR_BOLD="echo -ne '\033[1m'"
+			COLOR_RED="echo -ne '\033[31m'"
+			COLOR_MAGENTA="echo -ne '\033[35m'"
+			COLOR_YELLOW="echo -ne '\033[33m'"
+			COLOR_GREEN="echo -ne '\033[32m'"
+			COLOR_NORMAL="echo -ne '\033[0m'"
+			;;
+    	Linu|CYGW)   		
+			COLOR_BOLD="echo -ne '\E[1m'"
+			COLOR_RED="echo -ne '\E[31m'"
+			COLOR_MAGENTA="echo -ne '\E[35m'"
+			COLOR_YELLOW="echo -ne '\E[33m'"
+			COLOR_GREEN="echo -ne '\E[32m'"
+			COLOR_NORMAL="echo -ne '\E[0m'"
+			;;
+	esac
+	#newer color definitions
+	C_BLACK=`tput setaf 0`
+	C_RED=`tput setaf 1`
+	C_GREEN=`tput setaf 2`
+	C_YELLOW=`tput setaf 3`
+	C_BLUE=`tput setaf 4`
+	C_MAGENTA=`tput setaf 5`
+	C_CYAN=`tput setaf 6`
+	C_WHITE=`tput setaf 7`
+	#background
+	C_BLACK_BG=`tput setab 0`
+	C_RED_BG=`tput setab 1`
+	C_GREEN_BG=`tput setab 2`
+	C_YELLOW_BG=`tput setab 3`
+	C_BLUE_BG=`tput setab 4`
+	C_MAGENTA_BG=`tput setab 5`
+	C_CYAN_BG=`tput setab 6`
+	C_WHITE_BG=`tput setab 7`
+	C_DIM=`tput dim`
+	C_NORM=`tput sgr0`
+	C_BOLD=`tput bold`
+	C_REV=`tput smso`
+	C_UND=`tput smul`
+	#useage: echo -e "${C_RED} say stuff ${C_NORM}"
 }
+setup_colors
 
 function debug() {
 	string="$1"

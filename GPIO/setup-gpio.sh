@@ -115,6 +115,6 @@ function setdirection () {
 if [ "$#" -lt 1 ]; then
     modprobe_gpiodriver
     exportGPIOs
-    setdirection    
+    setdirection
 fi
 

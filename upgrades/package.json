@@ -1,0 +1,25 @@
+{
+  "name": "devicejs-tools",
+  "version": "0.0.1",
+  "description": "DeviceJS tools",
+  "author": {
+    "name": "WigWag",
+    "email": "support@wigwag.com"
+  },
+  "website": {
+    "url": "wigwag.com"
+  },
+  "repository": {},
+  "private": true,
+  "dependencies": {
+    "tar":"*",
+    "MD5":"*",
+    "zlib":"*",
+    "unzip":"*",
+    "optimist": "~0.6.1",
+    "ejs" : "*",
+    "fs-extra":"*",
+    "lockfile" : "*"
+  },
+  "engines": {}
+}

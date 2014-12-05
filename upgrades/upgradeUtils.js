@@ -11,16 +11,13 @@ var path         = require('path');
 var _            = require('underscore');
 var md5          = require('MD5');
 var http         = require('http');
-var events       = require('events');
 var JSONminify   = require('./json.minify.js');
-var EventEmitter = require('events').EventEmitter;
 
 var versionsObject;
 var cloudVersions;
-var ee = new EventEmitter();
 
 var numSpaces = function(n) {
-    theSpaces = "";
+    var theSpaces = '';
     for (var i=0; i< n*1; i++) {
         theSpaces += ' ';
     }
@@ -28,7 +25,7 @@ var numSpaces = function(n) {
 };
 /**
  Determines if the package with the name 'value'
- Exists in the package json "verObj"
+ Exists in the package json 'verObj'
 **/
 var existsPackage = function(verObj, value) {
     if (verObj && value) {
@@ -60,8 +57,8 @@ var indexOfPackage = function(vObj, name) {
 **/
 var isVersionGreater = function(ver1, ver2) {
 
-    vArray1 = ver1.split('.');
-    vArray2 = ver2.split('.');
+    var vArray1 = ver1.split('.');
+    var vArray2 = ver2.split('.');
 
     if (parseInt(vArray1[0]) > parseInt(vArray2[0])) {
         return true;
@@ -107,21 +104,21 @@ var walkObj = function(zObj) {
         if (_.isObject(value)) {
             identLevel++;
             if( ! _.isArray(key)) {
-                process.stdout.write(numSpaces(identLevel) + key + ": \n");
+                process.stdout.write(numSpaces(identLevel) + key + ': \n');
             }
 	    walkObj(value);
             identLevel--;
         } else {
-            process.stdout.write(numSpaces(identLevel) + key + ": ");
+            process.stdout.write(numSpaces(identLevel) + key + ': ');
             process.stdout.write(value + '\n');
         }
     });
 };
 
 /**
-   Method to pull the versions file from the "cloud"
+   Method to pull the versions file from the 'cloud'
 **/
-var getCloudVersions = function() {
+var getCloudVersions = function(cb) {
     var options = {
         host: 'localhost',
         path: '/api/versions',
@@ -136,7 +133,7 @@ var getCloudVersions = function() {
         }).on('end', function() {
             var body = Buffer.concat(bodyChunks);
             cloudVersions = JSON.parse(body);
-            ee.emit("versionsInit", versionsObject, cloudVersions);
+            cb(versionsObject, cloudVersions);
         });
     }).on('error', function(e) {
         console.log('ERROR: ' + e.message);
@@ -153,8 +150,7 @@ module.exports = {
             var fContents = fs.readFileSync(path, 'utf8');
             versionsObject = JSON.parse(JSONminify(fContents));
         }
-        ee.on("versionsInit", cb);
-        getCloudVersions();
+        getCloudVersions(cb);
         return versionsObject;
     },
 
@@ -170,7 +166,7 @@ module.exports = {
     upgradePackages: function() {
     },
     downloadPackages: function() {
-        console.log("Needs to be implemented");
+        console.log('Needs to be implemented');
     },
     isUpgradeRequired: function (a, b) {
         // Check the version number of the version file 
@@ -202,13 +198,13 @@ module.exports = {
             }
 
             newObj = {
-                "name" : name,
-                "description" : desc,
-                "version" : version,
-                "node_modules_path" : node_module_path,
-                "node_hash" : nodeMD5,
-                "ww_module_path" : ww_module_path,
-                "ww_module_hash" :  wwMD5
+                'name' : name,
+                'description' : desc,
+                'version' : version,
+                'node_modules_path' : node_module_path,
+                'node_hash' : nodeMD5,
+                'ww_module_path' : ww_module_path,
+                'ww_module_hash' :  wwMD5
             };
         } else {
             return undefined;
@@ -245,7 +241,7 @@ module.exports = {
     },
     save:   function(path){
         if (versionsObject && path) {
-            fs.writeFileSync(path, JSON.stringify(versionsObject, null, 4), "UTF-8",{'flags': 'w+'});
+            fs.writeFileSync(path, JSON.stringify(versionsObject, null, 4), 'UTF-8',{'flags': 'w+'});
         }
     }
 };

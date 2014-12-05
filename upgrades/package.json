@@ -13,7 +13,6 @@
   "private": true,
   "dependencies": {
     "MD5":"*",
-    "zlib":"*",
   },
   "engines": {}
 }

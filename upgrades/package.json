@@ -1,0 +1,18 @@
+{
+  "name": "upgrades",
+  "version": "0.0.1",
+  "description": "Upgrade tools for the relay",
+  "author": {
+    "name": "WigWag",
+    "email": "support@wigwag.com"
+  },
+  "website": {
+    "url": "wigwag.com"
+  },
+  "repository": {},
+  "private": true,
+  "dependencies": {
+    "MD5":"*",
+  },
+  "engines": {}
+}

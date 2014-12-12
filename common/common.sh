@@ -77,18 +77,27 @@ function debug() {
 	if [ "$debug_level" = "1" ]; then
 		case $tablevel in
 			1)
-				eval $COLOR_YELLOW
-			;;
-			2) 
-				eval $COLOR_GREEN
-				tabspace="$tabsapce\t"
-			;;
+				C="${C_BLUE}";echo -e "$C DEBUG${C_NORM}";;
+			2) C="${C_CYAN}"; tabspace="$tabsapce\t";;
+			3) C="${C_YELLOW}"; tabspace="$tabsapce\t\t";;
 		esac
-		echo -e "$tabspace$string"
-		eval $COLOR_NORMAL
+		echo -e " $tabspace$C$string${C_NORM}"
 	fi
 }
 
+#validates user input for a value match in a list
+function validate_in_list() {
+ 	if [[ ! $2 =~ $1 ]]; then
+ 		echo "${C_RED}Error: ${C_NORM} $3 is invalid: ${C_MAGENTA}$1${C_NORM} is not a member of ${C_MAGENTA}[${2// /|}]${C_NORM}"
+ 		exit 0
+ 	fi
+}
+function validate_file_exists() {
+ 	if [[ ! -e $1 ]]; then
+ 		echo "${C_RED}Error: ${C_NORM} File ${C_MAGENTA}$1${C_NORM} does not exist."
+ 		exit 0
+ 	fi
+}
 # Use like this:
 # 
 # THISDIR=$(getScriptDir "${BASH_SOURCE[0]}")
@@ -252,6 +261,6 @@ function mksoftlinkfiles_inform() {
 }
 
 setup_colors
-SCRIPT=`basename ${BASH_SOURCE[0]}`
+
 
 

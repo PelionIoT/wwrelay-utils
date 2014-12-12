@@ -52,7 +52,7 @@ NUMARGS=$#
 #echo -e \\n"Number of arguments: $NUMARGS"
 if [ $NUMARGS -eq 0 ]; then
   HELP
-fi
+
 
 ### Start getopts code ###
 

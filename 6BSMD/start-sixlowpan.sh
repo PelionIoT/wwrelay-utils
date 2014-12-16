@@ -66,8 +66,6 @@ if [ "$1" == "start" ]; then
 	# some trivial log rotation
 	mv $TUNSLIP_LOG $TUNSLIP_LOG.1
     fi
-    echo "I am told to exit now" 
-    exit
     echo "CMD: $TUNSLIP -v$TUNSLIP_LOG_LEVEL -s $TUNSLIP_SERIAL $IP6_ROUTE > $TUNSLIP_LOG 2>&1 &"
     $TUNSLIP -v$TUNSLIP_LOG_LEVEL -s $TUNSLIP_SERIAL $IP6_ROUTE > $TUNSLIP_LOG 2>&1 &
     sleep 3

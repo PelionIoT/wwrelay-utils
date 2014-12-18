@@ -26,6 +26,10 @@
                 "classpath": "WWWebAPI",
                 "config": { }
             },
+            "webUpgradeApp": {
+                "classpath": "WWUpgradeApp",
+                "config": { }
+            },
 	    "webUI": {
 		"classpath": "WWRelayWebUI",
 		"config": { }

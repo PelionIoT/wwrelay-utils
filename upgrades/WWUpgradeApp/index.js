@@ -7,7 +7,6 @@ var App = require('Class/App');
 var express = require('express');
 var morgan = require('morgan');
 var bodyParser = require('body-parser');
-var methodOverride = require('method-override');
 var dev$Promise = require('Class/DevPromise');
 var upgradeUtils = require('./upgradeUtils.js');
 
@@ -18,7 +17,7 @@ var WWUpgradeApp = App.create('WWUpgradeApp', function() {
 
     this.start = function () {
         log.debug("-----> wwupgradeapp start("+this.id()+")");
-        return new dev$promise().when(function(p) {
+        return new dev$Promise().when(function(p) {
 
             //  Path to local versions file
             var versionFile = '/etc/wigwag/versions.json'

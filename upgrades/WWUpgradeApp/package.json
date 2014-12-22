@@ -9,6 +9,8 @@
   "author": "",
   "license": "ISC",
   "dependencies": {
-    "morgan": "~1.0.0"
+    "morgan": "~1.0.0",
+    "MD5": "*",
+    "body-parser": "~1.0.0"
   }
 }

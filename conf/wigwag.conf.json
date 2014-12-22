@@ -13,7 +13,7 @@
         }
     },
     "runtimeConfig": {
-        "appDirectories": [ "./devjs-usr" ],
+        "appDirectories": [ "./devjs-usr" , "core"],
         "facadeDirectories": [ "./core" ],
         "deviceDirectories": [ "./core" ],
         "discovererDirectories": [ "./core" ],
@@ -24,6 +24,10 @@
             },
             "webAPI": {
                 "classpath": "WWWebAPI",
+                "config": { }
+            },
+            "LogMonitor": {
+                "classpath": "LogMonitor",
                 "config": { }
             },
             "webUpgradeApp": {

@@ -11,10 +11,10 @@ var path         = require('path');
 var _            = require('underscore');
 var md5          = require('MD5');
 var http         = require('http');
-var JSONminify   = require('./json.minify.js');
+var JSONminify   = require('json.minify.js');
+var cloudVersions;
 
 var versionsObject;
-var cloudVersions;
 
 var numSpaces = function(n) {
     var theSpaces = '';
@@ -71,29 +71,6 @@ var isVersionGreater = function(ver1, ver2) {
     }
 };
 
-/**
- Returns and array of the packages that need to be upgraded
- based on the package versions and the md5 has on each of the
- package.json files
-**/
-var whichPackagesNeedUpgrade = function(local, cloud) {
-    var requiresUpgrade = [];
-    for (var i=0; i<local.packages.length; i++) {
-        cloudIndex = indexOfPackage(cloud, local.packages[i].name);
-
-        if (cloudIndex !== -1) {
-            if ((isVersionGreater(cloud.packages[cloudIndex].version,
-                                 local.packages[i].version)) ||
-                cloud.packages[cloudIndex].node_hash !==
-                                 local.packages[i].node_hash || 
-                cloud.packages[cloudIndex].ww_module_hash !==
-                                 local.packages[i].ww_module_hash) {
-                requiresUpgrade[requiresUpgrade.length] = local.packages[i];
-            }
-        }
-    }
-    return requiresUpgrade;
-};
 
 /**
    Method to walk the package objects and print the attributes
@@ -118,7 +95,7 @@ var walkObj = function(zObj) {
 /**
    Method to pull the versions file from the 'cloud'
 **/
-var getCloudVersions = function(cb) {
+var getCloudVersions = function() {
     var options = {
         host: 'localhost',
         path: '/api/versions',
@@ -133,36 +110,35 @@ var getCloudVersions = function(cb) {
         }).on('end', function() {
             var body = Buffer.concat(bodyChunks);
             cloudVersions = JSON.parse(body);
-            cb(versionsObject, cloudVersions);
         });
     }).on('error', function(e) {
+        console.log('Unable to retrieve the Cloud Versions');
         console.log('ERROR: ' + e.message);
     });
 };
 
 module.exports = {
-
     /**
-       Verifies the existence of the versions file and reads it into memory
+       Verifies the existence of the versions file and loads it
+       The pulldown the version from the cloud
     **/
     init:  function(path, cb) { 
+        var localVersions;
         if (fs.existsSync(path)) {
             var fContents = fs.readFileSync(path, 'utf8');
-            versionsObject = JSON.parse(JSONminify(fContents));
+            localVersions = JSON.parse(JSONminify(fContents));
         }
-        getCloudVersions(cb);
-        return versionsObject;
+        getCloudVersions();
+        cb(localVersions, cloudVersions);
+        return localVersions;
     },
 
     /**
        Method to print the contents of the version file
     **/
-    printPackage:  function(zObj) {
-        walkObj(zObj);
+    logPackage:  function(zObj) {
+        logObj(zObj);
     },
-    availPackages: function() {
-        return cloudVersions;
-    }, 
     upgradePackages: function() {
     },
     downloadPackages: function() {
@@ -175,15 +151,38 @@ module.exports = {
             return true;
         }
         // Determine which, if any, packages should be upgraded
-        var needsUpgrade = whichPackagesNeedUpgrade(a, b);
+        var needsUpgrade = this.whichPackagesNeedUpgrade(a, b);
         if (needsUpgrade.length > 0) {
             return true;
         }
         return false;
     },
-    addPackage:    function(name, version, desc, node_module_path, ww_module_path){
+    /**
+     Returns and array of the packages that need to be upgraded
+     based on the package versions and the md5 has on each of the
+     package.json files
+    **/
+    whichPackagesNeedUpgrade: function(local, cloud) {
+        var requiresUpgrade = [];
+        for (var i=0; i<local.packages.length; i++) {
+            cloudIndex = indexOfPackage(cloud, local.packages[i].name);
 
-        if (versionsObject && version  && name && desc) {
+            if (cloudIndex !== -1) {
+                if ((isVersionGreater(cloud.packages[cloudIndex].version,
+                                     local.packages[i].version)) ||
+                    cloud.packages[cloudIndex].node_hash !==
+                                     local.packages[i].node_hash || 
+                    cloud.packages[cloudIndex].ww_module_hash !==
+                                     local.packages[i].ww_module_hash) {
+                    requiresUpgrade[requiresUpgrade.length] = local.packages[i];
+                }
+            }
+        }
+        return requiresUpgrade;
+    },
+    addPackage:    function(versionObject, name, version, desc, node_module_path, ww_module_path){
+
+        if (version  && name && desc) {
             var nodeMD5 = 0;
             var wwMD5 = 0;
 
@@ -209,39 +208,39 @@ module.exports = {
         } else {
             return undefined;
         }
-        if (existsPackage(versionsObject, name) === false) {
-            versionsObject.packages[versionsObject.packages.length] = newObj;
+        if (existsPackage(versionObject, name) === false) {
+            versionObject.packages[versionObject.packages.length] = newObj;
             return true;
         } else {
             return false;
         }
         
     },
-    removePackage: function(value){
-        if (versionsObject && value) {
-            for (var i=0; i<versionsObject.packages.length; i++) {
-                var tmpObj = versionsObject.packages[i];
+    removePackage: function(versionObject, value){
+        if (versionObject && value) {
+            for (var i=0; i<versionObject.packages.length; i++) {
+                var tmpObj = versionObject.packages[i];
                 if (tmpObj.name === value) {
-                    versionsObject.packages.splice(i, 1);
+                    versionObject.packages.splice(i, 1);
                     return;
                 }
             }
         }
     },
-    updatePackageVersion: function(name, value){
-        if (versionsObject && value) {
-            for (var i=0; i<versionsObject.packages.length; i++) {
-                var tmpObj = versionsObject.packages[i];
+    updatePackageVersion: function(versionObjectname, value){
+        if (versionObject && value) {
+            for (var i=0; i<versionObject.packages.length; i++) {
+                var tmpObj = versionObject.packages[i];
                 if (tmpObj.name === name) {
-                    versionsObject.packages[i].version = value;
+                    versionObject.packages[i].version = value;
                     return;
                 }
             }
         }
     },
-    save:   function(path){
-        if (versionsObject && path) {
-            fs.writeFileSync(path, JSON.stringify(versionsObject, null, 4), 'UTF-8',{'flags': 'w+'});
+    save:   function(versionObject, path){
+        if (versionObject && path) {
+            fs.writeFileSync(path, JSON.stringify(versionObject, null, 4), 'UTF-8',{'flags': 'w+'});
         }
     }
 };

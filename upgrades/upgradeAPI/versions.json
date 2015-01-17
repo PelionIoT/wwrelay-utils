@@ -1,0 +1,41 @@
+{
+    "version": "0.0.6",
+    "packages": [
+        {
+            "name": "devicejs",
+            "version": "0.0.1",
+            "description": "This is the deviceJS core package",
+            "node_module_hash": "",
+            "ww_module_hash": ""
+        },
+        {
+            "name": "webapi",
+            "version": "0.0.0",
+            "description": "This package provides the APIs required by applications",
+            "node_module_hash": "",
+            "ww_module_hash": "",
+            "extra_stuff": {
+                "a": "1",
+                "b": "2"
+            }
+        },
+        {
+            "name": "bad_moda",
+            "description": "This is a bad mod",
+            "version": "1.0.0",
+            "node_modules_path": "./package.json",
+            "node_hash": "c155c713e18db859eb3d306364d9ef52",
+            "ww_module_path": "./WWPackage.json",
+            "ww_module_hash": "d982e3f1ec14bb0efa47132a5df1bae2"
+        },
+        {
+            "name": "bad_mod",
+            "description": "This is a bad mod",
+            "version": "1.0.0",
+            "node_modules_path": "./package.json",
+            "node_hash": "c155c713e18db859eb3d306364d9ef52",
+            "ww_module_path": "./WWPackage.json",
+            "ww_module_hash": "d982e3f1ec14bb0efa47132a5df1bae2"
+        }
+    ]
+}

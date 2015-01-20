@@ -10,7 +10,7 @@
         },
         {
             "name": "webapi",
-            "version": "0.0.0",
+            "version": "0.0.1",
             "description": "This package provides the APIs required by applications",
             "node_module_hash": "",
             "ww_module_hash": "",

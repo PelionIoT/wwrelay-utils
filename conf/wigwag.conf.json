@@ -30,6 +30,10 @@
                 "classpath": "LogMonitor",
                 "config": { }
             },
+            "WWRuleUI": {                                              
+                "classpath": "WWRuleUI",
+                "config": { }
+            },                 
             "webUpgradeApp": {
                 "classpath": "WWUpgradeApp",
                 "config": { }

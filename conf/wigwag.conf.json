@@ -17,6 +17,7 @@
         "facadeDirectories": [ "./core" ],
         "deviceDirectories": [ "./core" ],
         "discovererDirectories": [ "./core" ],
+        "ruleNodeDirectories": [ "./core" ],
         "apps": {
             "mobileUI": {
                 "classpath": "WWMobileUI",

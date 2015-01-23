@@ -41,6 +41,7 @@
             },
 	    "webUI": {
 		"classpath": "WWRelayWebUI",
+                "defaultApp" : true,
 		"config": { }
 		}
 		

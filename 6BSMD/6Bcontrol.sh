@@ -65,7 +65,7 @@ function SET_PIN() {
         debug "echo 1 > $pin" 3
         echo 1 > $pin
     else
-        debug "echo 1 > $pin" 3
+        debug "echo 0 > $pin" 3
         echo 0 > $pin
     fi
 }
@@ -73,7 +73,7 @@ function SET_PIN() {
 function 6Breset () {
     debug "6Breset()" 1
     SET_PIN "$SBMC_RESET/value" "Low"
-    sleep 1
+    sleep $RESETTIME
     SET_PIN "$SBMC_RESET/value" "High"    
 }
 
@@ -81,7 +81,7 @@ function 6Berase() {
     debug "6Berase()" 1
     SET_PIN "$SBMC_ERASE/value" "High"
     6Breset
-    sleep 3
+    sleep 2
     SET_PIN "$SBMC_ERASE/value" "Low"
 }
 
@@ -96,7 +96,7 @@ function 6BStatus() {
 burnpid=""
 function burn() {
     debug "burn($1)"
-    echo -e "burning with $burnercmd\n"
+    echo -e "flashcmd: with $1\n"
     $1 &
     burnpid=$!
 }
@@ -104,10 +104,15 @@ function burn() {
 function 6Bprogram() {
     debug "6Bprogram(file=$1)"
     echo -e "Programming the 6Bee\n"
-    burnercmd="$THISDIR/$Loader $v -t $tty -f $Flasher -s $1 -u 115200 -e"
+    burnercmd="$THISDIR/$Loader $v -t $tty -f $Flasher -s $1 -u $Baudrate -e"
+    ramburncmd="$THISDIR/$Loader $v -t $tty -f $1 -u $Baudrate"
     6Berase
     SET_PIN "$SBMC_RTS/value" "low"
-    burn "$burnercmd"
+    if [[ $Mode == "Romburn" ]]; then
+        burn "$burnercmd"
+    else
+        burn "$ramburncmd"
+    fi
     6Breset
     sleep 1
     wait $burnpid
@@ -116,6 +121,7 @@ function 6Bprogram() {
 
 function 6Buartsettings(){
     stty -F $tty raw speed 115200 -parenb -parodd cs8 -hupcl -cstopb cread clocal -crtscts -ignbrk -brkint -ignpar -parmrk -inpck -istrip -inlcr -igncr -icrnl -ixon -ixoff -iuclc -ixany -imaxbel -iutf8 -opost -olcuc -ocrnl onlcr -onocr -onlret -ofill -ofdel nl0 cr0 tab0 bs0 vt0 ff0 -isig -icanon -iexten -echo -echoe echok -echonl -noflsh -xcase -tostop -echoprt echoctl echoke
+    #stty -F $tty raw speed 115200 -parenb -parodd cs8 -hupcl -cstopb cread clocal -crtscts ignbrk -brkint -ignpar -parmrk -inpck -istrip -inlcr -igncr -icrnl -ixon -ixoff -iuclc -ixany -imaxbel -iutf8 -opost -olcuc -ocrnl -onlcr -onocr -onlret -ofill -ofdel nl0 cr0 tab0 bs0 vt0 ff0 -isig -icanon -iexten -echo -echoe -echok -echonl -noflsh -xcase -tostop -echoprt -echoctl -echoke   
 }
 
 function Killallstuff() {
@@ -142,12 +148,16 @@ function process_args(){
     # extract options and their arguments into variables.
     # Only for educational purposes. Can be removed.
     #-----------------------------------------------
-    # echo "++ Test: Number of arguments: [$#]"
-    # echo '++ Test: Looping through "$@:'$@'"'
-    # for a in "$@"; do
-    #     echo "  ++ [$a]"
-    # done
+    debugcli=0
+    if [[ $debugcli = 1 ]];then
+        echo "++ Test: Number of arguments: [$#]"
+        echo '++ Test: Looping through "$@:'$@'"'
+        for a in "$@"; do
+            echo "  ++ [$a]"
+        done
+    fi
     #-----------------------------------------------
+    action=0;
     while true ; do
         case "$1" in
             -h|--Help) HELP ;;
@@ -167,7 +177,7 @@ function process_args(){
                     "") shift 2 ;;
                     *) validate_in_list $2 "$SETABLES" "-r --ResetPin";SET_PIN "$SBMC_RESET/value" "$2" ; shift 2 ;;
                 esac ;;
-            -r|--RTSPin)
+            -u|--RTSPin)
                 case "$2" in
                     "") shift 2 ;;
                     *) validate_in_list $2 "$SETABLES" "-S --RTSPin";SET_PIN "$SBMC_RTS/value" "$2" ; shift 2 ;;
@@ -187,6 +197,11 @@ function process_args(){
                     "") shift 2 ;;
                     *) validate_in_list $2 "$FLASHERS" "-f --Flasher";Flasher="$2" ; shift 2 ;;
                 esac ;;
+            -m|--Mode)
+                case "$2" in
+                    "") shift 2 ;;
+                    *) validate_in_list $2 "$MODES" "-m --Mode";Mode="$2" ; shift 2 ;;
+                esac ;;
             -t|--ttyPort)
                 case "$2" in
                     "") shift 2 ;;
@@ -198,7 +213,7 @@ function process_args(){
                     *) validate_in_list $2 "$LOADERS" "-l --Loader";Loader="$2" ; shift 2 ;;
                 esac ;;
             --) shift ; break ;;
-            *) echo "Internal error!" ; exit 1 ;;
+            *) echo "Error $SCRIPT requires command line arguments"; HELP ;;
         esac
     done
 }
@@ -213,24 +228,25 @@ function HELP {
     echo -e "  Commands the 6BSMD_MC13224 (6BMC13)"
     echo -e "  Usage: $SCRIPT [OPTIONS] [PARAMATERS]"
     echo -e "${C_UND}Options:${C_NORM}"
-    echo -e " -c, --Configure\t Sets the default settings for the ttyPort"
-    echo -e " -e, --ErasePin\t$C[${SETABLES// /|}]$N Sets erase pin. (Default: Low)"
-    echo -e " -E, --Erase\tErases the 6BEE."
-    echo -e " -h, --Help\tDisplays the help message."
-    echo -e " -K, --Kill\tKill all 6BEE programs (Tunslip & programmers)."
-    echo -e " -P, --Program\t$C<File>$N Programs the given file into the 6BMC13"
-    echo -e "  -b, --Baud\t$C[${BAUDS// /|}]$N Sets baud rate. (Defualt: $Baudrate)"
-    echo -e "  -l, --Loader\t$C[${LOADERS// /|}]$N Programer to use. (Default:$Loader)"
-    echo -e "  -f, --Flasher\t$C[${FLASHERS// /|}]$N Flasher to use."
-    echo -e "  -v, --Verbose\tPass the flasher the -v argument."
-    echo -e " -r, --ResetPin\t$C[${SETABLES// /|}]$N Sets reset pin. (Default: High)"
-    echo -e " -R, --Reset\tToggles the reset pin."
-    echo -e " -S, --Status\tDisplays status for all pins."
-    echo -e " -t, --ttyPort\t Sets the ttyPort.  (Default: $tty)"
-    echo -e " -u, --RTSPin\t$C[${SETABLES// /|}]$N Sets RTS pin. (Default: Low)"
+    echo -e " -c, --Configure\tSets the default settings for the ttyPort"
+    echo -e " -e, --ErasePin\t\t$C[${SETABLES// /|}]$N Sets erase pin. (Default: Low)"
+    echo -e " -E, --Erase\t\tErases the 6BEE."
+    echo -e " -h, --Help\t\tDisplays the help message."
+    echo -e " -K, --Kill\t\tKill all 6BEE programs (Tunslip & programmers)."
+    echo -e " -P, --Program\t\t$C<File>$N Programs the given file into the 6BMC13"
+    echo -e "   -b, --Baud\t\t$C[${BAUDS// /|}]$N Sets baud rate. (Defualt: $Baudrate)"
+    echo -e "   -l, --Loader\t\t$C[${LOADERS// /|}]$N Programer to use. (Default: $Loader)"
+    echo -e "   -f, --Flasher\t$C[${FLASHERS// /|}]$N Flasher to use."
+    echo -e "   -t, --ttyPort\t Sets the ttyPort.  (Default: $tty)"
+    echo -e "   -v, --Verbose\tPass the flasher the -v argument."
+    echo -e "   -m, --Mode\t\t$C[${MODES// /|}]$N Mode to use (Default: $Mode)"
+    echo -e " -r, --ResetPin\t\t$C[${SETABLES// /|}]$N Sets reset pin. (Default: High)"
+    echo -e " -R, --Reset\t\tToggles reset pin."
+    echo -e " -S, --Status\t\tDisplays status for all pins."
+    echo -e " -u, --RTSPin\t\t$C[${SETABLES// /|}]$N Sets RTS pin. (Default: Low)"
     echo -e "${C_UND}Examples:${C_NORM}"
-    echo -e " $SCRIPT --Status \tPrints the status of each pin"
-    echo -e " $SCRIPT --Program file \tPrograms the file into the 6BMC13224"\\n
+    echo -e " $SCRIPT --Status\tPrints the status of each pin"
+    echo -e " $SCRIPT --Program file\tPrograms the file into the 6BMC13224"\\n
   exit 1
 }
 
@@ -246,22 +262,24 @@ function HELP {
 #Set our default varribles that can be overwritten with command line switches
 Baudrate=115200
 Loader=mc1322x-load
+Mode=Romburn
 tty=$SBMC_TTY
 Flasher=flasher.bin
 v=""
 Program=""
+RESETTIME=1
 
 BAUDS="115200 57600 19200 9600"
 FLASHERS="flasher.bin flasher_m12.bin f2-econotag.bin"
 LOADERS="mc1322x-load mctest"
 SETABLES="High Low"
+MODES="Ramburn Romburn"
 
 
-
-checkargs $#
+#checkargs $#
 
 #caputures the output of getopt, if error stops the script, dispays the error, and Help
-PARSED_CLI=`getopt -o e:u:r:b:l:f:t:vcSKERP:h --long ErasePin:,RTSPin:,ResetPin:,Baud:,Loader:,Flasher:,ttyPort:,Configure,Verbose,Kill,Status,Erase,Reset,Program:,Help -n ${SCRIPT} -- "$@" 2> /tmp/errorfile`
+PARSED_CLI=`getopt -o e:u:r:b:l:f:m:t:vcSKERP:h --long ErasePin:,RTSPin:,ResetPin:,Baud:,Loader:,Flasher:,Mode:,ttyPort:,Configure,Verbose,Kill,Status,Erase,Reset,Program:,Help -n ${SCRIPT} -- "$@" 2> /tmp/errorfile`
 if [[ $? = 1 ]]; then
     ERR=$(</tmp/errorfile)
     echo -e "${C_RED}Error: $ERR${C_NORM}"
@@ -270,5 +288,7 @@ fi
 
 process_args
 if [[ "$Program" != "" ]]; then
+    Killallstuff
     6Bprogram "$Program"
+    6Breset
 fi

@@ -19,19 +19,17 @@ echo "$__MYDIR"
 THISDIR=$(getScriptDir "${BASH_SOURCE[0]}")
 . $THISDIR/../common/common.sh
 
-# bring GPIO functions
+# bring GPIO functions and the important varriables
 . $THISDIR/../GPIO/setup-gpio.sh funcsonly
+SCRIPT=`basename ${BASH_SOURCE[0]}`
 
 if [ "$#" -lt 1 ]; then
-    echo "Usage: $0 [start|stop|debug (ttyport)]"
+    echo "Usage: $0 [start|stop|debug (ttyport baud)]"
     
 fi
 
 
-
-
-
-TUNSLIP_SERIAL=/dev/ttyS1
+TUNSLIP_SERIAL=/dev/ttyS2
 TUNSLIP=$THISDIR/tunslip6
 TUNSLIP_LOG=$THISDIR/../../log/tunslip6.log
 
@@ -66,8 +64,7 @@ if [ "$1" == "start" ]; then
 	# some trivial log rotation
 	mv $TUNSLIP_LOG $TUNSLIP_LOG.1
     fi
-    echo "I am told to exit now" 
-    exit
+  
     echo "CMD: $TUNSLIP -v$TUNSLIP_LOG_LEVEL -s $TUNSLIP_SERIAL $IP6_ROUTE > $TUNSLIP_LOG 2>&1 &"
     $TUNSLIP -v$TUNSLIP_LOG_LEVEL -s $TUNSLIP_SERIAL $IP6_ROUTE > $TUNSLIP_LOG 2>&1 &
     sleep 3
@@ -85,8 +82,19 @@ if [ "$1" == "debug" ]; then
     eval $COLOR_BOLD
     echo "Starting SixLowPAN services on command line with -t $1"
     eval $COLOR_NORMAL
-    echo "CMD: $TUNSLIP -v$TUNSLIP_LOG_LEVEL -s $2 $IP6_ROUTE"
-    $TUNSLIP -v$TUNSLIP_LOG_LEVEL -s $2 $IP6_ROUTE
-    
-
+    if [ -z "$2" ]; then
+        port=$SBMC_TTY
+    else
+        port="$2"
+    fi
+    if [ -z "$3" ]; then
+        baudrate=1152300
+    else
+        baudrate="$3"
+    fi
+    echo "CMD: $TUNSLIP -v$TUNSLIP_LOG_LEVEL -s $port -B $baudrate $IP6_ROUTE"
+    #sleep 5 && echo "donesleep" &
+    echo "Resetting 6BSMD"
+    $THISDIR/6bee-reset.sh 2 &
+    $TUNSLIP -v$TUNSLIP_LOG_LEVEL -s $port -B $baudrate $IP6_ROUTE 
 fi

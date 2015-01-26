@@ -3,7 +3,7 @@
 var express    = require('express'); // call express
 var app        = express(); // define our app using express
 var bodyParser = require('body-parser');
-var JSONminify = require('../json.minify.js');
+var JSONminify = require('./json.minify.js');
 var fs         = require('fs');
 
 var loadVersionsFile = function(path) {

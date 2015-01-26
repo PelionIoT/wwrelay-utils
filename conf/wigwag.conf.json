@@ -1,0 +1,59 @@
+{
+	"appServer" : true, // defaults to true
+	"loadApps" : [ 
+		{"classpath" : "WWWebAPI"},
+		{"classpath" : "WWMobileUI"}
+    ],	
+	"requiredServices" : [
+	     { "classpath" : "IPStack", "config" : { "wan" : "dhcp" }},
+	     { "classpath" : "HotPlug", "config" : { "verbose": true }}
+	],
+	"relay_info" : {
+		"providers" : {
+        }
+    },
+    "runtimeConfig": {
+        "appDirectories": [ "./devjs-usr" , "core"],
+        "facadeDirectories": [ "./core" ],
+        "deviceDirectories": [ "./core" ],
+        "discovererDirectories": [ "./core" ],
+        "ruleNodeDirectories": [ "./core" ],
+        "apps": {
+            "mobileUI": {
+                "classpath": "WWMobileUI",
+                "config": { }
+            },
+            "webAPI": {
+                "classpath": "WWWebAPI",
+                "config": { }
+            },
+            "LogMonitor": {
+                "classpath": "LogMonitor",
+                "config": { }
+            },
+            "WWRuleUI": {                                              
+                "classpath": "WWRuleUI",
+                "config": { }
+            },                 
+            "webUpgradeApp": {
+                "classpath": "WWUpgradeApp",
+                "config": { }
+            },
+	    "webUI": {
+		"classpath": "WWRelayWebUI",
+                "defaultApp" : true,
+		"config": { }
+		}
+		
+        },
+        "rootDiscoverers": {
+            "wwDiscoverer": {
+                "typeName": "WigWagDiscoverer",
+                "config": {
+                    "interfacePort": 3000
+                }
+            }
+        }
+    }
+}
+

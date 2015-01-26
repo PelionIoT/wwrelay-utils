@@ -64,7 +64,6 @@ if [ "$1" == "start" ]; then
 	# some trivial log rotation
 	mv $TUNSLIP_LOG $TUNSLIP_LOG.1
     fi
-  
     echo "CMD: $TUNSLIP -v$TUNSLIP_LOG_LEVEL -s $TUNSLIP_SERIAL $IP6_ROUTE > $TUNSLIP_LOG 2>&1 &"
     $TUNSLIP -v$TUNSLIP_LOG_LEVEL -s $TUNSLIP_SERIAL $IP6_ROUTE > $TUNSLIP_LOG 2>&1 &
     sleep 3
@@ -98,3 +97,4 @@ if [ "$1" == "debug" ]; then
     $THISDIR/6bee-reset.sh 2 &
     $TUNSLIP -v$TUNSLIP_LOG_LEVEL -s $port -B $baudrate $IP6_ROUTE 
 fi
+

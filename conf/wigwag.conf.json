@@ -1,9 +1,9 @@
 {
-	"appServer" : true, // defaults to true
+	"appServer" : true,
 	"loadApps" : [ 
 		{"classpath" : "WWWebAPI"},
 		{"classpath" : "WWMobileUI"}
-    ],	
+        ],	
 	"requiredServices" : [
 	     { "classpath" : "IPStack", "config" : { "wan" : "dhcp" }},
 	     { "classpath" : "HotPlug", "config" : { "verbose": true }}
@@ -13,11 +13,13 @@
         }
     },
     "runtimeConfig": {
-        "appDirectories": [ "./devjs-usr" , "core"],
-        "facadeDirectories": [ "./core" ],
-        "deviceDirectories": [ "./core" ],
-        "discovererDirectories": [ "./core" ],
-        "ruleNodeDirectories": [ "./core" ],
+        "appDirectories": [ "./devjs-usr" , "${core}"],
+        "serviceDirectories" : [ "${core}" ],
+        "facadeDirectories": [ "${core}" ],
+        "services" : {},
+        "deviceDirectories": [ "${core}" ],
+        "ruleNodeDirectories": [ "${core}" ],
+        "discovererDirectories": [ "${core}" ],
         "apps": {
             "mobileUI": {
                 "classpath": "WWMobileUI",
@@ -31,29 +33,41 @@
                 "classpath": "LogMonitor",
                 "config": { }
             },
-            "WWRuleUI": {                                              
-                "classpath": "WWRuleUI",
-                "config": { }
-            },                 
+	    "webUI": {
+		"classpath": "WWRelayWebUI",
+                "defaultApp" : true,
+	   	"config": { }
+            },
             "webUpgradeApp": {
                 "classpath": "WWUpgradeApp",
                 "config": { }
             },
-	    "webUI": {
-		"classpath": "WWRelayWebUI",
-                "defaultApp" : true,
-		"config": { }
-		}
-		
+            "RelayEventBroker" : {
+                "classpath": "RelayEventBroker",
+                "config" : { }
+            }
+
         },
         "rootDiscoverers": {
+            "cloudDiscoverer": {
+                "typeName": "RuleDeviceDiscoverer",
+                "config": { },
+                "enabled": true
+            },
+            "rootUPnP":{
+                "typeName": "UPnPDiscoverer",
+                "config": { 
+                    "pollTime": 200
+                },
+                "enabled": true
+            },
             "wwDiscoverer": {
                 "typeName": "WigWagDiscoverer",
                 "config": {
                     "interfacePort": 3000
-                }
+                },
+                "enabled": true
             }
         }
     }
 }
-

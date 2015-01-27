@@ -45,6 +45,10 @@
             "RelayEventBroker" : {
                 "classpath": "RelayEventBroker",
                 "config" : { }
+            },
+            "WWRuleUI" : {
+                "classpath": "WWRuleUI",
+                "config" : { }
             }
 
         },

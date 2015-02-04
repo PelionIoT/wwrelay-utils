@@ -16,7 +16,29 @@
         "appDirectories": [ "./devjs-usr" , "${core}"],
         "serviceDirectories" : [ "${core}" ],
         "facadeDirectories": [ "${core}" ],
-        "services" : {},
+        "services" : {
+            "sixLBR": {
+                "typeName": "SixLBR",
+                "config": { 
+                    "ifname": "tap0",
+                    "wsnNet": "bbbb::100",
+                    "sixlbr": {
+                        "tundev": "tap0",
+                        "use_raw": false,
+                        "siodev": "ttyUSB1",
+                        "baudrate": 115200,
+                        "slip_delay": 15,
+                        "channel": 21
+                    }
+                }
+            },
+            "udpMultiplexerService": {
+                "typeName": "UDPMultiplexerService",
+                "config": {
+                    "interfacePort": 3000
+                }
+            }
+        },
         "deviceDirectories": [ "${core}" ],
         "ruleNodeDirectories": [ "${core}" ],
         "discovererDirectories": [ "${core}" ],
@@ -33,10 +55,10 @@
                 "classpath": "LogMonitor",
                 "config": { }
             },
-	    "webUI": {
-		"classpath": "WWRelayWebUI",
+	        "webUI": {
+		        "classpath": "WWRelayWebUI",
                 "defaultApp" : true,
-	   	"config": { }
+	   	        "config": { }
             },
             "webUpgradeApp": {
                 "classpath": "WWUpgradeApp",

@@ -52,6 +52,7 @@ NUMARGS=$#
 #echo -e \\n"Number of arguments: $NUMARGS"
 if [ $NUMARGS -eq 0 ]; then
   HELP
+fi
 
 
 ### Start getopts code ###
@@ -99,6 +100,7 @@ while getopts :f:t:m:h FLAG; do
       	;;
   esac
 done
+
 debug "at shift" 1
 shift $((OPTIND-1))  #This tells getopts to move on to the next argument.
 

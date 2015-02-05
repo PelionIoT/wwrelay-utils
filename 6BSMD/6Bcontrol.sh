@@ -39,22 +39,10 @@ function checkargs(){
 }
 
 
-
-
-
-# burner=$THISDIR/mc1322x-load
-# burner=$THISDIR/mctest
-# t=$SBMC_TTY
-# #t=/dev/ttyUSB0
-# #t=/dev/ttyS2
-# #t=/dev/ttyS0
-# #t=/dev/ttyUSB1
-# f=$THISDIR/flasher_redbee-econotag.bin
-# b=115200
-# #burnercmd="$burner -t $t -f $f -b $b -s $2"
-
-# ramburncmd="$burner -v -t $t -f $2 -u 115200 -e"
-
+#---------------------------------------------------------------------------------------------------------------------------------------------------
+# Primary functions for the script
+#
+#---------------------------------------------------------------------------------------------------------------------------------------------------
 
 
 function SET_PIN() {
@@ -97,14 +85,14 @@ burnpid=""
 function burn() {
     debug "burn($1)"
     echo -e "flashcmd: with $1\n"
-    $1 &
+    eval "$1" &
     burnpid=$!
 }
 
 function 6Bprogram() {
     debug "6Bprogram(file=$1)"
     echo -e "Programming the 6Bee\n"
-    burnercmd="$THISDIR/$Loader $v -t $tty -f $Flasher -s $1 -u $Baudrate -e"
+    burnercmd="$Loader $v -t $tty -f $Flasher -s $1 -u $Baudrate -e -c '$THISDIR/6Bcontrol.sh -R'"
     ramburncmd="$THISDIR/$Loader $v -t $tty -f $1 -u $Baudrate"
     6Berase
     SET_PIN "$SBMC_RTS/value" "low"
@@ -142,7 +130,11 @@ function ramburn() {
 }
 
 
-
+#---------------------------------------------------------------------------------------------------------------------------------------------------
+# Command line option parser
+#
+# big switch statement that processes all the command line arguments
+#---------------------------------------------------------------------------------------------------------------------------------------------------
 function process_args(){
     eval set -- "$PARSED_CLI"
     # extract options and their arguments into variables.
@@ -220,7 +212,10 @@ function process_args(){
 
 
 
-#Help function
+#---------------------------------------------------------------------------------------------------------------------------------------------------
+# Command line help
+#
+#---------------------------------------------------------------------------------------------------------------------------------------------------
 function HELP {
     C=${C_GREEN}
     N=${C_NORM}
@@ -238,7 +233,7 @@ function HELP {
     echo -e "   -l, --Loader\t\t$C[${LOADERS// /|}]$N Programer to use. (Default: $Loader)"
     echo -e "   -f, --Flasher\t$C[${FLASHERS// /|}]$N Flasher to use."
     echo -e "   -t, --ttyPort\t Sets the ttyPort.  (Default: $tty)"
-    echo -e "   -v, --Verbose\tPass the flasher the -v argument."
+    echo -e "   -v, --Verbose\tPass the flasher the -v argument (silent without v)."
     echo -e "   -m, --Mode\t\t$C[${MODES// /|}]$N Mode to use (Default: $Mode)"
     echo -e " -r, --ResetPin\t\t$C[${SETABLES// /|}]$N Sets reset pin. (Default: High)"
     echo -e " -R, --Reset\t\tToggles reset pin."
@@ -252,23 +247,29 @@ function HELP {
 
 
 
-#MAIN
-#We are using getopt to process args, a good article on this can be found here: http://www.bahmanm.com/blogs/command-line-options-how-to-parse-in-bash-using-getopt
-#: required
-#:: optional
-#-o single char opt
-#--long long declaration
 
-#Set our default varribles that can be overwritten with command line switches
+
+#---------------------------------------------------------------------------------------------------------------------------------------------------
+#Default varribles
+#
+# overwrite with command line switches
+#---------------------------------------------------------------------------------------------------------------------------------------------------
 Baudrate=115200
-Loader=mc1322x-load
+Loader=$THISDIR/mc1322x-load
 Mode=Romburn
 tty=$SBMC_TTY
-Flasher=flasher.bin
+Flasher=$THISDIR/flasher.bin
 v=""
 Program=""
 RESETTIME=1
 
+
+
+#---------------------------------------------------------------------------------------------------------------------------------------------------
+# Acceptable parameters
+#
+# used in command line switches (these are checked against)
+#---------------------------------------------------------------------------------------------------------------------------------------------------
 BAUDS="115200 57600 19200 9600"
 FLASHERS="flasher.bin flasher_m12.bin f2-econotag.bin"
 LOADERS="mc1322x-load mctest"
@@ -276,9 +277,17 @@ SETABLES="High Low"
 MODES="Ramburn Romburn"
 
 
+#---------------------------------------------------------------------------------------------------------------------------------------------------
+#MAIN
+#We are using getopt to process args, a good article on this can be found here: http://www.bahmanm.com/blogs/command-line-options-how-to-parse-in-bash-using-getopt
+#: required
+#:: optional
+#-o single char opt
+#--long long declaration
+#caputures the output of getopt, if error stops the script, dispays the error, and Help
+#---------------------------------------------------------------------------------------------------------------------------------------------------
 #checkargs $#
 
-#caputures the output of getopt, if error stops the script, dispays the error, and Help
 PARSED_CLI=`getopt -o e:u:r:b:l:f:m:t:vcSKERP:h --long ErasePin:,RTSPin:,ResetPin:,Baud:,Loader:,Flasher:,Mode:,ttyPort:,Configure,Verbose,Kill,Status,Erase,Reset,Program:,Help -n ${SCRIPT} -- "$@" 2> /tmp/errorfile`
 if [[ $? = 1 ]]; then
     ERR=$(</tmp/errorfile)

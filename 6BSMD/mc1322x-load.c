@@ -1,4 +1,5 @@
 /*
+ * Copyright (c) 2015, WigWag.com
  * Copyright (c) 2012, Maxim Osipov <maxim.osipov@gmail.com>
  * Copyright (c) 2010, Mariano Alvira <mar@devl.org> and other contributors
  * to the MC1322x project (http://mc1322x.devl.org)
@@ -27,6 +28,11 @@
  * LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY
  * OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF
  * SUCH DAMAGE.
+ *
+ * WigWag additions:
+ * -will not run perpetually when failing to connect
+ * -fixed baud rate setting from command line (was not set before)
+ * -made it quieter when not specifying verbose
  */
 
 #include <stdio.h>
@@ -60,9 +66,18 @@ char buf[256];
 int pfd;
 int ffd;
 int sfd;
+int silent=0;
 
 void help(void);
-void waitFor(const char *needle, const char sendZero);
+void waitFor(char *command, const char *needle, const char sendZero);
+void reset(char *command) {
+   /* Reset the board if we can */
+   if (verbose) printf("Reset the board to enter bootloader\n");
+  if (command) {
+    if (verbose)  printf("Performing reset: %s\n", command);
+    system(command);
+  }
+}
 
 int main(int argc, char **argv) {
   int c = 0;
@@ -94,13 +109,17 @@ int main(int argc, char **argv) {
         verbose = 1;
         break;
       case 'u':
-        if (strcmp(optarg, "115200")) {
+        if (! strcmp(optarg, "115200")) {
           baud = B115200;
-        } else if (strcmp(optarg, "57600")) {
+        } else if (! strcmp(optarg, "230400")) {
           baud = B115200;
-        } else if (strcmp(optarg, "19200")) {
+        } else if (! strcmp(optarg, "921600")) {
+          baud = B115200;
+        } else if (! strcmp(optarg, "57600")) {
+          baud = B115200;
+        } else if (! strcmp(optarg, "19200")) {
           baud = B19200;
-        } else if (strcmp(optarg, "9600")) {
+        } else if (! strcmp(optarg, "9600")) {
           baud = B9600;
         } else {
           printf("Unknown baud rate %s!\n", optarg);
@@ -171,15 +190,10 @@ int main(int argc, char **argv) {
   options.c_oflag &= ~OPOST;
   tcsetattr(pfd, TCSANOW, &options);
 
-  /* Reset the board if we can */
-  printf("Reset the board to enter bootloader\n");
-  if (command) {
-    printf("Performing reset: %s\n", command);
-    system(command);
-  }
+ reset(command);
 
   /* Primary bootloader wait loop */
-  waitFor("CONNECT", 1);
+  waitFor(command,"CONNECT", 1);
 
   /* Send primary file */
   if (!filename) {
@@ -196,7 +210,7 @@ int main(int argc, char **argv) {
     return -1;
   }
   s = sbuf.st_size;
-  printf("Sending %s (%i bytes)...\n", filename, s);
+   if (verbose) printf("Sending %s (%i bytes)...\n", filename, s);
   r = write(pfd, (const void*)&s, 4);
   i = 0;
   r = read(ffd, buf, 1);
@@ -206,7 +220,8 @@ int main(int argc, char **argv) {
       c = write(pfd, (const void*)buf, r);
     } while(c < r);
     i += r;
-    printf("Written %i\r", i); fflush(stdout);
+    if (verbose) printf("Written %i\r", i); 
+    fflush(stdout);
     r = read(ffd, buf, 1);
   }
   printf("\n");
@@ -214,10 +229,10 @@ int main(int argc, char **argv) {
   /* Secondary loader wait loop */
   if (second || zerolen) {
     /* Wait for ready */
-    waitFor("ready", 0);
+    waitFor(command,"ready", 0);
 
     /* Send secondary file */
-    printf("Sending secondary file\n");
+     if (verbose) printf("Sending secondary file\n");
     if (second) {
       if (stat(second, &sbuf)) {
         printf("Cannot open secondary file %s!\n", second);
@@ -232,13 +247,13 @@ int main(int argc, char **argv) {
       if (ownlen) {
         s = sbuf.st_size;
         r = write(pfd, (const void*) &s, 4);
-        printf("Sending %s (%i bytes)...\n", second, s);
+         if (verbose) printf("Sending %s (%i bytes)...\n", second, s);
         r = read(sfd, &s, 4);
       } else {
         s = sbuf.st_size + 4;
         r = write(pfd, (const void*) &s, 4);
         s = sbuf.st_size;
-        printf("Sending len (4 bytes) + %s (%i bytes)...\n", second, s);
+        if (verbose)  printf("Sending len (4 bytes) + %s (%i bytes)...\n", second, s);
       }
       r = write(pfd, (const void*) &s, 4);
 
@@ -250,23 +265,23 @@ int main(int argc, char **argv) {
           c = write(pfd, (const void*)buf, r);
         } while(c < r);
         i += r;
-        printf("Written %i\r", i); fflush(stdout);
+        if (verbose)  printf("Written %i\r", i); fflush(stdout);
         r = read(sfd, buf, 1);
       }
       printf("\n");
     } else if (zerolen) {
       s = 0;
-      printf("Sending %i...\n", s);
+       if (verbose) printf("Sending %i...\n", s);
       write(pfd, (const void*)&s, 4);
     }
 
     /* Wait for flasher done */
-    waitFor("flasher done", 0);
+    waitFor(command,"flasher done", 0);
   }
 
   /* Send the remaining arguments */
   if (args) {
-    printf("Sending %s\n", args);
+     if (verbose) printf("Sending %s\n", args);
     r = write(pfd, (const void*)args, strlen(args));
     r = write(pfd, (const void*)",", 1);
   }
@@ -300,6 +315,7 @@ void help(void)
   printf("       -l optional: secondary file contains len in first 4 Bytes (little endian)\n");
   printf("       -t, terminal default: /dev/ttyUSB0\n");
   printf("       -u, baud rate default: 115200\n");
+  printf("       -v, verbose (no -v silent)\n");
   printf("       -r [none|rts] flow control default: none\n");
   printf("       -c command to run for autoreset: \n");
   printf("              e.g. -c 'bbmc -l redbee-econotag -i 0 reset'\n");
@@ -311,12 +327,16 @@ void help(void)
 }
 
 
-void waitFor(const char *needle, const char sendZero)
+void waitFor(char *command, const char *needle, const char sendZero)
 {
   int r = 0;
   int i = 0;
+  int reset_count=0;
+  int exit_count=0;
+  int reset_after=3; 
+  int exit_after=5*reset_after;  //attempt to reboot
 
-  printf("Waiting for %s...\n", needle);
+  if (verbose)  printf("Waiting for %s...\n", needle);
   while (1) {
     if (sendZero) write(pfd, (const void*)"\0", 1);
     sleep(1);
@@ -332,8 +352,18 @@ void waitFor(const char *needle, const char sendZero)
       if (i >= sizeof(buf)-1) {
         i = 0;
       }
-    } else {
-      printf("."); fflush(stdout);
+    } 
+    else {
+      printf("."); fflush(stdout); 
+      if (reset_count>reset_after){
+        reset(command);
+        reset_count=0;
+      }
+      if (exit_count>exit_after){
+        printf("failed to get %s\n. Must exit.  Ensure no other resources attached to TTY port.",needle);
+        exit(EXIT_FAILURE);
+      }
+      reset_count++; exit_count++;
     }
   }
 }

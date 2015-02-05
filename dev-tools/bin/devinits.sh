@@ -65,6 +65,7 @@ function buildlinks () {
 
 function tattletale(){
   zcat /proc/config.gz | grep CONFIG_GPIO_SUNXI
+  zcat /proc/config.gz | grep CONFIG_LEDS_SUNXI
   echo -e "current CPU0 speed: " `cat /sys/devices/system/cpu/cpu0/cpufreq/cpuinfo_cur_freq`
   echo -e "current CPU1 speed: " `cat /sys/devices/system/cpu/cpu1/cpufreq/cpuinfo_cur_freq`
 }

@@ -8,7 +8,7 @@
 #Debug levels
 #0 off
 #1 screen
-debug_level=1
+debug_level=0
 
 
 COLOR_BOLD="echo -ne '\E[1m'"

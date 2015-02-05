@@ -1,9 +1,9 @@
 {
-	"appServer" : true, // defaults to true
+	"appServer" : true,
 	"loadApps" : [ 
 		{"classpath" : "WWWebAPI"},
 		{"classpath" : "WWMobileUI"}
-    ],	
+        ],	
 	"requiredServices" : [
 	     { "classpath" : "IPStack", "config" : { "wan" : "dhcp" }},
 	     { "classpath" : "HotPlug", "config" : { "verbose": true }}
@@ -13,11 +13,35 @@
         }
     },
     "runtimeConfig": {
-        "appDirectories": [ "./devjs-usr" , "core"],
-        "facadeDirectories": [ "./core" ],
-        "deviceDirectories": [ "./core" ],
-        "discovererDirectories": [ "./core" ],
-        "ruleNodeDirectories": [ "./core" ],
+        "appDirectories": [ "./devjs-usr" , "${core}"],
+        "serviceDirectories" : [ "${core}" ],
+        "facadeDirectories": [ "${core}" ],
+        "services" : {
+            "sixLBR": {
+                "typeName": "SixLBR",
+                "config": { 
+                    "ifname": "tap0",
+                    "wsnNet": "bbbb::100",
+                    "sixlbr": {
+                        "tundev": "tap0",
+                        "use_raw": false,
+                        "siodev": "ttyUSB1",
+                        "baudrate": 115200,
+                        "slip_delay": 15,
+                        "channel": 21
+                    }
+                }
+            },
+            "udpMultiplexerService": {
+                "typeName": "UDPMultiplexerService",
+                "config": {
+                    "interfacePort": 3000
+                }
+            }
+        },
+        "deviceDirectories": [ "${core}" ],
+        "ruleNodeDirectories": [ "${core}" ],
+        "discovererDirectories": [ "${core}" ],
         "apps": {
             "mobileUI": {
                 "classpath": "WWMobileUI",
@@ -31,29 +55,49 @@
                 "classpath": "LogMonitor",
                 "config": { }
             },
-            "WWRuleUI": {                                              
-                "classpath": "WWRuleUI",
-                "config": { }
-            },                 
+	        "webUI": {
+		        "classpath": "WWRelayWebUI",
+                "defaultApp" : true,
+	   	        "config": { }
+            },
             "webUpgradeApp": {
                 "classpath": "WWUpgradeApp",
                 "config": { }
             },
-	    "webUI": {
-		"classpath": "WWRelayWebUI",
-                "defaultApp" : true,
-		"config": { }
-		}
-		
+            "RelayEventBroker" : {
+                "classpath": "RelayEventBroker",
+                "config" : { }
+            },
+            "WWRuleUI" : {
+                "classpath": "WWRuleUI",
+                "config" : { }
+            },
+            "WWRelayWebUI" : {
+                "classpath": "WWRelayWebUI",
+                "config" : { }
+            }
+
         },
         "rootDiscoverers": {
+            "cloudDiscoverer": {
+                "typeName": "RuleDeviceDiscoverer",
+                "config": { },
+                "enabled": true
+            },
+            "rootUPnP":{
+                "typeName": "UPnPDiscoverer",
+                "config": { 
+                    "pollTime": 200
+                },
+                "enabled": true
+            },
             "wwDiscoverer": {
                 "typeName": "WigWagDiscoverer",
                 "config": {
                     "interfacePort": 3000
-                }
+                },
+                "enabled": true
             }
         }
     }
 }
-

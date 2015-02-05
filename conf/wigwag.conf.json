@@ -24,11 +24,13 @@
                     "wsnNet": "bbbb::100",
                     "sixlbr": {
                         "tundev": "tap0",
-                        "use_raw": false,
+                        "use_raw_ethernet": false,
                         "siodev": "ttyUSB1",
                         "baudrate": 115200,
                         "slip_delay": 15,
-                        "channel": 21
+                        "nvm_data": {
+                            "channel": 21
+                        }
                     }
                 }
             },

@@ -38,7 +38,7 @@ GPIO_THISDIR=$(getScriptDir "${BASH_SOURCE[0]}")
 #v4 -contains A20 with Amplifier chips and fix for red led. (V2=v4 for this file)
 
 #BOARDT
-BOARDTYPE=Relay_v1
+BOARDTYPE=Relay_v2
 #BOARDTYPE=Relay-Pro
 GPIOpath=/sys/class/gpio
 LEDspath=/sys/class/leds
@@ -48,12 +48,13 @@ if [ "$BOARDTYPE" = "Relay_v1" ]
   then
     let TotalGPIO_outputs=11
     let TotalGPIO_inputs=1
-    declare -a GPoutputs=(gpio1_pd0 gpio2_pd1 gpio3_pd2 gpio4_pd3 gpio5_pd4 gpio6_pd5 gpio7_pd6 gpio8_pd7 gpio9_pd8 gpio10_pd9 gpio12_pb8)
-    declare -a GPinputs=(gpio11_ph12)
+    declare -a GPoutputs=(gpio1_pd0 gpio2_pd1 gpio3_pd2 gpio4_pd3 gpio5_pd4 gpio6_pd5 gpio7_pd6 gpio8_pd7 gpio9_pd8 gpio10_pd9 gpio11_pb8)
+    declare -a GPinputs=(gpio12_ph12)
     TopRed="$LEDspath/red"
     TopBlue="$LEDspath/blue"
     TopGreen="$LEDspath/green"
-    RED_OFF="$GPIOpath/gpio12_pb8"
+    RED_OFF="$GPIOpath/gpio11_pb8"
+    BUTTON="$GPIOpath/gpio12_ph12"
     SBMC_RESET="$GPIOpath/gpio1_pd0"
     SBMC_RTS="$GPIOpath/gpio2_pd1"
     SBMC_ERASE="$GPIOpath/gpio3_pd2"
@@ -76,6 +77,7 @@ if [ "$BOARDTYPE" = "Relay_v1" ]
     TopGreen="$LEDspath/green"
     SBMC_TTY="/dev/ttyS2"
     RED_OFF="$GPIOpath/gpio11_pb8"
+    BUTTON="$GPIOpath/gpio12_ph12"
     RESET_DET="$GPIOpath/gpio12_ph12"
     SBMC_RESET="$GPIOpath/gpio10_pd9"
     SBMC_RTS="$GPIOpath/gpio9_pd8"

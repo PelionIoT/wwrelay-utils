@@ -38,8 +38,8 @@ function HELP {
   echo -e \\n"Help documentation for ${C_BOLD}${SCRIPT}.${C_NORM}"\\n
   echo -e "${C_REV}Basic usage:${C_NORM} ${C_BOLD}$SCRIPT color ${C_NORM}"\\n
   echo "The following switches are optional."
-  echo -e "\t${C_REV}-f${C_NORM} optional [${C_BOLD}${COLORS// /|}${C_NORM}] --Sets only the front LED if equipted.  Default is ${C_BOLD}OFF${C_NORM}."
-  echo -e "\t${C_REV}-t${C_NORM} optional [${C_BOLD}${COLORS// /|}${C_NORM}] --Sets only the top LED if equipted. Default is ${C_BOLD}OFF${C_NORM}."
+  echo -e "\t${C_REV}-f${C_NORM} optional [${C_BOLD}${COLORS// /|}${C_NORM}] --Sets only the front LED if equipped.  Default is ${C_BOLD}OFF${C_NORM}."
+  echo -e "\t${C_REV}-t${C_NORM} optional [${C_BOLD}${COLORS// /|}${C_NORM}] --Sets only the top LED if equipped. Default is ${C_BOLD}OFF${C_NORM}."
   echo -e "\t${C_REV}-m${C_NORM} optional [${C_BOLD}${MODES// /|}${C_NORM}] --Sets the mode for light strobe. Default is ${C_BOLD}none${C_NORM}."
   echo -e "\t${C_REV}-h${C_NORM}  --Displays this help message. No further functions are performed."\\n
   echo -e "Example: ${C_BOLD}$SCRIPT -f blue -m heartbeat${C_NORM}"\\n
@@ -63,7 +63,7 @@ fi
 #getopts. This is required to get my unrecognized option code to work.
 
 while getopts :f:t:m:h FLAG; do
-	TEST="$OPTARG "
+	TEST="$OPTARG"
 	case $FLAG in
     f)
 		if [[ "$COLORS" =~ "$TEST" ]]; then
@@ -86,7 +86,7 @@ while getopts :f:t:m:h FLAG; do
 		if [[ "$MODES" =~ "$TEST" ]]; then
 			OPT_M=$OPTARG 
 		else	
-			echo "${C_RED}${C_BOLD}-f $OPTARG invalid${C_NORM}"
+			echo "${C_RED}${C_BOLD}-f $OPTARG is invalid${C_NORM}"
 			HELP
 		fi
       	;;

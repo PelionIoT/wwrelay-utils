@@ -16,26 +16,30 @@
         "appDirectories": [ "./devjs-usr" , "${core}"],
         "serviceDirectories" : [ "${core}" ],
         "facadeDirectories": [ "${core}" ],
+        "overrideDatabase" : true,
         "services" : {
             "sixLBR": {
                 "typeName": "SixLBR",
+                "enabled" : true,
                 "config": { 
                     "ifname": "tap0",
                     "wsnNet": "bbbb::100",
                     "sixlbr": {
                         "tundev": "tap0",
                         "use_raw_ethernet": false,
-                        "siodev": "ttyUSB1",
+                        "log_level": ["packet", "debug", "info", "trace"],
+                        "siodev": "ttyUSB2",
                         "baudrate": 115200,
                         "slip_delay": 15,
                         "nvm_data": {
-                            "channel": 21
+                            "channel": 18
                         }
                     }
                 }
             },
             "udpMultiplexerService": {
                 "typeName": "UDPMultiplexerService",
+                "enabled" : true,
                 "config": {
                     "interfacePort": 3000
                 }
@@ -51,7 +55,10 @@
             },
             "webAPI": {
                 "classpath": "WWWebAPI",
-                "config": { }
+                "config": { 
+                    "locationImagesDirectory" : "./images"
+                }
+
             },
             "LogMonitor": {
                 "classpath": "LogMonitor",
@@ -62,16 +69,25 @@
                 "defaultApp" : true,
 	   	        "config": { }
             },
+            "WWRuleUI" : {
+                "classpath": "WWRuleUI",
+                "config" : { }
+            },
+            "RelayUpdateApp" : {
+                "classpath": "RelayUpdateApp",
+                "config": { 
+                    "cloudURI": "https://cloud.wigwag.com/apps/upgrade",
+                    "stagingDirectory": "/wigwagdownloads",
+                    "installDirectory": "/wigwag/installs",
+                    "versionsFile": "/etc/wigwag/versions.json"
+                }
+            },
             "webUpgradeApp": {
                 "classpath": "WWUpgradeApp",
                 "config": { }
             },
             "RelayEventBroker" : {
                 "classpath": "RelayEventBroker",
-                "config" : { }
-            },
-            "WWRuleUI" : {
-                "classpath": "WWRuleUI",
                 "config" : { }
             },
             "WWRelayWebUI" : {

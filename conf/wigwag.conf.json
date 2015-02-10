@@ -28,7 +28,7 @@
                         "tundev": "tap0",
                         "use_raw_ethernet": false,
                         "log_level": ["packet", "debug", "info", "trace"],
-                        "siodev": "ttyUSB2",
+                        "siodev": "ttyS2",
                         "baudrate": 115200,
                         "slip_delay": 15,
                         "nvm_data": {

@@ -77,7 +77,7 @@
                 "classpath": "RelayUpdateApp",
                 "config": { 
                     "cloudURI": "https://cloud.wigwag.com/apps/upgrade",
-                    "stagingDirectory": "/wigwagdownloads",
+                    "stagingDirectory": "/wigwag/downloads",
                     "installDirectory": "/wigwag/installs",
                     "versionsFile": "/etc/wigwag/versions.json"
                 }

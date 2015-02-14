@@ -82,10 +82,6 @@
                     "versionsFile": "/etc/wigwag/versions.json"
                 }
             },
-            "webUpgradeApp": {
-                "classpath": "WWUpgradeApp",
-                "config": { }
-            },
             "RelayEventBroker" : {
                 "classpath": "RelayEventBroker",
                 "config" : { }

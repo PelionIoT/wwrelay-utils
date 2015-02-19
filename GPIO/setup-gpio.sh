@@ -25,7 +25,9 @@ GPIO_THISDIR=$(getScriptDir "${BASH_SOURCE[0]}")
 
 
 ### add here
-
+theboardversion="Relay"_v$(cat /etc/wigwag/wigwag.conf | gawk -F'HWVersion":"' '{print $2}' | gawk -F'",' '{print $1}')
+echo "the board version: $theboardversion"
+exit
 
 #Boardtype defines the layout for the board.  This will become useful when we produce other version.   
 #Eventually we need a function here to read the CPU serial number to understand what boardtype it was deployed with

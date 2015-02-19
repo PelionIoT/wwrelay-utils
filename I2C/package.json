@@ -1,0 +1,14 @@
+{
+  "name": "ww_eeprom",
+  "version": "0.0.1",
+  "description": "WigWag EEprom access",
+  "main": "eeprom.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "author": "Trav",
+  "license": "WigWag",
+  "dependencies": {
+    "i2c": "~0.1.8"
+  }
+}

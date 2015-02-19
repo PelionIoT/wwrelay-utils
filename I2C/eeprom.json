@@ -1,0 +1,10 @@
+{ 
+  "SN" : "WWRL123456",
+  "KEY" : "abcdefghijklmnopqrstuvwxyz012345",
+  "MFG_BATCH" : "1",
+  "MFG_MONTH" : "F",
+  "MFG_YEAR" : "5",
+  "RADIO_CONFIG" : "01",
+  "HARDWARE" : "04",
+  "QR": "01234567"
+}

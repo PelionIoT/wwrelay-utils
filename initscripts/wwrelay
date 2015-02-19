@@ -20,6 +20,8 @@ GPIO_DIR="/wigwag/wwrelay-utils/GPIO"
 case "$1" in
     start)
 	echo "Starting WigWag Relay"
+        cd /wigwag/wwrelay-utils/I2C
+        /usr/bin/node ./wwfactory_eeprom_writer.js
     	$GPIO_DIR/setup-gpio.sh
 	;;	
     stop)

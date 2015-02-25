@@ -30,9 +30,14 @@
                         "log_level": ["packet", "debug", "info", "trace"],
                         "siodev": "ttyS2",
                         "baudrate": 115200,
-                        "slip_delay": 15,
+                        "slip_delay": 0.03125,
                         "nvm_data": {
-                            "channel": 18
+                            "channel": 18,
+			    "rpl_dio_intdoubl": 3,
+			    "rpl_dio_intmin": 12,
+			    "rpl_default_lifetime": 25,
+			    "rpl_lifetime_unit": 4,
+			    "rpl_version_id": 247
                         }
                     }
                 }

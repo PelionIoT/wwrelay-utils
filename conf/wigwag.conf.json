@@ -13,7 +13,7 @@
         }
     },
     "runtimeConfig": {
-        "appDirectories": [ "./devjs-usr" , "${core}"],
+        "appDirectories": [ "${devjs_root}/devjs-usr" , "${core}"],
         "serviceDirectories" : [ "${core}" ],
         "facadeDirectories": [ "${core}" ],
         "overrideDatabase" : true,
@@ -69,11 +69,6 @@
                 "classpath": "LogMonitor",
                 "config": { }
             },
-	        "webUI": {
-		        "classpath": "WWRelayWebUI",
-                "defaultApp" : true,
-	   	        "config": { }
-            },
             "WWRuleUI" : {
                 "classpath": "WWRuleUI",
                 "config" : { }
@@ -91,11 +86,11 @@
                 "classpath": "RelayEventBroker",
                 "config" : { }
             },
-            "WWRelayWebUI" : {
+            "webUI" : {
                 "classpath": "WWRelayWebUI",
-                "config" : { }
+                "config" : { },
+		        "defaultApp" : true
             }
-
         },
         "rootDiscoverers": {
             "cloudDiscoverer": {

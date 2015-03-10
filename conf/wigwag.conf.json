@@ -29,14 +29,14 @@
                         "use_raw_ethernet": false,
                         "log_level": ["packet", "debug", "info", "trace"],
                         "siodev": "ttyS2",
-                        "baudrate": 115200,
+                        "baudrate": 230400,
                         "slip_delay": 0.03125,
                         "nvm_data": {
-                            "channel": 18,
-			    "rpl_dio_intdoubl": 3,
+                            "channel": 12,
+			    "rpl_dio_intdoubl": 1,
 			    "rpl_dio_intmin": 12,
-			    "rpl_default_lifetime": 25,
-			    "rpl_lifetime_unit": 4,
+			    "rpl_default_lifetime": 20,
+			    "rpl_lifetime_unit": 25,
 			    "rpl_version_id": 247
                         }
                     }

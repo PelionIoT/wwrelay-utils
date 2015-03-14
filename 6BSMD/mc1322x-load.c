@@ -112,11 +112,11 @@ int main(int argc, char **argv) {
         if (! strcmp(optarg, "115200")) {
           baud = B115200;
         } else if (! strcmp(optarg, "230400")) {
-          baud = B115200;
+          baud = B230400;
         } else if (! strcmp(optarg, "921600")) {
-          baud = B115200;
+          baud = B921600;
         } else if (! strcmp(optarg, "57600")) {
-          baud = B115200;
+          baud = B57600;
         } else if (! strcmp(optarg, "19200")) {
           baud = B19200;
         } else if (! strcmp(optarg, "9600")) {

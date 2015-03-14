@@ -3,11 +3,11 @@
 
 ### BEGIN INIT INFO
 # Provides:             devicejs
-# Required-Start:       $remote_fs $time
+# Required-Start:       $remote_fs $time devicedbd
 # Required-Stop:        $remote_fs $time
-# Should-Start:         $network $devicedbd
-# Should-Stop:          $network $devicedbd
-# Default-Start:        2 3 4 5
+# Should-Start:         $network
+# Should-Stop:          $network
+# Default-Start:        5
 # Default-Stop:         0 1 6
 # Short-Description:    System logger
 ### END INIT INFO

@@ -16,15 +16,27 @@
 . /etc/init.d/functions
 
 GPIO_DIR="/wigwag/wwrelay-utils/GPIO"
+WWRELAY_LOG="/wigwag/log/wwrelay.log"
+GPIO_LOG="/wigwag/log/gpio.log"
+
 
 case "$1" in
     start)
 	echo "Starting WigWag Relay"
-    	$GPIO_DIR/setup-gpio.sh
+        if [ -x $WWRELAY_LOG ] ; then
+            mv $WWRELAY_LOG $WWRLAY_LOG.1
+        fi
+
+        if [ -x $GPIO_LOG ] ; then
+            mv $GPIO_LOG $GPIO_LOG.1
+        fi
+
+        cd /wigwag/wwrelay-utils/I2C
+        /usr/bin/node ./ww_eeprom_reader.js  > $WWRELAY_LOG 2>&1
+    	$GPIO_DIR/setup-gpio.sh > $GPIO_LOG 2>&1
 	;;	
     stop)
 	echo "Stopping WigWag Relay"
-GPIO
 esac
 
 exit 0

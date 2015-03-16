@@ -31,6 +31,10 @@
                         "siodev": "ttyS2",
                         "baudrate": 230400,
                         "slip_delay": 0.03125,
+			"ww_encryption": true,
+                        "firmware_path_mc1322": "/wigwag/devicejs/core/utils/node-6lbr/slip-radio_bin/",
+                        "firmware_file_prefix": "slip-radio_econotag",
+                        "reset_GPIO_path_firmware_mc1322": "/sys/class/gpio/gpio10_pd9/value",
                         "nvm_data": {
                             "channel": 12,
 			    "rpl_dio_intdoubl": 1,

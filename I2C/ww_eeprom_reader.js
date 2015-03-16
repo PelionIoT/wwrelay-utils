@@ -8,7 +8,7 @@ var fs = require('fs');
 
 var path = require('path'); 
 
-var file="/etc/wigwag/wigwag.conf";
+var file="/etc/wigwag/relay.conf";
 var filestring="{\"relayID\":\"RELAYID\",\"relaySecret\":\"RELAYSECRET\",\"cloudURL\":\"https://cloud.wigwag.com\",\"HWVersion\":\"HARDWAREVERSION\",\"RadioCFG\":\"RADIOCONFIG\",\"qrcode\":\"QRCODE\"}";
 
 

@@ -6,6 +6,7 @@ reader = new WWAT24();
 //r/w files
 var fs = require('fs');
 
+//travis
 var path = require('path');
 
 var file = "/etc/wigwag/relay.conf";

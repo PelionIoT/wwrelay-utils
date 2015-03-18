@@ -1,10 +1,29 @@
-{ 
-  "SN" : "WWRL123456",
-  "KEY" : "abcdefghijklmnopqrstuvwxyz012345",
-  "MFG_BATCH" : "1",
-  "MFG_MONTH" : "F",
-  "MFG_YEAR" : "5",
-  "RADIO_CONFIG" : "01",
-  "HARDWARE" : "04",
-  "QR": "01234567"
+{
+	"batch": "1",
+	"month": "F",
+	"year": "5",
+	"radioConfig": "04",
+	"hardwareVersion": "0.0.1",
+	"firmwareVersion": "0.0.1",
+	"relayID": "WWRL000000",
+	"ethernetMAC": [
+		0,
+		165,
+		9,
+		214,
+		76,
+		167
+	],
+	"sixBMAC": [
+		0,
+		165,
+		9,
+		255,
+		253,
+		196,
+		99,
+		129
+	],
+	"relaySecret": "4d5867b4af7fa42f4f9720213789a49T",
+	"pairingCode": "8RHFXDFVS9BTMJUAMT66N7ZHT"
 }

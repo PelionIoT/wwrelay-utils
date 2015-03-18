@@ -1,38 +1,75 @@
 #!/usr/bin/env node
 
+//hints for i2cdump
+// ./i2cdump 
+
 var WWAT24 = require('./WWrelay_at24c16.js');
-writer=new WWAT24();
+writer = new WWAT24();
+var CI = require('./eeprom.json');
 
-var text = require('./eeprom.json');
-//console.log(text.SN+text.HARDWARE+text.RADIO_CONFIG+text.MFG_YEAR+text.MFG_MONTH+text.MFG_BATCH);
-//console.log(text.KEY);
+var Promise = require('es6-promise').Promise;
 
-function write_sn(cb){
-writer.setSerial(text.SN+text.HARDWARE+text.RADIO_CONFIG+text.MFG_YEAR+text.MFG_MONTH+text.MFG_BATCH+text.QR,function(err,suc) {
-	if (err) {
-		console.log("Writing SN Error: "+err);
-		cb();
-	}
-	else {
-		console.log("Success writing SN: "+suc);
-		cb();
-	}
-});
+function decRay2str(array) {
+	var str = ""
+	for (var i = 0; i < array.length; i++) {
+		var hex = array[i].toString(16);
+		var charc = String.fromCharCode(array[i]);
+		//	console.log("I belive that %s is '%s' and is '%s' reversed '%s'", array[i], hex, charc, charc.charCodeAt(0));
+		str = str + charc;
+	};
+	return str;
 }
 
-function write_sk(cb){
-	writer.setsKey(text.KEY,function(err, suc)  {
-		if (err) {
-			console.log("Write SK Error:"+err);
-			cb();
-		}
-		else {
-			console.log("Success writting SK: "+suc);
-			cb();
-		}
+function rrec(cb) {
+	CI.REP1 = CI.relayID.substring(0, 2);
+	CI.REP2 = CI.relayID.substring(2, 4);
+	CI.REP3 = CI.relayID.substring(4, 10);
+	CI.ethernetMAC = decRay2str(CI.ethernetMAC);
+	CI.sixBMAC = decRay2str(CI.sixBMAC);
+
+	writer.set("BRAND", CI.REP1).then(function(result) {
+		console.log("complete: BRAND with [" + CI.REP1 + "]");
+		writer.set("DEVICE", CI.REP2).then(function(result) {
+			console.log("complete: DEVICE with [" + CI.REP2 + "]");
+			writer.set("UUID", CI.REP3).then(function(result) {
+				console.log("complete: UUID with [" + CI.REP3 + "]");
+				writer.set("hardwareVersion", CI.hardwareVersion).then(function(result) {
+					console.log("complete: hardwareVersion with [" + CI.hardwareVersion + "]");
+					writer.set("firmwareVersion", CI.firmwareVersion).then(function(result) {
+						console.log("complete: firmwareVersion with [" + CI.firmwareVersion + "]");
+						writer.set("radioConfig", CI.radioConfig).then(function(result) {
+							console.log("complete: radioConfig with [" + CI.radioConfig + "]");
+							writer.set("year", CI.year).then(function(result) {
+								console.log("complete: year with [" + CI.year + "]");
+								writer.set("month", CI.month).then(function(result) {
+									console.log("complete: month with [" + CI.month + "]");
+									writer.set("batch", CI.batch).then(function(result) {
+										console.log("complete: batch with [" + CI.batch + "]");
+										writer.set("ethernetMAC", CI.ethernetMAC).then(function(result) {
+											console.log("complete: ethernetMAC with [" + CI.ethernetMAC + "]");
+											writer.set("sixBMAC", CI.sixBMAC).then(function(result) {
+												console.log("complete: sixBMAC with [" + CI.sixBMAC + "]");
+												writer.set("relaySecret", CI.relaySecret).then(function(result) {
+													console.log("complete: relaySecret with [" + CI.relaySecret + "]");
+													writer.set("pairingCode", CI.pairingCode).then(function(result) {
+														console.log("complete: pairingCode with [" + CI.pairingCode + "]");
+													});
+												});
+											});
+										});
+									});
+								});
+							});
+						});
+					});
+				});
+			});
+		});
 	});
+
 }
 
-write_sn(function(){ 
-	write_sk(function(){});
+writer.erase(0).then(function(res) {
+	console.log("primise full: now lets do it for relasz " + res);
+	rrec();
 });

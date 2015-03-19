@@ -25,11 +25,10 @@ GPIO_THISDIR=$(getScriptDir "${BASH_SOURCE[0]}")
 
 
 ### add here
-theboardversion="Relay"_v$(cat /etc/wigwag/wigwag.conf | gawk -F'HWVersion":"' '{print $2}' | gawk -F'",' '{print $1}')
-echo "the board version: $theboardversion"
+
 #exit
 
-#Boardtype defines the layout for the board.  This will become useful when we produce other version.   
+#GPIODEF defines the layout for the board.  This will become useful when we produce other version.   
 #Eventually we need a function here to read the CPU serial number to understand what boardtype it was deployed with
 #BOARDTYPES
 
@@ -40,13 +39,22 @@ echo "the board version: $theboardversion"
 #v4 -contains A20 with Amplifier chips and fix for red led. (V2=v4 for this file)
 
 #BOARDT
-BOARDTYPE=Relay_v2
-#BOARDTYPE=Relay-Pro
+theboardversion="Relay"_v$(cat /etc/wigwag/wigwag.conf | gawk -F'HWVersion":"' '{print $2}' | gawk -F'",' '{print $1}')
+echo -e "Board Factory Version:\t$theboardversion"
+case $theboardversion in
+  "Relay_v01") GPIODEF="GPIO_V1";;
+  "Relay_v02") GPIODEF="GPIO_V2";;
+  "Relay_v04") GPIODEF="GPIO_V2";;
+  *) GPIODEF="GPIO_V2";;
+esac
+echo -e "Board GPIO definition:\t$GPIODEF"
+
+
 GPIOpath=/sys/class/gpio
 LEDspath=/sys/class/leds
 
-debug "MY Boardtype: $BOARDTYPE" 1
-if [ "$BOARDTYPE" = "Relay_v1" ]
+debug "MY GPIODEF: $GPIODEF" 1
+if [ "$GPIODEF" = "GPIO_V1" ]
   then
     let TotalGPIO_outputs=11
     let TotalGPIO_inputs=1
@@ -68,7 +76,7 @@ if [ "$BOARDTYPE" = "Relay_v1" ]
     SBCC2_RESET="$GPIOpath/gpio8_pd7"
     SBCC2_CLK="$GPIOpath/gpio9_pd8"
     SBCC2_DATA="$GPIOpath/gpio10_pd9"
-  elif [ "$BOARDTYPE" = "Relay_v2" ]
+  elif [ "$GPIODEF" = "GPIO_V2" ]
     then
     let TotalGPIO_outputs=11
     let TotalGPIO_inputs=1
@@ -91,7 +99,7 @@ if [ "$BOARDTYPE" = "Relay_v1" ]
     SBCC2_RESET="$GPIOpath/gpio4_pd3"
     SBCC2_CLK="$GPIOpath/gpio5_pd4"
     SBCC2_DATA="$GPIOpath/gpio1_pd0"
-  elif [ "$BOARDTYPE" = "Relay_v2a" ]
+  elif [ "$GPIODEF" = "GPIO_V2a" ]
     then
     let TotalGPIO_outputs=14
     let TotalGPIO_inputs=1
@@ -175,5 +183,6 @@ if [ "$#" -lt 1 ]; then
     modprobe_gpiodriver
     exportGPIOs
     setdirection
+    echo 1 > $RED_OFF/value
 fi
 

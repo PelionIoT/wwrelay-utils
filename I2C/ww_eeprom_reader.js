@@ -52,6 +52,7 @@ function get_all(callback) {
 	read(temp, str, function(done) {
 		var res = JSON.parse(done);
 		res.relayID = res.BRAND + res.DEVICE + res.UUID;
+		res.cloudURL = "https://cloud.wigwag.com";
 		callback(res);
 	});
 }

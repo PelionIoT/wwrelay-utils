@@ -95,6 +95,7 @@ function 6Bprogram() {
     burnercmd="$Loader $v -t $tty -f $Flasher -s $1 -u $Baudrate -e -c '$THISDIR/6Bcontrol.sh -R'"
     ramburncmd="$THISDIR/$Loader $v -t $tty -f $1 -u $Baudrate"
     6Berase
+    6Buartsettings
     SET_PIN "$SBMC_RTS/value" "low"
     if [[ $Mode == "Romburn" ]]; then
         burn "$burnercmd"
@@ -108,6 +109,7 @@ function 6Bprogram() {
 }
 
 function 6Buartsettings(){
+    echo -e "6Buartsettings running"
     stty -F $tty raw speed 115200 -parenb -parodd cs8 -hupcl -cstopb cread clocal -crtscts -ignbrk -brkint -ignpar -parmrk -inpck -istrip -inlcr -igncr -icrnl -ixon -ixoff -iuclc -ixany -imaxbel -iutf8 -opost -olcuc -ocrnl onlcr -onocr -onlret -ofill -ofdel nl0 cr0 tab0 bs0 vt0 ff0 -isig -icanon -iexten -echo -echoe echok -echonl -noflsh -xcase -tostop -echoprt echoctl echoke
     #stty -F $tty raw speed 115200 -parenb -parodd cs8 -hupcl -cstopb cread clocal -crtscts ignbrk -brkint -ignpar -parmrk -inpck -istrip -inlcr -igncr -icrnl -ixon -ixoff -iuclc -ixany -imaxbel -iutf8 -opost -olcuc -ocrnl -onlcr -onocr -onlret -ofill -ofdel nl0 cr0 tab0 bs0 vt0 ff0 -isig -icanon -iexten -echo -echoe -echok -echonl -noflsh -xcase -tostop -echoprt -echoctl -echoke   
 }

@@ -33,8 +33,9 @@ case "$1" in
 
         cd /wigwag/wwrelay-utils/I2C
         /usr/bin/node ./ww_eeprom_reader.js  > $WWRELAY_LOG 2>&1
+        /usr/bin/node ./enableRTC_charging.js >> $WWRELAY_LOG 2>&1
     	$GPIO_DIR/setup-gpio.sh > $GPIO_LOG 2>&1
-        i2cset -f sunxi-i2c.0 0x34 0x35 0x82
+        
 
 	;;	
     stop)

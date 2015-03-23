@@ -16,8 +16,9 @@
 . /etc/init.d/functions
 
 DEVICEDB_DIR="/wigwag/devicedb"
-DEVICEDB_CMD="/usr/bin/devicedbd"
+DEVICEDB_CMD="/wigwag/devicejs/libexec/devicedbd"
 DEVICEDB_LOG="/wigwag/log/devicedbd.log"
+export LD_LIBRARY_PATH="/wigwag/devicejs/libexec/lib"
 
 
 function run_devicedb() {
@@ -43,7 +44,7 @@ case "$1" in
 	run_devicedb
   	;;
       *)
-	log_success_msg "Usage: $0 {start|stop|restart}"
+	echo "Usage: $0 {start|stop|restart}"
     exit 1
 esac
 

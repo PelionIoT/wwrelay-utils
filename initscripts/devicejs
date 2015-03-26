@@ -1,4 +1,4 @@
-#! /bin/sh
+#!/bin/bash
 # /etc/init.d/devicejs: starts DeviceJS & WigWag runtime
 
 ### BEGIN INIT INFO
@@ -11,9 +11,6 @@
 # Default-Stop:         0 1 6
 # Short-Description:    System logger
 ### END INIT INFO
-
-# Source function library.
-. /etc/init.d/functions
 
 DEVICEJS_DIR="/wigwag/devicejs"
 DEVJS_START_CMD="./bin/devjs --start -i wigwag -b -c conf/wigwag.conf.json"
@@ -66,7 +63,7 @@ case "$1" in
 	run_devjs
   	;;
       *)
-	log_success_msg "Usage: $0 {start|stop|restart}"
+	echo "Usage: $0 {start|stop|restart}"
     exit 1
 esac
 

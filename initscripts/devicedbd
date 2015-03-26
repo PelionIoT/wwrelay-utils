@@ -1,4 +1,4 @@
-#! /bin/sh
+#!/bin/bash
 # /etc/init.d/devicedbd: starts WigWag Device Database
 
 ### BEGIN INIT INFO
@@ -11,9 +11,6 @@
 # Default-Stop:         0 1 6
 # Short-Description:    Device Database for WigWag
 ### END INIT INFO
-
-# Source function library.
-. /etc/init.d/functions
 
 DEVICEDB_DIR="/wigwag/devicedb"
 DEVICEDB_CMD="/wigwag/devicejs/libexec/devicedbd"

@@ -65,7 +65,7 @@
             "webAPI": {
                 "classpath": "WWWebAPI",
                 "config": { 
-                    "locationImagesDirectory" : "./images"
+                    "locationImagesDirectory" : "${devjs_root}/devjs-usr/App/WWWebAPI/images"
                 }
 
             },

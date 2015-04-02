@@ -22,10 +22,10 @@
                 "typeName": "SixLBR",
                 "enabled" : true,
                 "config": { 
-                    "ifname": "tap0",
+                    "ifname": "Witap0",
                     "wsnNet": "bbbb::100",
                     "sixlbr": {
-                        "tundev": "tap0",
+                        "tundev": "Witap0",
                         "use_raw_ethernet": false,
                         "log_level": ["packet", "debug", "info", "trace"],
                         "siodev": "ttyS2",

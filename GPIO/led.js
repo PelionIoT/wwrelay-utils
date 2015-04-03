@@ -48,7 +48,6 @@ var LED = function LED() {
   this.Promise_FD_red = _openFD('/sys/class/leds/red/brightness', this.FD_RED);
   this.Promise_FD_green = _openFD('/sys/class/leds/green/brightness', this.FD_GREEN);
   this.Promise_FD_blue = _openFD('/sys/class/leds/blue/brightness', this.FD_BLUE);
-  FDPromises = [this.Promise_FD_red, this.Promise_FD_green, this.Promise_FD_blue];
 
   this.Promise_FD_red.then(function(result) {
       this.FD_RED = result;
@@ -71,7 +70,7 @@ var LED = function LED() {
   }
 }
 
-LED.prototype.__setColor = function(color, callback) {
+LED.prototype.ColorLED = function(color, callback) {
   var self = this;
   //var r, g, b;
   var r = 0;
@@ -127,11 +126,9 @@ LED.prototype.__setColor = function(color, callback) {
 
   if (!badcolor) {
     this._current_color = color;
-
     dev$Promise.all([this.Promise_FD_red, this.Promise_FD_green, this.Promise_FD_blue]).then(function(err, result) {
       var stuff = new dev$Promise(null).join(_wrappedWrite(this.FD_RED, r), _wrappedWrite(this.FD_BLUE, b), _wrappedWrite(this.FD_GREEN, g)).then(function(stat) {}, function(err) {});
     });
-
   }
 
   else {
@@ -145,14 +142,13 @@ LED.prototype._blinkColor = function() {
   this._colorray.push(color);
   time = this._colorray.shift();
   this._colorray.push(time);
-  this.__setColor(color);
+  this.ColorLED(color);
   setTimeout(function() {
-    //var self=this;
     if (self._imblinking) self._blinkColor();
   }, time);
 }
 
-LED.prototype.__blinkColorReturn = function(array, callback) {
+LED.prototype._blinkColorRecurse = function(array, callback) {
   var self = this;
   if (array.length == 0) {
     callback(null, "complete notification");
@@ -160,10 +156,10 @@ LED.prototype.__blinkColorReturn = function(array, callback) {
   else {
     var color = array.shift();
     var time = array.shift();
-    this.__setColor(color);
+    this.ColorLED(color);
     setTimeout(function() {
       //var self=this;
-      self.__blinkColorReturn(array, callback);
+      self._blinkColorRecurse(array, callback);
     }, time);
   }
 }
@@ -171,7 +167,7 @@ LED.prototype.__blinkColorReturn = function(array, callback) {
 LED.prototype._setColor = function(color) {
   this._imblinking = false;
   this._current_color = color;
-  this.__setColor(color);
+  this.ColorLED(color);
 }
 
 LED.prototype._blinkColorLoop = function(array, callback) {
@@ -196,11 +192,11 @@ LED.prototype._blinkColorReturn = function(array, callback) {
   else {
     if (!this._imblinking) {
       array.push(this._current_color, 1);
-      this.__blinkColorReturn(array, callback);
+      this._blinkColorRecurse(array, callback);
     }
     else {
       this._imblinking = false;
-      this.__blinkColorReturn(array, function(err, done) {
+      this._blinkColorRecurse(array, function(err, done) {
         self._imblinking = true;
         self._blinkColor();
         callback(err, done);
@@ -293,7 +289,6 @@ LED.prototype.restoreLED = function() {
 LED.prototype.disableLED = function() {
   this._EnabledStatus = false;
   this._EnabledNotifications = false;
-
   this._setColor("off");
 }
 
@@ -309,5 +304,5 @@ LED.getInstance = function() {
   return this.instance;
 }
 
-//We are exporting a Singleton.  There is only 1 led, so the state should be treated universally throughout the entire system.
+//a Singleton.  There is only 1 led, so the state should be treated universally throughout the entire system.
 module.exports = LED.getInstance();

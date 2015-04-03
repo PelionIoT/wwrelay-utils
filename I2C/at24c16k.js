@@ -148,5 +148,28 @@ AT24C16.prototype.readout = function(spacenumber, from, end, callback) {
 	});
 }
 
+AT24C16.prototype.exists = function(callback) {
+	var self = this;
+	try {
+		var wire = new i2c(0x50, {
+			device: '/dev/i2c-1'
+		});
+
+		wire.scan(function(err, success) {
+			if (err) callback(false);
+			if (success) {
+				if (success.length = 8 && success[0] == 80 && success[7] == 87) {
+					callback(true);
+				}
+				else callback(false);
+			}
+
+		});
+	}
+	catch (err) {
+		callback(false);
+	}
+}
+
 module.exports = AT24C16;
 // console.log("did you get your data");

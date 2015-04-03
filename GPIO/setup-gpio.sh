@@ -39,12 +39,12 @@ GPIO_THISDIR=$(getScriptDir "${BASH_SOURCE[0]}")
 #v4 -contains A20 with Amplifier chips and fix for red led. (V2=v4 for this file)
 
 #BOARDT
-theboardversion="Relay"_v$(cat /etc/wigwag/wigwag.conf | gawk -F'HWVersion":"' '{print $2}' | gawk -F'",' '{print $1}')
+theboardversion=$(cat /etc/wigwag/relay.conf | gawk -F'hardwareVersion":"' '{print $2}' | gawk -F'",' '{print $1}')
 echo -e "Board Factory Version:\t$theboardversion"
 case $theboardversion in
-  "Relay_v01") GPIODEF="GPIO_V1";;
-  "Relay_v02") GPIODEF="GPIO_V2";;
-  "Relay_v04") GPIODEF="GPIO_V2";;
+  "0.0.1") GPIODEF="GPIO_V1";;
+  "0.0.2") GPIODEF="GPIO_V2";;
+  "0.0.4") GPIODEF="GPIO_V2";;
   *) GPIODEF="GPIO_V2";;
 esac
 echo -e "Board GPIO definition:\t$GPIODEF"
@@ -68,7 +68,7 @@ if [ "$GPIODEF" = "GPIO_V1" ]
     SBMC_RESET="$GPIOpath/gpio1_pd0"
     SBMC_RTS="$GPIOpath/gpio2_pd1"
     SBMC_ERASE="$GPIOpath/gpio3_pd2"
-    SBMC_TTY="/dev/ttyS2"
+    SBMC_TTY="/dev/ttyS4"
     SBKW_RESET="$GPIOpath/gpio4_pd3"
     SBCC1_RESET="$GPIOpath/gpio5_pd4"
     SBCC1_CLK="$GPIOpath/gpio6_pd5"

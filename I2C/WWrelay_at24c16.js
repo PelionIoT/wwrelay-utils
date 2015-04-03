@@ -157,7 +157,7 @@ WWEEPROM.prototype.get = function(key) {
 	});
 }
 
-WWEEPROM.prototype.readSpecial = function() {
+WWEEPROM.prototype.readSpecial_testing = function() {
 	var self = this;
 	at24.readout(serial_spacenum, 0x1A, 0x1B, function(a, b) {
 		if (b instanceof Buffer) {
@@ -169,4 +169,7 @@ WWEEPROM.prototype.readSpecial = function() {
 	});
 }
 
+WWEEPROM.prototype.exists = function(callback) {
+	at24.exists(callback);
+}
 module.exports = WWEEPROM;

@@ -16,6 +16,7 @@ DEVICEDB_DIR="/wigwag/devicedb"
 DEVICEDB_CMD="/wigwag/devicejs/libexec/bin/devicedbd"
 DEVICEDB_LOG="/wigwag/log/devicedbd.log"
 
+export LD_LIBRARY_PATH="/wigwag/devicejs/libexec/lib"
 
 function run_devicedb() {
     

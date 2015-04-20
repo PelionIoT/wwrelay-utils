@@ -110,6 +110,11 @@
                 },
                 "enabled": true
             },
+            "lifx": {                         
+                "typeName": "LIFXBulbDiscoverer",                                                       
+                "config": { },                                        
+                "enabled": true                                                               
+            },                       
             "wwDiscoverer": {
                 "typeName": "WigWagDiscoverer",
                 "config": {

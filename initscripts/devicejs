@@ -45,7 +45,6 @@ function run_devjs() {
 
 case "$1" in
     start)
-	stop_devjs
 	eval $COLOR_BOLD
 	echo "Starting DeviceJS services."
 	eval $COLOR_NORMAL

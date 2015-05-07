@@ -40,7 +40,7 @@
                             "channel": 12,
 			    "rpl_dio_intdoubl": 1,
 			    "rpl_dio_intmin": 12,
-			    "rpl_default_lifetime": 20,
+			    "rpl_default_lifetime": 2,
 			    "rpl_lifetime_unit": 25,
 			    "rpl_version_id": 247
                         }
@@ -59,6 +59,10 @@
         "ruleNodeDirectories": [ "${core}" ],
         "discovererDirectories": [ "${core}" ],
         "apps": {
+            "debugTools": {
+                "classpath": "WWDebugTools",
+                "config": { }
+            },
             "mobileUI": {
                 "classpath": "WWMobileUI",
                 "config": { }

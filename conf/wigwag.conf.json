@@ -56,6 +56,24 @@
                 }
             }
         },
+        "ipStack": {
+            "config": {
+                "dhcp": "on",
+                "periodMS": 10000,
+                "static": {
+                    "gateway": "10.10.20.1",
+                    "ipaddress": "10.10.20.31",
+                    "mask": "255.255.255.0"
+                },
+                "wan": [
+                    "eth0",
+                    "eth1",
+                    "wlan0"
+                ]
+            },
+            "enabled": true,
+            "typeName": "IPStack"
+        },
         "deviceDirectories": [ "${core}" ],
         "ruleNodeDirectories": [ "${core}" ],
         "discovererDirectories": [ "${core}" ],

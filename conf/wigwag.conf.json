@@ -48,6 +48,20 @@
                     }
                 }
             },
+            "ipStack" : {
+                "typeName" : "IPStack",
+                 "enabled": true,
+                "config": {
+                    "wan": ["eth0", "eth1", "wlan0"],
+                    "dhcp": "on",
+                    "static": {
+                        "ipaddress":"10.10.20.31",
+                        "mask": "255.255.255.0",
+                        "gateway": "10.10.20.1"
+                    },
+                    "periodMS": 10000
+                }
+            },
             "udpMultiplexerService": {
                 "typeName": "UDPMultiplexerService",
                 "enabled" : true,
@@ -55,24 +69,6 @@
                     "interfacePort": 3000
                 }
             }
-        },
-        "ipStack": {
-            "config": {
-                "dhcp": "on",
-                "periodMS": 10000,
-                "static": {
-                    "gateway": "10.10.20.1",
-                    "ipaddress": "10.10.20.31",
-                    "mask": "255.255.255.0"
-                },
-                "wan": [
-                    "eth0",
-                    "eth1",
-                    "wlan0"
-                ]
-            },
-            "enabled": true,
-            "typeName": "IPStack"
         },
         "deviceDirectories": [ "${core}" ],
         "ruleNodeDirectories": [ "${core}" ],

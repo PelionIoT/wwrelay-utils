@@ -1,0 +1,21 @@
+// config file
+{ 
+	// This will embed MAC address from relay.conf to slip binary...
+	// Components - MAC address location in the binary is wrapped 
+    // between prefix and postfix
+    // prefix:
+    // postfix:
+
+    "WIGWAG_IEEE_BLOCK" : "01",   // used to keep straight muliple IEEE blocks, if we later have them
+    "MAC_OUI" : "00:A5:09:00:00",       // WigWag OUI  (would change if doing an OEM product) (total MAC is 8 bytes)
+    "block" : {
+    	"name" : "WWSLIP_001",   // a name for this 'block' of devices.
+    	"id_prefix" : "SP",          
+        "firmwareVersion": [ 0 ],
+        "deviceSignature": "Slip1",
+        "segment_offsets" : {
+            "prefix_name" : { "bytes" : "95ADF8B6FB2E7D5F", "length": 8 },     // needs 8 bytes
+            "postfix_name" : { "bytes" : "9B8D8C854E72D270", "length": 8 }     // needs 8 bytes
+        }
+    }
+}

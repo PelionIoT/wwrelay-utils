@@ -1,0 +1,27 @@
+{
+  "name": "wwslip-embedMAC",
+  "version": "0.0.0",
+  "description": "",
+  "main": "index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "author": "",
+  "license": "proprietary",
+  "dependencies": {
+    "errorhandler": "*",
+    "express": "~4.0.0",
+    "morgan": "~1.0.0",
+    "body-parser": "~1.0.0",
+    "method-override": "~1.0.0",
+    "negotiator": "*",
+    "tinytim" : "*",
+    "commander" : "*",
+    "es6-promise" : "*",
+    "forge" : "*",
+    "lockfile" : "*",
+    "base32" : "*",
+    "node-rsa": "0.2.13",
+    "request": "2.53.0"
+    }
+}

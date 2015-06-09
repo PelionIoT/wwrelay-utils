@@ -35,7 +35,8 @@ case "$1" in
         /usr/bin/node ./ww_eeprom_reader.js  > $WWRELAY_LOG 2>&1
         /usr/bin/node ./enableRTC_charging.js >> $WWRELAY_LOG 2>&1
     	$GPIO_DIR/setup-gpio.sh > $GPIO_LOG 2>&1
-        
+        cd /wigwag/wwrelay-utils/slip-radio
+        /usr/bin/node ./wwslip-embedmac.js embedMAC /wigwag/devicejs/core/utils/node-6lbr/slip-radio_bin/slip-radio_econotag_B115200.bin slip-conf.json /wigwag/devicejs/conf/wigwag.conf.json
 
 	;;	
     stop)

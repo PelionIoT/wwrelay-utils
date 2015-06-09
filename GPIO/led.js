@@ -191,6 +191,7 @@ LED.prototype._blinkColorReturn = function(array, callback) {
   }
   else {
     if (!this._imblinking) {
+      // console.log("Not blinking in _blinkColor_return");
       array.push(this._current_color, 1);
       this._blinkColorRecurse(array, callback);
     }
@@ -237,6 +238,9 @@ LED.prototype.setStatus = function(status, callback) {
       case "loggedin":
         this._blinkColorLoop(["blue", 2000, "magenta", 500], callback);
         break;
+      case "FACTORYfailure":
+        this._setColor("red");
+        break;
     }
   }
   else callback("Error: setStatus disabled, saved request for future.", null);
@@ -251,6 +255,7 @@ valid time: miliseconds eg 2000 = 2 seconds
 */
 LED.prototype.notify = function(notification, callback) {
   if (this._EnabledNotifications && this._EnabledStatus) {
+    //console.log("notifying %s", notification);
     if (!this._notifying) {
       switch (notification) {
         case "radio":
@@ -262,6 +267,32 @@ LED.prototype.notify = function(notification, callback) {
         case "login":
           this._blinkColorReturn(["magenta", 1000], callback);
           break;
+        case "FACTORYfailure_6BEE":
+          this._blinkColorReturn(["blue", 500, "blue", 500], callback);
+          // this._blinkColorReturn(["blue", 500, "red", 500, "blue", 500, "red", 3000, ], callback);
+          break;
+        case "FACTORYfailure_ETHERNET":
+          this._blinkColorReturn(["cyan", 500, "cyan", 500], callback);
+          //   this._blinkColorReturn(["green", 500, "red", 500, "green", 500, "red", 3000, ], callback);
+          break;
+        case "FACTORYfailure_RAM":
+          this._blinkColorReturn(["red", 500, "red", 500, ], callback);
+          //  this._blinkColorReturn(["yellow", 500, "red", 500, "yellow", 500, "red", 3000, ], callback);
+          break;
+        case "FACTORYfailure_SERIAL":
+          this._blinkColorReturn(["magenta", 500, "magenta", 500], callback);
+          //  this._blinkColorReturn(["cyan", 500, "red", 500, "cyan", 500, "red", 3000, ], callback);
+          break;
+        case "FACTORYfailure_SERIALKEY":
+          this._blinkColorReturn(["yellow", 500, "yellow", 500], callback);
+          //  this._blinkColorReturn(["magenta", 1000, "red", 3000], callback);
+          break;
+        case "FACTORYfailure_USB":
+          this._blinkColorReturn(["white", 500, "white", 500], callback);
+          //   this._blinkColorReturn(["white", 1000, "red", 3000], callback);
+          break;
+        case "off":
+          this._blinkColorReturn(["off", 5000, "red", 500], callback);
 
       }
     }

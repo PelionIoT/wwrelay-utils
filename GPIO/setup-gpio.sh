@@ -19,6 +19,10 @@ echo "$__MYDIR"
 GPIO_THISDIR=$(getScriptDir "${BASH_SOURCE[0]}")
 . $GPIO_THISDIR/../common/common.sh
 
+
+# . /etc/wigwag/relayconf.sh
+# echo $hardware_gpioProfile_RED_OFF
+# exit
 #eval $COLOR_BOLD
 #echo "Setting up WWRelay (rev 5) GPIO ports"
 #eval $COLOR_NORMAL
@@ -39,12 +43,17 @@ GPIO_THISDIR=$(getScriptDir "${BASH_SOURCE[0]}")
 #v4 -contains A20 with Amplifier chips and fix for red led. (V2=v4 for this file)
 
 #BOARDT
-theboardversion=$(cat /etc/wigwag/relay.conf | gawk -F'hardwareVersion":"' '{print $2}' | gawk -F'",' '{print $1}')
-echo -e "Board Factory Version:\t$theboardversion"
+. /etc/wigwag/relayconf.sh
+#theboardversion=$(cat /etc/wigwag/relay.conf | gawk -F'hardwareVersion": "' '{print $2}' | gawk -F'",' '{print $1}')
+#echo -e "Board Factory Version:\t$theboardversion"
+echo -e "The hardware version: \t$hardwareVersion"
+theboardversion=$hardwareVersion
 case $theboardversion in
   "0.0.1") GPIODEF="GPIO_V1";;
   "0.0.2") GPIODEF="GPIO_V2";;
   "0.0.4") GPIODEF="GPIO_V2";;
+  "0.0.5") GPIODEF="GPIO_V5";;
+  "0.0.6") GPIODEF="GPIO_V6";;
   *) GPIODEF="GPIO_V2";;
 esac
 echo -e "Board GPIO definition:\t$GPIODEF"
@@ -114,6 +123,50 @@ if [ "$GPIODEF" = "GPIO_V1" ]
     SBMC_RESET="$GPIOpath/gpio10_pd9"
     SBMC_RTS="$GPIOpath/gpio9_pd8"
     SBMC_ERASE="$GPIOpath/gpio8_pd7"
+    SBKW_RESET="$GPIOpath/gpio7_pd6"
+    SBCC1_RESET="$GPIOpath/gpio6_pd5"
+    SBCC1_CLK="$GPIOpath/gpio2_pd1"
+    SBCC1_DATA="$GPIOpath/gpio3_pd2"
+    SBCC2_RESET="$GPIOpath/gpio4_pd3"
+    SBCC2_CLK="$GPIOpath/gpio5_pd4"
+    SBCC2_DATA="$GPIOpath/gpio1_pd0"
+  elif [ "$GPIODEF" = "GPIO_V5" ]
+    then
+    let TotalGPIO_outputs="$hardware_gpioProfile_NumberOfOutputs"
+    let TotalGPIO_inputs="$hardware_gpioProfile_NumberOfInputs"
+   declare -a GPoutputs=(gpio1_pd0 gpio2_pd1 gpio3_pd2 gpio4_pd3 gpio5_pd4 gpio6_pd5 gpio7_pd6 gpio8_pd7 gpio9_pd8 gpio10_pd9 gpio11_pb8)
+    declare -a GPinputs=(gpio12_ph12)
+   TopRed="$hardware_gpioProfile_TopRed"
+    TopBlue="$hardware_gpioProfile_TopBlue"
+    TopGreen="$hardware_gpioProfile_TopGreen"
+    SBMC_TTY="$hardware_radioProfile_SBMC_TTY"
+    RED_OFF="$hardware_gpioProfile_RED_OFF"
+    RESET_DET="$hardware_gpioProfile_BUTTON"
+    SBMC_RESET="$hardware_radioProfile_SBMC_RESET"
+    SBMC_RTS="$hardware_radioProfile_SBMC_RTS"
+    SBMC_ERASE="$hardware_radioProfile_SBMC_ERASE"
+    SBKW_RESET="$GPIOpath/gpio7_pd6"
+    SBCC1_RESET="$GPIOpath/gpio6_pd5"
+    SBCC1_CLK="$GPIOpath/gpio2_pd1"
+    SBCC1_DATA="$GPIOpath/gpio3_pd2"
+    SBCC2_RESET="$GPIOpath/gpio4_pd3"
+    SBCC2_CLK="$GPIOpath/gpio5_pd4"
+    SBCC2_DATA="$GPIOpath/gpio1_pd0"
+      elif [ "$GPIODEF" = "GPIO_V6" ]
+    then
+    let TotalGPIO_outputs="$hardware_gpioProfile_NumberOfOutputs"
+    let TotalGPIO_inputs="$hardware_gpioProfile_NumberOfInputs"
+   declare -a GPoutputs=(gpio1_pd0 gpio2_pd1 gpio3_pd2 gpio4_pd3 gpio5_pd4 gpio6_pd5 gpio7_pd6 gpio8_pd7 gpio9_pd8 gpio10_pd9 gpio11_pb8)
+    declare -a GPinputs=(gpio12_ph12)
+   TopRed="$hardware_gpioProfile_TopRed"
+    TopBlue="$hardware_gpioProfile_TopBlue"
+    TopGreen="$hardware_gpioProfile_TopGreen"
+    SBMC_TTY="$hardware_radioProfile_SBMC_TTY"
+    RED_OFF="$hardware_gpioProfile_RED_OFF"
+    RESET_DET="$hardware_gpioProfile_BUTTON"
+    SBMC_RESET="$hardware_radioProfile_SBMC_RESET"
+    SBMC_RTS="$hardware_radioProfile_SBMC_RTS"
+    SBMC_ERASE="$hardware_radioProfile_SBMC_ERASE"
     SBKW_RESET="$GPIOpath/gpio7_pd6"
     SBCC1_RESET="$GPIOpath/gpio6_pd5"
     SBCC1_CLK="$GPIOpath/gpio2_pd1"

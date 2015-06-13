@@ -2,12 +2,11 @@
 	"batch": "1",
 	"month": "F",
 	"year": "5",
-	"radioConfig": "00",
-	"hardwareVersion": "0.0.0",
-	"relayID": "WWRL00002X",
-	"ethernetMAC": [0, 165, 9, 214, 2, 88],
-	"sixBMAC": [0, 165, 9, 255, 255, 214, 2, 88],
-	"relaySecret": "939f7b82f7708be77f54e70b4503a4b3",
-	"pairingCode": "YHJBHKKS93NG8RKR8SI4J88YW",
-	"cloudURL": "https://cloud.wigwag.com"
+	"radioConfig": "04",
+	"hardwareVersion": "0.0.1",
+	"relayID": "WWRL000034",
+	"ethernetMAC": [0, 165, 9, 62, 30, 187],
+	"sixBMAC": [0, 165, 9, 255, 253, 241, 90, 12],
+	"relaySecret": "7ab5c955e25d66aa48cbe0a72853311c",
+	"pairingCode": "8PFI2622CW6AVPIYNSGVPQEIG"
 }

@@ -64,10 +64,22 @@ function buildlinks () {
 }
 
 function tattletale(){
+  echo -e "\nKernel Configs\n---------------------------------\n"
   zcat /proc/config.gz | grep CONFIG_GPIO_SUNXI
   zcat /proc/config.gz | grep CONFIG_LEDS_SUNXI
+    zcat /proc/config.gz | grep CONFIG_SERIAL_8250_SUNXI
+  echo -e "\nCPU Speeds\n---------------------------------\n"
   echo -e "current CPU0 speed: " `cat /sys/devices/system/cpu/cpu0/cpufreq/cpuinfo_cur_freq`
   echo -e "current CPU1 speed: " `cat /sys/devices/system/cpu/cpu1/cpufreq/cpuinfo_cur_freq`
+  echo -e "\nUART_Assignments\n---------------------------------\n"
+  echo -e "\t${C_BOLD}U1 Assign:\t${C_GREEN} /dev/"`ls /sys/devices/platform/sunxi-uart.1/tty/`"${C_NORM}"
+ echo -e "\t${C_BOLD}U2 Assign:\t${C_GREEN} /dev/"`ls /sys/devices/platform/sunxi-uart.2/tty/`"${C_NORM}"
+ echo -e "\t${C_BOLD}U3 Assign:\t${C_GREEN} /dev/"`ls /sys/devices/platform/sunxi-uart.3/tty/`"${C_NORM}"
+ echo -e "\t${C_BOLD}U4 Assign:\t${C_GREEN} /dev/"`ls /sys/devices/platform/sunxi-uart.4/tty/`"${C_NORM}"
+ echo -e "\t${C_BOLD}U5 Assign:\t${C_GREEN} /dev/"`ls /sys/devices/platform/sunxi-uart.5/tty/`"${C_NORM}"
+ echo -e "\t${C_BOLD}U6 Assign:\t${C_GREEN} /dev/"`ls /sys/devices/platform/sunxi-uart.6/tty/`"${C_NORM}"
+ echo -e "\t${C_BOLD}U7 Assign:\t${C_GREEN} /dev/"`ls /sys/devices/platform/sunxi-uart.7/tty/`"${C_NORM}"
+
 }
 
 function main () {

@@ -10,14 +10,29 @@ var exec = require('child_process').exec;
 //var execSync = require('child_process').execSync;
 var execSync = require('execSync');
 
+var flatten = require('flat');
+
 //travis
 var path = require('path');
 var wigwag_conf_json_file = "/wigwag/devicejs/conf/wigwag.conf.json";
 var devjs = require(wigwag_conf_json_file);
 var relay_dot_conf = "/etc/wigwag/relay.conf";
+var relayconf_dot_sh = "/etc/wigwag/relayconf.sh"
 var hw_dot_conf = "/etc/wigwag/hardware.conf"
 var eeprom_dot_json = "/etc/wigwag/eeprom.json";
 var uuid_eeprom_path = "/etc/wigwag/.eeprom_";
+
+function flattenobj(obj, callback) {
+	var out = flatten(obj, {
+		delimiter: "_",
+		safe: true
+	});
+	var str = "";
+	Object.keys(out).forEach(function(key) {
+		str += key + "=\"" + out[key] + "\"\n";
+	});
+	callback(str);
+}
 
 function read(ray, str, callback) {
 	var key = ray.shift();
@@ -26,7 +41,6 @@ function read(ray, str, callback) {
 		var ray2 = ray;
 		var str2 = str;
 		if (res) {
-
 			//this will convert the storred hex to integers array
 			if (key == "ethernetMAC" || key == "sixBMAC") {
 				newray = [];
@@ -69,30 +83,25 @@ function define_hardware(res) {
 	hw = new Object();
 	hw.gpioProfile = new Object();
 	hw.radioProfile = new Object();
+	//console.log("Here iam and res hwadwareverssion: " + res.hardwareVersion.toString());
 	switch (res.hardwareVersion.toString()) {
 		case "0.0.0":
 			hw.gpioProfile.RelayType = "software";
-			break;
-		case "0.0.1":
-		case "0.0.4":
-			hw.gpioProfile.RelayType = "hardware";
-			hw.gpioProfile.RED_OFF = GPIOpath + "gpio11_pb8";
-			hw.gpioProfile.BUTTON = GPIOpath + "gpio12_ph12";
-			hw.gpioProfile.TopRed = LEDspath + "/red";
-			hw.gpioProfile.TopBlue = LEDspath + "/blue";
-			hw.gpioProfile.TopGreen = LEDspath + "/green";
-			break;
-	}
-	///may need to nest this swtich into the above in the future... just make it a huge decision tree
-	switch (res.radioConfig) {
-		case "00":
 			hw.radioProfile.hasSM_SBMC = false; //Solder_Module 6BEE MC13224
 			hw.radioProfile.hasSM_5304 = false; //Solder_Module Zwave 5304
 			hw.radioProfile.hasSM_U880 = false; //Solder_Module U880
 			hw.radioProfile.hasSM_BT = false; //Solder_Module Bluetooth
 			hw.radioProfile.SBMC_TTY = "/dev/ttyUSB0"
 			break;
-		case "01":
+		case "0.0.1":
+			hw.gpioProfile.NumberOfInputs = 1;
+			hw.gpioProfile.NumberOfOutputs = 11;
+			hw.gpioProfile.RelayType = "hardware";
+			hw.gpioProfile.RED_OFF = GPIOpath + "gpio11_pb8";
+			hw.gpioProfile.BUTTON = GPIOpath + "gpio12_ph12";
+			hw.gpioProfile.TopRed = LEDspath + "/red";
+			hw.gpioProfile.TopBlue = LEDspath + "/blue";
+			hw.gpioProfile.TopGreen = LEDspath + "/green";
 			hw.radioProfile.hasSM_SBMC = true; //Solder_Module 6BEE MC13224
 			hw.radioProfile.hasSM_5304 = false; //Solder_Module Zwave 5304
 			hw.radioProfile.hasSM_U880 = false; //Solder_Module U880
@@ -102,7 +111,16 @@ function define_hardware(res) {
 			hw.radioProfile.SBMC_RESET = GPIOpath + "gpio1_pd0";
 			hw.radioProfile.SBMC_RTS = GPIOpath + "gpio2_pd1";
 			break;
-		case "04":
+		case "0.0.2":
+		case "0.0.4":
+			hw.gpioProfile.NumberOfInputs = 1;
+			hw.gpioProfile.NumberOfOutputs = 11;
+			hw.gpioProfile.RelayType = "hardware";
+			hw.gpioProfile.RED_OFF = GPIOpath + "gpio11_pb8";
+			hw.gpioProfile.BUTTON = GPIOpath + "gpio12_ph12";
+			hw.gpioProfile.TopRed = LEDspath + "/red";
+			hw.gpioProfile.TopBlue = LEDspath + "/blue";
+			hw.gpioProfile.TopGreen = LEDspath + "/green";
 			hw.radioProfile.hasSM_SBMC = true; //Solder_Module 6BEE MC13224
 			hw.radioProfile.hasSM_5304 = false; //Solder_Module Zwave 5304
 			hw.radioProfile.hasSM_U880 = false; //Solder_Module U880
@@ -113,6 +131,18 @@ function define_hardware(res) {
 			hw.radioProfile.SBMC_RTS = GPIOpath + "gpio9_pd8";
 			break;
 	}
+	///may need to nest this swtich into the above in the future... just make it a huge decision tree
+	// switch (res.radioConfig) {
+	// 	case "00":
+
+	// 		break;
+	// 	case "01":
+
+	// 		break;
+	// 	case "04":
+
+	// 		break;
+	// }
 	return hw;
 }
 
@@ -137,11 +167,28 @@ function get_all(callback) {
 	});
 }
 
-function write_file(myfile, json, overwrite, cb) {
+function write_JSON2file(myfile, json, overwrite, cb) {
 	console.log("writing: %s:%s", myfile, json);
 	fs.exists(myfile, function(exists) {
 		if (exists && overwrite || (!exists)) {
 			fs.writeFile(myfile, JSON.stringify(json, null, '\t') + "\n", 'utf8', function(err) {
+				if (err) {
+					cb(err, null);
+				}
+				else {
+					cb(null, "SUCCESS");
+				}
+			});
+		}
+		else cb(null, "SUCCESS");
+	});
+}
+
+function write_string2file(myfile, str, overwrite, cb) {
+	console.log("writing: %s", myfile);
+	fs.exists(myfile, function(exists) {
+		if (exists && overwrite || (!exists)) {
+			fs.writeFile(myfile, str, 'utf8', function(err) {
 				if (err) {
 					cb(err, null);
 				}
@@ -222,16 +269,24 @@ function main() {
 			console.log("Hardware based Relay found.");
 			//	if (!exists) {
 			get_all(function(result) {
-				hw = define_hardware(result);
-				result.hardware = hw;
-				modify_devjs(result.sixBMAC.string, result.hardware.radioProfile.SBMC_TTY.split("/")[2]);
-				write_file(relay_dot_conf, result, true, function(err, suc) {
-					if (err) console.log("Error Writing file %s", err);
-					write_file(wigwag_conf_json_file, devjs, true, function(err, suc) {
-						if (err) console.log("Error Writing file %s", err);
+				//this checks if the eeprom had valid data.  I may want to add a different check, perhaps a eeprom_version number, so this file never need to change
+				if (result.BRAND == "WW") {
+					hw = define_hardware(result);
+					result.hardware = hw;
+					flattenobj(result, function(output) {
+						write_string2file(relayconf_dot_sh, output, true, function(err, succ) {
+							if (err) console.log("Error Writing file %s", err);
+						});
 					});
+					modify_devjs(result.sixBMAC.string, result.hardware.radioProfile.SBMC_TTY.split("/")[2]);
+					write_JSON2file(relay_dot_conf, result, true, function(err, suc) {
+						if (err) console.log("Error Writing file %s", err);
+						write_JSON2file(wigwag_conf_json_file, devjs, true, function(err, suc) {
+							if (err) console.log("Error Writing file %s", err);
+						});
 
-				});
+					});
+				}
 			});
 
 		}
@@ -241,8 +296,8 @@ function main() {
 				if (res) {
 					res.hw = define_hardware(res);
 					modify_devjs(res.sixBMAC.string, "ttyUSB0");
-					write_file(relay_dot_conf, res, true, function(err, suc) {
-						write_file(wigwag_conf_json_file, devjs, true, function(err, suc) {
+					write_JSON2file(relay_dot_conf, res, true, function(err, suc) {
+						write_JSON2file(wigwag_conf_json_file, devjs, true, function(err, suc) {
 							if (err) console.log("Error Writing file %s", err);
 						});
 					});

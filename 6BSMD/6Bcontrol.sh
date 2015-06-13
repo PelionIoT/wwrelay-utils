@@ -20,9 +20,11 @@ THISDIR=$(getScriptDir "${BASH_SOURCE[0]}")
 . $THISDIR/../common/common.sh
 
 # bring GPIO functions and the important varriables
-. $THISDIR/../GPIO/setup-gpio.sh funcsonly
+#. $THISDIR/../GPIO/setup-gpio.sh funcsonly
 SCRIPT=`basename ${BASH_SOURCE[0]}`
 
+
+. /etc/wigwag/relayconf.sh
 
 
 
@@ -30,7 +32,7 @@ SCRIPT=`basename ${BASH_SOURCE[0]}`
 
 
 #Check the number of arguments. If none are passed, print help and exit.
-function checkargs(){
+function checkargs() {
     NUMARGS=$1
     if [ $NUMARGS -eq 0 ]; then
         echo -e \\n"Number of arguments: $NUMARGS"
@@ -49,7 +51,7 @@ function SET_PIN() {
     debug "SET_PIN(pin=$1,direction=$2)" 2
     pin=$1
     direction=$2
-    if [ "$direction" = "High" ];then
+    if [[ "$direction" = "High" || "$direction" = 1 ]]; then
         debug "echo 1 > $pin" 3
         echo 1 > $pin
     else
@@ -60,31 +62,33 @@ function SET_PIN() {
 
 function 6Breset () {
     debug "6Breset()" 1
-    SET_PIN "$SBMC_RESET/value" "Low"
+    SET_PIN "$hardware_radioProfile_SBMC_RESET/value" "Low"
     sleep $RESETTIME
-    SET_PIN "$SBMC_RESET/value" "High"    
+    SET_PIN "$hardware_radioProfile_SBMC_RESET/value" "High"    
 }
+#cat /proc/tty/driver/serial 
 
 function 6Berase() {
     debug "6Berase()" 1
-    SET_PIN "$SBMC_ERASE/value" "High"
+    SET_PIN "$hardware_radioProfile_SBMC_ERASE/value" "High"
     6Breset
     sleep 2
-    SET_PIN "$SBMC_ERASE/value" "Low"
+    SET_PIN "$hardware_radioProfile_SBMC_ERASE/value" "Low"
 }
 
 function 6BStatus() {
     echo "${C_BOLD}${C_UND}6BMC13224 Pin Status${C_NORM}"
     echo -e "\t${C_BOLD}UART:\t\t${C_GREEN} $tty${C_NORM}"
-    echo -e "\t${C_BOLD}RTS PIN:\t${C_GREEN} $SBMC_RTS \t$(cat $SBMC_RTS/value)${C_NORM}"
-    echo -e "\t${C_BOLD}ERASE PIN:\t${C_GREEN} $SBMC_ERASE \t$(cat $SBMC_ERASE/value)${C_NORM}"
-    echo -e "\t${C_BOLD}RESET PIN:\t${C_GREEN} $SBMC_RESET \t$(cat $SBMC_RESET/value)${C_NORM}"
+     echo -e "\t${C_BOLD}U3 Assign:\t${C_GREEN} /dev/"`ls /sys/devices/platform/sunxi-uart.3/tty/`"${C_NORM}"
+    echo -e "\t${C_BOLD}RTS PIN:\t${C_GREEN} $hardware_radioProfile_SBMC_RTS \t$(cat $hardware_radioProfile_SBMC_RTS/value)${C_NORM}"
+    echo -e "\t${C_BOLD}ERASE PIN:\t${C_GREEN} $hardware_radioProfile_SBMC_ERASE \t$(cat $hardware_radioProfile_SBMC_ERASE/value)${C_NORM}"
+    echo -e "\t${C_BOLD}RESET PIN:\t${C_GREEN} $hardware_radioProfile_SBMC_RESET \t$(cat $hardware_radioProfile_SBMC_RESET/value)${C_NORM}"
 }
 
 burnpid=""
 function burn() {
     debug "burn($1)"
-    echo -e "flashcmd: with $1\n"
+    echo -e "flashcmd given: $1\n"
     eval "$1" &
     burnpid=$!
 }
@@ -93,10 +97,10 @@ function 6Bprogram() {
     debug "6Bprogram(file=$1)"
     echo -e "Programming the 6Bee\n"
     burnercmd="$Loader $v -t $tty -f $Flasher -s $1 -u $Baudrate -e -c '$THISDIR/6Bcontrol.sh -R'"
-    ramburncmd="$THISDIR/$Loader $v -t $tty -f $1 -u $Baudrate"
+    ramburncmd="$Loader $v -t $tty -f $1 -u $Baudrate"
     6Berase
     6Buartsettings
-    SET_PIN "$SBMC_RTS/value" "low"
+    SET_PIN "$hardware_radioProfile_SBMC_RTS/value" "low"
     if [[ $Mode == "Romburn" ]]; then
         burn "$burnercmd"
     else
@@ -105,7 +109,7 @@ function 6Bprogram() {
     6Breset
     sleep 1
     wait $burnpid
-    SET_PIN "$SBMC_RTS/value" "high"
+    SET_PIN "$hardware_radioProfile_SBMC_RTS/value" "high"
 }
 
 function 6Buartsettings(){
@@ -164,17 +168,17 @@ function process_args(){
             -e|--ErasePin)
                 case "$2" in
                     "") shift 2 ;;
-                    *) validate_in_list $2 "$SETABLES" "-E --ErasePin"; SET_PIN "$SBMC_ERASE/value" "$2"; shift 2 ;;
+                    *) validate_in_list $2 "$SETABLES" "-E --ErasePin"; SET_PIN "$hardware_radioProfile_SBMC_ERASE/value" "$2"; shift 2 ;;
                 esac ;;
             -r|--ResetPin)
                 case "$2" in
                     "") shift 2 ;;
-                    *) validate_in_list $2 "$SETABLES" "-r --ResetPin";SET_PIN "$SBMC_RESET/value" "$2" ; shift 2 ;;
+                    *) validate_in_list $2 "$SETABLES" "-r --ResetPin";SET_PIN "$hardware_radioProfile_SBMC_RESET/value" "$2" ; shift 2 ;;
                 esac ;;
             -u|--RTSPin)
                 case "$2" in
                     "") shift 2 ;;
-                    *) validate_in_list $2 "$SETABLES" "-S --RTSPin";SET_PIN "$SBMC_RTS/value" "$2" ; shift 2 ;;
+                    *) validate_in_list $2 "$SETABLES" "-S --RTSPin";SET_PIN "$hardware_radioProfile_SBMC_RTS/value" "$2" ; shift 2 ;;
                 esac ;;
             -P|--Program)
                 case "$2" in
@@ -259,7 +263,7 @@ function HELP {
 Baudrate=115200
 Loader=$THISDIR/mc1322x-load
 Mode=Romburn
-tty=$SBMC_TTY
+tty=$hardware_radioProfile_SBMC_TTY
 Flasher=$THISDIR/flasher.bin
 v=""
 Program=""
@@ -275,7 +279,7 @@ RESETTIME=1
 BAUDS="115200 57600 19200 9600"
 FLASHERS="flasher.bin flasher_m12.bin f2-econotag.bin"
 LOADERS="mc1322x-load mctest"
-SETABLES="High Low"
+SETABLES="High Low 1 0"
 MODES="Ramburn Romburn"
 
 

@@ -30,6 +30,7 @@
                         "use_raw_ethernet": false,
                         "log_level": ["packet", "debug", "info", "trace"],
                         "siodev": "ttyS2",
+			"secondary_siodev": "ttyS3",
                         "sixBMAC": "00A5090001123456",
                         "baudrate": 115200,
                         "slip_delay": 0.03125,

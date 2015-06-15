@@ -48,6 +48,11 @@
                     }
                 }
             },
+            "ledChanger": {
+                "typeName" : "LEDChangerService",
+                "enabled": true,
+                "config": {}
+            },
             "ipStack" : {
                 "typeName" : "IPStack",
                  "enabled": true,

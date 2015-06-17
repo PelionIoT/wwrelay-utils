@@ -181,11 +181,11 @@ int main(int argc, char **argv) {
   options.c_cflag &= ~CSTOPB;
   options.c_cflag &= ~CSIZE;
   options.c_cflag |= CS8;
-  if (strcmp(rts, "rts")) {
-    options.c_cflag &= ~CRTSCTS;
-  } else {
+//  if (strcmp(rts, "rts")) {
+//    options.c_cflag &= ~CRTSCTS;
+//  } else {
     options.c_cflag |= CRTSCTS;
-  }
+//  }
   options.c_lflag &= ~(ICANON | ECHO | ECHOE | ISIG);
   options.c_oflag &= ~OPOST;
   tcsetattr(pfd, TCSANOW, &options);

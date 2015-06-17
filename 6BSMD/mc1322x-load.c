@@ -190,6 +190,13 @@ int main(int argc, char **argv) {
   options.c_oflag &= ~OPOST;
   tcsetattr(pfd, TCSANOW, &options);
 
+  if (verbose) {
+  	printf("terminal options:\n");
+  	printf("\tc_cflag: %d\n", options.c_cflag);
+  	printf("\tc_lflag: %d\n", options.c_lflag);
+  	printf("\tc_oflag: %d\n", options.c_oflag);
+  }
+
  reset(command);
 
   /* Primary bootloader wait loop */

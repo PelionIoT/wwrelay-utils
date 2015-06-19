@@ -84,6 +84,10 @@
                 "classpath": "WWDebugTools",
                 "config": { }
             },
+            "api" : {
+                "classpath": "wwapi",
+                "config" : {}
+            },
             "mobileUI": {
                 "classpath": "WWMobileUI",
                 "config": { }

@@ -28,7 +28,7 @@
                     "sixlbr": {
                         "tundev": "Witap0",
                         "use_raw_ethernet": false,
-                        "log_level": ["packet", "debug", "info", "trace"],
+                        "log_level": [],
                         "siodev": "ttyS2",
 			"siodev_secondary": "ttyS3",
                         "sixBMAC": "00A5090001123456",

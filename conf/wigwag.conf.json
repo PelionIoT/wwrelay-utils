@@ -1,6 +1,6 @@
 {
 	"appServer" : true,
-        "logger" : { "file": "${conf}/default_logger.conf.json" },
+        "logger" : { "file": "${conf}/relay_logger.conf.json" },
 	"loadApps" : [ 
 		{"classpath" : "WWWebAPI"},
 		{"classpath" : "WWMobileUI"}

@@ -236,6 +236,7 @@ if [ "$#" -lt 1 ]; then
     modprobe_gpiodriver
     exportGPIOs
     setdirection
+      $GPIO_THISDIR/control-LED.sh red
     echo 1 > $RED_OFF/value
 fi
 

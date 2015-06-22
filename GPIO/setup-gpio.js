@@ -66,7 +66,7 @@ function exportGPIO(type, callback) {
 }
 
 function fix_red() {
-	fs.
+	//
 }
 
 function main() {

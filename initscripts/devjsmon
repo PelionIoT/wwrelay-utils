@@ -1,0 +1,57 @@
+#!/bin/bash
+# /etc/init.d/devjsmon: Monitors DeviceJS
+
+### BEGIN INIT INFO
+# Provides:             devjsmon
+# Required-Start:       $remote_fs $time
+# Required-Stop:        $remote_fs $time
+# Should-Start:         $network
+# Should-Stop:          $network
+# Default-Start:        5
+# Default-Stop:         0 1 6
+# Short-Description:    DeviceJSMonitor
+### END INIT INFO
+
+DEVJSMON_DIR="/wigwag/devicejs"
+DEVJSMON_START_CMD="node /wigwag/devicejs/core/exec/devjsmon.js"
+
+DEVICEJSMON_LOG="/wigwag/log/devjsmon.log"
+
+function stop_devjs() {
+    pushd $DEVICEJS_DIR
+    $DEVJS_STOP_CMD > $DEVICEJS_LOG 2>&1 &
+    popd
+}
+function run_devjsmon() {
+    if [ -e $DEVICEJSMON_LOG ]; then
+	# some trivial log rotation
+	mv $DEVICEJSMON_LOG $DEVICEJSMON_LOG.1
+    fi
+    
+    pushd $DEVICEJSMON_DIR
+    $DEVJSMON_START_CMD > $DEVICEJSMON_LOG 2>&1 &
+    popd
+}
+
+case "$1" in
+    start)
+	eval $COLOR_BOLD
+	echo "Starting DeviceJS Monitoring Services."
+	eval $COLOR_NORMAL
+	run_devjsmon
+	;;
+    stop)
+	echo "Stopping DeviceJS Monitor Services"
+        stop_devjsmon
+        ;;
+    restart) 
+	echo "Restarting DeviceJS Monitor Services"
+	stop_devjsmon
+	run_devjsmon
+  	;;
+      *)
+	echo "Usage: $0 {start|stop|restart}"
+    exit 1
+esac
+
+exit 0

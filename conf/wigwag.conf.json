@@ -38,6 +38,7 @@
                         "firmware_path_mc1322": "/wigwag/devicejs/core/utils/node-6lbr/slip-radio_bin/",
                         "firmware_file_prefix": "slip-radio_econotag",
                         "reset_GPIO_path_firmware_mc1322": "/sys/class/gpio/gpio10_pd9/value",
+                        "erase_GPIO_path_firmware_mc1322": "/sys/class/gpio/gpio8_pd7/value",
                         "nvm_data": {
                             "channel": 12,
 			    "rpl_dio_intdoubl": 1,

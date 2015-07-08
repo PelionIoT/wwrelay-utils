@@ -81,10 +81,6 @@
         "ruleNodeDirectories": [ "${core}" ],
         "discovererDirectories": [ "${core}" ],
         "apps": {
-            "debugTools": {
-                "classpath": "WWDebugTools",
-                "config": { }
-            },
             "api" : {
                 "classpath": "api",
                 "config" : {}

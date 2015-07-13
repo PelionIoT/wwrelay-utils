@@ -248,7 +248,7 @@ fi
 
 
 #turn off the red "I have been powered led"
-echo 1 > $RED_OFF/value
+#echo 1 > $RED_OFF/value
 #pass main the remaining command line args
 main $@
 

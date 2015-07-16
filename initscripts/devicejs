@@ -13,7 +13,7 @@
 ### END INIT INFO
 
 DEVICEJS_DIR="/wigwag/devicejs"
-DEVJS_START_CMD="./bin/devjs --start -i wigwag -b -c conf/wigwag.conf.json"
+DEVJS_START_CMD="./bin/devjs --start --force -i wigwag -b -c conf/wigwag.conf.json"
 DEVJS_STOP_CMD="./bin/devjs --shutdown -i wigwag"
 
 DEVICEJS_LOG="/wigwag/log/devicejs.log"

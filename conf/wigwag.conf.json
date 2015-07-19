@@ -50,6 +50,11 @@
                     }
                 }
             },
+            "mdns": {
+                "typeName": "MDNSService",
+                "enabled": true,
+                "config": {}
+            },
             "ledChanger": {
                 "typeName" : "LEDChangerService",
                 "enabled": true,

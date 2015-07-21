@@ -3,7 +3,7 @@
     "packages": [
         {
             "name": "WigWag-Firmware",
-            "version": "1.0.1",
+            "version": "1.0.8",
             "description": "Upgrade for the WigWag Relay Firmware",
             "node_module_hash": "",
             "ww_module_hash": ""

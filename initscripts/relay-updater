@@ -1,0 +1,47 @@
+#!/bin/bash
+# /etc/init.d/devicedbd: starts WigWag Device Database
+
+### BEGIN INIT INFO
+# Provides:             devicedbd
+# Required-Start:       $remote_fs $time
+# Required-Stop:        $remote_fs $time
+# Should-Start:         $network
+# Should-Stop:          $network
+# Default-Start:        4 5
+# Default-Stop:         0 1 6
+# Short-Description:    Device Database for WigWag
+### END INIT INFO
+
+RELAY_UPDATER_DIR="/updater/relay-updater"
+RELAY_UPDATER_CMD="./bin/runUpdater.sh"
+RELAY_UPDATER_LOG="/wigwag/log/relay-updater.log"
+
+function run_relay_updater() {
+    pushd $RELAY_UPDATER_DIR
+    $RELAY_UPDATER_CMD > $RELAY_UPDATER_LOG 2>&1 &
+    popd
+}
+
+case "$1" in
+    start)
+	eval $COLOR_BOLD
+	echo "Starting Relay Updater Services."
+	eval $COLOR_NORMAL
+	run_relay_updater
+	;;
+    stop)
+	echo "Stopping Relay Updater Services"
+	killall -g runUpdater.sh 
+	;;
+    restart) 
+	killall -g runUpdater.sh 
+	run_relay_updater
+  	;;
+      *)
+	echo "Usage: $0 {start|stop|restart}"
+    exit 1
+esac
+
+exit 0
+
+     

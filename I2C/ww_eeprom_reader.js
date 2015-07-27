@@ -170,8 +170,8 @@ function define_hardware(res) {
 			hw.radioProfile.CC2520_RESET = GPIOpath + "gpio5_pd4";
 			hw.radioProfile.SBMC_RTS = GPIOpath + "gpio6_pd5";
 			break;
-	}
-	}
+	};
+
 	///may need to nest this swtich into the above in the future... just make it a huge decision tree
 	// switch (res.radioConfig) {
 	// 	case "00":
@@ -201,7 +201,12 @@ function get_all(callback) {
 	}
 	var res;
 	read(temp, str, function(done) {
-		var res = JSON.parse(done);
+		try {
+			var res = JSON.parse(done);
+		}
+		catch (e) {
+			callback(JSON.parse('{"eeprom":"not configured properly"}'));
+		}
 		res.relayID = res.BRAND + res.DEVICE + res.UUID;
 		res.cloudURL = "https://cloud.wigwag.com";
 		callback(res);
@@ -327,6 +332,10 @@ function main() {
 						});
 
 					});
+				}
+				else {
+					console.log("EEPROM is not configured properly.\n---------------------------------\nIf " + relay_dot_conf + " + " + relayconf_dot_sh + " exist, will manually use those files. Otherwise, Relay will not start up properly.");
+
 				}
 			});
 

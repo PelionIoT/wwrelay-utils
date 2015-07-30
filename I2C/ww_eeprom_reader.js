@@ -270,7 +270,7 @@ function main() {
 			//	if (!exists) {
 			get_all(function(result) {
 				//this checks if the eeprom had valid data.  I may want to add a different check, perhaps a eeprom_version number, so this file never need to change
-				if (result.BRAND == "WW") {
+				if (result.BRAND == "WW" || result.BRAND == "WD") {
 					hw = define_hardware(result);
 					result.hardware = hw;
 					flattenobj(result, function(output) {

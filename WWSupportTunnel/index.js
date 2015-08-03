@@ -17,12 +17,12 @@ function randomInt(low, high){
 }
 
 function getSelfIPAddr(){
-	var command = "ifconfig | grep eth0 -A 1 | awk '{ print $2 }' | grep addr:"
+	var command = "ifconfig | grep eth0 -A 1 | awk '{ print $2 }' | grep addr:";
 	var getSelfIP = exec(command, function(error, stdout, stderr){
 		currentIP = stdout.split(':')[1];
 		console.log(currentIP);
 		if (currentIP === undefined){
-			var command = "ifconfig | grep wlan0 -A 1 | awk '{ print $2 }' | grep addr:"
+			var command = "ifconfig | grep wlan0 -A 1 | awk '{ print $2 }' | grep addr:";
 			var getSelfIP = exec(command, function(error, stdout, stderr){
 				currentIP = stdout.split(':')[1];
 				console.log(currentIP);

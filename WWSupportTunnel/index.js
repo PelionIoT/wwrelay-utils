@@ -13,7 +13,7 @@ var supportIP = '198.58.101.57'; // ip address of the server
 var currentIP = '0.0.0.0';
 
 function randomInt(low, high){
-	return Math.floor(Math.random() * (high - low)) + low
+	return Math.floor(Math.random() * (high - low)) + low;
 }
 
 function getSelfIPAddr(){

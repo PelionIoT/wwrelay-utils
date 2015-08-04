@@ -34,7 +34,7 @@ body {
 }
 
 .tunnel-container {
-	width: 1000px;
+	width: 1075px;
 	margin-left: auto;
 	margin-right: auto;
 	background-color: #F8F8F8;
@@ -50,7 +50,9 @@ body {
 	display: none;
 	margin-left: auto;
 	margin-right: auto;
-	width: 478px;
+	width: 563px;
+	height: 548px;
+	font-family: "Ubuntu Mono",Menlo,Monaco,Consolas,"Courier New",monospace;
 	display: block;
 	background-color: white;
 	border: 2px solid #C8C8C8;
@@ -105,9 +107,9 @@ body {
 	line-height: 103px;
 }
 
-@media (max-width: 1000px) {
+@media (max-width: 1075px) {
 	.tunnel-container {width: 100%; top: 0px; margin-top: 0px;}
 	.left-holder {width: 100%;}
 	.left-section {margin-left: auto; margin-right: auto;}
-	.right-holder {width: 100%; margin-left: auto; margin-right: auto; padding-top: 0px;}
+	.right-holder {width: 100%; margin-left: auto; margin-right: auto; padding-top: 0px; padding-right: 0px;}
 }

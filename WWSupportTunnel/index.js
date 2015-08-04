@@ -113,9 +113,27 @@ function getStop(){
 	removeKeys();
 }
 
+function copyKnownHosts(){
+	var command = "cp known_hosts /home/support/.ssh";
+	var copyHosts = exec(command, function(){
+		console.log("known hosts copied to support/.ssh");
+	});
+}
+
+function chownSupport(){
+	var command = "chown support:support /home/support/.ssh";
+	var chownSup = exec(command, function(){
+		console.log("changed the ownership of support/.ssh");
+	});
+}
+
 function mainBody(){
 	getStop();
     getSelfIPAddr();
+    chownSupport();
+    setTimeout(function(){
+    	copyKnownHosts();
+    }, 1000);
 
 	app.get('/', function (req, res) {
 		req.socket.on("error", function(){});

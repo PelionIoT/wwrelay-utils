@@ -121,7 +121,7 @@ function copyKnownHosts(){
 }
 
 function chownSupport(){
-	var command = "chown support:support /home/support/.ssh";
+	var command = "chown -R support:support /home/support/.ssh";
 	var chownSup = exec(command, function(){
 		console.log("changed the ownership of support/.ssh");
 	});

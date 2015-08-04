@@ -38,7 +38,7 @@ function startTunnel(){
 	// var command = 'ssh -p 3232 -f -N -R ' + randomPort + ':localhost:22 support@' + supportIP + ' -i /home/joe/.ssh/relay_support_key';
 	var command = 'ssh -f -N -R ' + randomPort + ':localhost:22 support@' + supportIP + ' -i relay_support_key';
 	var sshSupport = exec(command, function(error, stdout, stderr){
-		console.log("Started Support Tunnel");
+		console.log("Ended Support Tunnel");
 	});
 }
 

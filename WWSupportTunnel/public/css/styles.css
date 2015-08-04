@@ -16,9 +16,9 @@ body {
 }
 
 .left-section {
-	height: 182px;
+	height: 155px;
 	width: 300px;
-	padding: 40px 20px;
+	padding: 27px 20px;
 }
 
 .left-name {
@@ -34,7 +34,7 @@ body {
 }
 
 .tunnel-container {
-	width: 1075px;
+	width: 1015px;
 	margin-left: auto;
 	margin-right: auto;
 	background-color: #F8F8F8;
@@ -50,9 +50,10 @@ body {
 	display: none;
 	margin-left: auto;
 	margin-right: auto;
-	width: 563px;
-	height: 548px;
+	width: 490px;
+	height: 467px;
 	font-family: "Ubuntu Mono",Menlo,Monaco,Consolas,"Courier New",monospace;
+	font-size: 12px;
 	display: block;
 	background-color: white;
 	border: 2px solid #C8C8C8;
@@ -99,6 +100,11 @@ body {
 #downloadKey {
 	font-size: 60px;
 	margin: 25px 0px;
+	color: #0094D9;
+}
+
+#downloadKey:hover {
+	color: #337AB7;
 }
 
 #display-port {
@@ -107,7 +113,7 @@ body {
 	line-height: 103px;
 }
 
-@media (max-width: 1075px) {
+@media (max-width: 1015px) {
 	.tunnel-container {width: 100%; top: 0px; margin-top: 0px;}
 	.left-holder {width: 100%;}
 	.left-section {margin-left: auto; margin-right: auto;}

@@ -1,0 +1,57 @@
+#!/bin/bash
+# /etc/init.d/devjssupport: Monitors Support App
+
+### BEGIN INIT INFO
+# Provides:             devjsssuport
+# Required-Start:       $remote_fs $time
+# Required-Stop:        $remote_fs $time
+# Should-Start:         $network
+# Should-Stop:          $network
+# Default-Start:        5
+# Default-Stop:         0 1 6
+# Short-Description:    DeviceJSApp
+### END INIT INFO
+
+DEVJSSUPPORT_DIR="/wigwag/support"
+DEVJSSUPPORT_START_CMD="node /wigwag/support/index.js"
+
+DEVICEJSSUPPORT_LOG="/wigwag/log/devjssupport.log"
+
+function stop_devjssupport() {
+    pushd $DEVICEJSSJUPPORT_DIR
+    $DEVJS_STOP_CMD > $DEVICEJSSUPPORT_LOG 2>&1 &
+    popd
+}
+function run_devjssupport() {
+    if [ -e $DEVICEJSSUPPORT_LOG ]; then
+	# some trivial log rotation
+	mv $DEVICEJSSUPPORT_LOG $DEVICEJSSUPPORT_LOG.1
+    fi
+    
+    pushd $DEVICEJSSUPPORT_DIR
+    $DEVJSSUPPORT_START_CMD > $DEVICEJSSUPPORT_LOG 2>&1 &
+    popd
+}
+
+case "$1" in
+    start)
+	eval $COLOR_BOLD
+	echo "Starting DeviceJS Support Services."
+	eval $COLOR_NORMAL
+	run_devjssupport
+	;;
+    stop)
+	echo "Stopping DeviceJS Support Services"
+        stop_devjssupport
+        ;;
+    restart) 
+	echo "Restarting DeviceJS Support Services"
+	stop_devjssupport
+	run_devjssupport
+  	;;
+      *)
+	echo "Usage: $0 {start|stop|restart}"
+    exit 1
+esac
+
+exit 0

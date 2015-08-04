@@ -1,6 +1,7 @@
 <!DOCTYPE html>
 <html>
 <head>
+	<link rel="stylesheet" type="text/css" href="css/styles.css">
 	<script src="https://cdnjs.cloudflare.com/ajax/libs/jquery/2.1.1/jquery.min.js"></script>
 	<script src="js/ui.js"></script>
 	<script src="/socket.io/socket.io.js"></script>
@@ -11,11 +12,13 @@
 <p>Click Start/Stop the tunnel to the WigWag Support Service</p>
 <p>After 'Start' please do not close your browser, otherwise the connection will have to be remade</p>
 
-<button id="start" onclick="start()">Start</button>
+<div id="startstop" onclick="startstop()">
+	<div id="innerbutton"></div>
+</div>
 
-<button id="stop" onclick="stop()">Stop</button>
+<textarea id="display-full-key" rows="27" cols="65" spellcheck='false' readonly></textarea>
 
-<p id="display-key">-----</p>
+<p id="display-empty-key">-----</p>
 
 <a href="/downloadKey">
 	<button id="downloadKey" onclick="download()">Download Key</button>
@@ -25,3 +28,11 @@
 
 </body>
 </html>
+
+<!--
+XXX change start and stop to start/stop one button
+XXXput ssh key in nice textbox
+download key -> download rene-con
+copy key to clipboard - ready to paste
+copy port to clipboard - ready to paste 
+-->

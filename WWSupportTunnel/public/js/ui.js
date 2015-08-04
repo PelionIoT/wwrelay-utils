@@ -1,7 +1,6 @@
 var tunnelUP = false;
 
-function stop() {
-	tunnelUP = false;
+function stopTun() {
 	$.ajax({
 	  url: "/stop",
 	  context: document.body
@@ -13,9 +12,7 @@ function stop() {
     updateButtons();
 }
 
-function start() {
-	tunnelUP = true;
-	$.ajax({
+function startTun() {	$.ajax({
 	  url: "/start",
 	  context: document.body
 	});
@@ -36,6 +33,16 @@ function start() {
 	updateButtons();
 }
 
+function startstop(){
+	if (tunnelUP){
+		tunnelUP = false;
+		stopTun();
+	} else {
+		tunnelUP = true;
+		startTun();
+	}
+}
+
 function download() {
 	console.log('stuff');
 	$.ajax({
@@ -47,12 +54,19 @@ function download() {
 function displayKey(){
 	$.get("/returnKey", function(data){
 		if (data === "" || data === undefined){
-    		$("#display-key").html("-----");
+    		// empty can see
+    		// full gone
+    		$("#display-empty-key").css("display", "block");
+    		$("#display-full-key").css("display", "none");
     	} else {
-    		data = data.replace(/\n/g, "<br />");
-    		$("#display-key").html(data);
-    		clearInterval(keyInterval);
 
+    		// data = data.replace(/\n/g, "<br />");
+    		// empty gone
+    		// full can see
+    		$("#display-empty-key").css("display", "none");
+    		$("#display-full-key").css("display", "block");
+    		$('#display-full-key').val(data);
+    		clearInterval(keyInterval);
     	}
     	console.log(data + "asdfasdf");
 	});
@@ -74,18 +88,11 @@ function displayPort(){
 
 function updateButtons(){
 	if (tunnelUP){ // tunnel up yay
-		// disable start, enable stop
-		$("#start").prop("disabled", true);
-		$("#stop").prop("disabled", false);
-		$("#refreshKey").prop("disabled", false);
-		$("#refreshPort").prop("disabled", false);
+		// display stop
+		
 		$("#downloadKey").prop("disabled", false);		
 	} else { // tunnel down
-		// enable start, disable stop
-		$("#start").prop("disabled", false);
-		$("#stop").prop("disabled", true);
-		$("#refreshKey").prop("disabled", true);
-		$("#refreshPort").prop("disabled", true);
+		// display to start
 		$("#downloadKey").prop("disabled", true);
 	}
 }

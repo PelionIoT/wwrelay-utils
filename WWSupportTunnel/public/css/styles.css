@@ -35,7 +35,6 @@ body {
 
 .tunnel-container {
 	width: 1000px;
-	height: 680px;
 	margin-left: auto;
 	margin-right: auto;
 	background-color: #F8F8F8;
@@ -51,6 +50,7 @@ body {
 	display: none;
 	margin-left: auto;
 	margin-right: auto;
+	width: 478px;
 	display: block;
 	background-color: white;
 	border: 2px solid #C8C8C8;
@@ -73,7 +73,7 @@ body {
 	position: absolute;
 	width: 45px;
 	height: 45px;
-	margin: 12.5px auto;
+	margin: 13px auto;
 	left: 0px;
 	right: 0px;
 	background-color: #C8C8C8;
@@ -103,4 +103,11 @@ body {
 	font-size: 16px;
 	font-weight: bold;
 	line-height: 103px;
+}
+
+@media (max-width: 1000px) {
+	.tunnel-container {width: 100%; top: 0px; margin-top: 0px;}
+	.left-holder {width: 100%;}
+	.left-section {margin-left: auto; margin-right: auto;}
+	.right-holder {width: 100%; margin-left: auto; margin-right: auto; padding-top: 0px;}
 }

@@ -1,6 +1,8 @@
 <!DOCTYPE html>
 <html>
 <head>
+	<link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.5/css/bootstrap.min.css">
+	<link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/font-awesome/4.4.0/css/font-awesome.min.css">
 	<link rel="stylesheet" type="text/css" href="css/styles.css">
 	<script src="https://cdnjs.cloudflare.com/ajax/libs/jquery/2.1.1/jquery.min.js"></script>
 	<script src="js/ui.js"></script>
@@ -9,22 +11,32 @@
 </head>
 <body>
 
-<p>Click Start/Stop the tunnel to the WigWag Support Service</p>
-<p>After 'Start' please do not close your browser, otherwise the connection will have to be remade</p>
+<!-- <p>Click Start/Stop the tunnel to the WigWag Support Service</p>
+<p>After 'Start' please do not close your browser, otherwise the connection will have to be remade</p> -->
 
-<div id="startstop" onclick="startstop()">
-	<div id="innerbutton"></div>
+<div class="tunnel-container">
+	<div class="left-holder">
+		<div class="left-section">
+			<p class="left-name">Start/Stop Tunnel</p>
+			<div class="left-action" id="startstop" onclick="startstop()">
+				<div id="innerbutton"></div>
+			</div>
+		</div>
+		<div class="left-section">
+			<p class="left-name">Download SSH Key</p>
+			<a class="left-action" href="/downloadKey">
+				<i class="fa fa-download" id="downloadKey" onclick="download()"></i>
+			</a>
+		</div>
+		<div class="left-section">
+			<p class="left-name">Port Number</p>
+			<p class="left-action" id="display-port">####</p>
+		</div>
+	</div>
+	<div class="right-holder">
+		<textarea id="display-full-key" rows="27" cols="65" spellcheck='false' readonly>No SSH Key</textarea>
+	</div>
 </div>
-
-<textarea id="display-full-key" rows="27" cols="65" spellcheck='false' readonly></textarea>
-
-<p id="display-empty-key">-----</p>
-
-<a href="/downloadKey">
-	<button id="downloadKey" onclick="download()">Download Key</button>
-</a>
-
-<p id="display-port">####</p>
 
 </body>
 </html>

@@ -56,14 +56,12 @@ function displayKey(){
 		if (data === "" || data === undefined){
     		// empty can see
     		// full gone
-    		$("#display-empty-key").css("display", "block");
-    		$("#display-full-key").css("display", "none");
+    		$("#display-full-key").val("No Key");
     	} else {
 
     		// data = data.replace(/\n/g, "<br />");
     		// empty gone
     		// full can see
-    		$("#display-empty-key").css("display", "none");
     		$("#display-full-key").css("display", "block");
     		$('#display-full-key').val(data);
     		clearInterval(keyInterval);
@@ -89,12 +87,12 @@ function displayPort(){
 function updateButtons(){
 	if (tunnelUP){ // tunnel up yay
 		// display stop
-		$("#innerbutton").css("background-color", "purple");
-		$("#downloadKey").prop("disabled", false);		
+		$("#innerbutton").css("background-color", "#0094D9");
+		$("#downloadKey").css("opacity", "1");		
 	} else { // tunnel down
 		// display start
-		$("#innerbutton").css("background-color", "orange");
-		$("#downloadKey").prop("disabled", true);
+		$("#innerbutton").css("background-color", "#C8C8C8");
+		$("#downloadKey").css("opacity", "0.3");
 	}
 }
 

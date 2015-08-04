@@ -89,10 +89,11 @@ function displayPort(){
 function updateButtons(){
 	if (tunnelUP){ // tunnel up yay
 		// display stop
-		
+		$("#innerbutton").css("background-color", "purple");
 		$("#downloadKey").prop("disabled", false);		
 	} else { // tunnel down
-		// display to start
+		// display start
+		$("#innerbutton").css("background-color", "orange");
 		$("#downloadKey").prop("disabled", true);
 	}
 }

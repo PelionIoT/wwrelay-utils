@@ -1,0 +1,27 @@
+<!DOCTYPE html>
+<html>
+<head>
+	<script src="https://cdnjs.cloudflare.com/ajax/libs/jquery/2.1.1/jquery.min.js"></script>
+	<script src="js/ui.js"></script>
+	<script src="/socket.io/socket.io.js"></script>
+	<script> var socket = io(); </script>
+</head>
+<body>
+
+<p>Click Start/Stop the tunnel to the WigWag Support Service</p>
+<p>After 'Start' please do not close your browser, otherwise the connection will have to be remade</p>
+
+<button id="start" onclick="start()">Start</button>
+
+<button id="stop" onclick="stop()">Stop</button>
+
+<p id="display-key">-----</p>
+
+<a href="/downloadKey">
+	<button id="downloadKey" onclick="download()">Download Key</button>
+</a>
+
+<p id="display-port">####</p>
+
+</body>
+</html>

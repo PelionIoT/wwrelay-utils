@@ -9,7 +9,7 @@ var randomPort = -1; // choose a random port on the support sever
 var minPort = 19991; // smallest port number the client can reverse tunnel using
 var maxPort = 19999; // biggest port number the client can reverse tunnel using
 var port = 3000; // port of the current program
-var supportIP = '198.58.101.57'; // ip address of the server
+var supportIP = 'tunnel.wigwag.com'; // ip address of the server
 var currentIP = '0.0.0.0';
 
 function randomInt(low, high){

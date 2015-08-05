@@ -35,7 +35,7 @@ function startTunnel(){
 	console.log('startTunnel');
 	randomPort = randomInt(minPort, maxPort);
 
-	var command = 'ssh -f -N -R ' + randomPort + ':localhost:22 support@' + supportIP + ' -i relay_support_key';
+	var command = 'ssh -f -N -R ' + randomPort + ':localhost:22 support@' + supportIP + ' -i /wigwag/support/relay_support_key';
 	var sshSupport = exec(command, function(error, stdout, stderr){
 		console.log("Ended Support Tunnel");
 	});
@@ -115,7 +115,7 @@ function copyKnownHosts(){
 	var command = "cat /home/root/.ssh/known_hosts | grep " + supportIP;
 	var checkKH = exec(command, function(error, stdout, stderr){
 		if (stdout === undefined || stdout == ""){
-			var command = "cat known_hosts >> /home/root/.ssh/known_hosts";
+			var command = "cat /wigwag/support/known_hosts >> /home/root/.ssh/known_hosts";
 			var copyHosts = exec(command, function(){
 				console.log("known hosts copied to root/.ssh");
 			});
@@ -131,9 +131,9 @@ function chownSupport(){
 }
 
 function chmodRelaySupportKey(){
-	var command = "chmod 600 ./relay_support_key";
+	var command = "chmod 600 /wigwag/support/relay_support_key";
 	var chownSup = exec(command, function(error, stdout, stderr){
-		console.log("chmodded relay_support_key");
+		console.log("change permissions of relay_support_key");
 	});
 }
 

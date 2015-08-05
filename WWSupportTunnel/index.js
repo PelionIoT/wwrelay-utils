@@ -35,7 +35,6 @@ function startTunnel(){
 	console.log('startTunnel');
 	randomPort = randomInt(minPort, maxPort);
 
-	// var command = 'ssh -p 3232 -f -N -R ' + randomPort + ':localhost:22 support@' + supportIP + ' -i /home/joe/.ssh/relay_support_key';
 	var command = 'ssh -f -N -R ' + randomPort + ':localhost:22 support@' + supportIP + ' -i relay_support_key';
 	var sshSupport = exec(command, function(error, stdout, stderr){
 		console.log("Ended Support Tunnel");
@@ -44,7 +43,6 @@ function startTunnel(){
 
 function killTunnel(){
 	// get the PIDs of every process associated with tunneling
-	// var command = "ps ax | grep 'ssh -p 3232 -f -N -R' | awk '{ print $5" + '" "' + "$1 }'"
 	var command = "ps ax | grep 'ssh -f -N -R' | awk '{ print $5" + '" "' + "$1 }'"
 	var getPIDs = exec(command, function(error, stdout, stderr){
 		// get the tuple of {command, pid}
@@ -114,26 +112,38 @@ function getStop(){
 }
 
 function copyKnownHosts(){
-	var command = "cp known_hosts /home/support/.ssh";
-	var copyHosts = exec(command, function(){
-		console.log("known hosts copied to support/.ssh");
+	var command = "cat /home/root/.ssh/known_hosts | grep " + supportIP;
+	var checkKH = exec(command, function(error, stdout, stderr){
+		if (stdout === undefined || stdout == ""){
+			var command = "cat known_hosts >> /home/root/.ssh/known_hosts";
+			var copyHosts = exec(command, function(){
+				console.log("known hosts copied to root/.ssh");
+			});
+		}
 	});
 }
 
 function chownSupport(){
 	var command = "chown -R support:support /home/support/.ssh";
-	var chownSup = exec(command, function(){
+	var chownSup = exec(command, function(error, stdout, stderr){
 		console.log("changed the ownership of support/.ssh");
 	});
 }
 
+function chmodRelaySupportKey(){
+	var command = "chmod 600 ./relay_support_key";
+	var chownSup = exec(command, function(error, stdout, stderr){
+		console.log("chmodded relay_support_key");
+	});
+}
+
 function mainBody(){
+	console.log('Support Tunnel web interface starting');
 	getStop();
     getSelfIPAddr();
     chownSupport();
-    setTimeout(function(){
-    	copyKnownHosts();
-    }, 1000);
+    copyKnownHosts();
+    chmodRelaySupportKey();
 
 	app.get('/', function (req, res) {
 		req.socket.on("error", function(){});
@@ -153,6 +163,8 @@ function mainBody(){
 	});
 
 	app.get('/start', function(req, res){
+		chmodRelaySupportKey();
+		copyKnownHosts();
 		getStart();
 		res.status(200).send();
 	});

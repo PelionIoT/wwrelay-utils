@@ -6,7 +6,7 @@
             "version": "1.0.8",
             "description": "Upgrade for the WigWag Relay Firmware",
             "node_module_hash": "",
-            "ww_module_hash": ""
+            "ww_module_hash": "",
             "releaseStrategy": {
                 "partitionType": "ranged",
                 "partitionOptions": {

@@ -19,7 +19,7 @@ var config = "";
 function read_config(callback) {
 	fs.readFile(relay_dot_conf, 'ascii', function(err, data) {
 		if (err) {
-			console.log("error readFile");
+			console.log("error reading " + relay_dot_conf);
 			callback(err, null);
 		}
 		if (data) {
@@ -31,6 +31,7 @@ function read_config(callback) {
 
 function set_direction(callback) {
 	var dir = "out";
+	var completed = 3;
 	var total = config.hardware.gpioProfile.NumberOfOutputs + config.hardware.gpioProfile.NumberOfInputs;
 	var fileray = fs.readdirSync("/sys/class/gpio/");
 	var re = /(gpio)(\d+)(.+)/i;
@@ -39,7 +40,18 @@ function set_direction(callback) {
 			var caught = fileray[i].match(re)[2];
 			if (caught > config.hardware.gpioProfile.NumberOfOutputs) dir = "in"
 			else dir = "out";
-			fs.writeFileSync(gpio_path + fileray[i] + "/direction", dir);
+			fullpath = gpio_path + fileray[i] + "/direction";
+			fs.writeFile(fullpath, dir, function(err, success) {
+				if (err) {
+					callback("total failure", null);
+				}
+				else {
+					completed++;
+					if (completed >= fileray.length) {
+						callback(null, "success");
+					}
+				}
+			});
 		}
 	}
 }
@@ -65,36 +77,67 @@ function exportGPIO(type, callback) {
 	});
 }
 
-function fix_red() {
-	//
+function fix_red(callback) {
+	success = "Sucessfully set the red as desired";
+	failure = "failed to set the red as desired";
+	fs.writeFile(config.hardware.gpioProfile.TopRed + "/brightness", 1, function(err, data) {
+		if (err) {
+			console.log("Could not enable a normal red led");
+			callback(failure, null);
+		}
+		else {
+			fs.writeFile(config.hardware.gpioProfile.RED_OFF + "/value", 1, function(err, data) {
+				if (err) {
+					console.log("Could not disable the red boot flag for the Top LED");
+					callback(failure, null);
+				}
+				else {
+					callback(null, success);
+				}
+			});
+		}
+	});
 }
 
 function main() {
 	read_config(function(err, suc) {
-		if (err) console.log("err reading config: %s", err);
-		else exportGPIO(1, function(err, success) {
-			if (err) {
-				console.log("Error: %s", err);
-			}
-			if (success) {
-				set_direction(function(err, success) {
-					if (err) {
-						console.log("Error: %s", err);
-					}
-					if (success) {
-						console.log("Setting direction: %s", success);
-						fix_red(function(err, success) {
-							if (err) {
-								console.log("Error: %s", err);
-							}
-							if (success) {
-								console.log("Success: %s", success);
-							}
-						});
-					}
-				});
-			}
-		});
+		console.log("startin main");
+		if (err) {
+			console.log("err reading config: %s", err);
+		}
+
+		else {
+			exportGPIO(1, function(err, success) {
+				if (err) {
+					console.log("Error published: %s", err);
+				}
+				if (success) {
+					set_direction(function(err, success) {
+						if (err) {
+							console.log("Error now: %s", err);
+							fix_red(function(err, success) {
+								if (err) {
+									console.log("Error: %s", err);
+								}
+								if (success) {
+									console.log("Success: %s", success);
+								}
+							});
+						}
+						if (success) {
+							fix_red(function(err, success) {
+								if (err) {
+									console.log("Error: %s", err);
+								}
+								if (success) {
+									console.log("Success: %s", success);
+								}
+							});
+						}
+					});
+				}
+			});
+		}
 	});
 }
 main();

@@ -13,10 +13,17 @@
 ### END INIT INFO
 
 DEVICEJS_DIR="/wigwag/devicejs"
-DEVJS_START_CMD="./bin/devjs --start -i wigwag -b -c conf/wigwag.conf.json"
+DEVJS_START_CMD="./bin/devjs --start --force -i wigwag -b -c conf/wigwag.conf.json"
 DEVJS_STOP_CMD="./bin/devjs --shutdown -i wigwag"
 
 DEVICEJS_LOG="/wigwag/log/devicejs.log"
+
+function mk_var_dir() {
+   if [ ! -e $DEVICEJS_DIR/var ] ; then
+      mkdir /var/volatile/devjs_var
+      ln -s /var/volatile/devjs_var $DEVICEJS_DIR/var
+   fi
+}
 
 function congig_cpu_scaling() {
    MAX_FREQ=/sys/devices/system/cpu/cpu0/cpufreq/scaling_max_freq
@@ -29,7 +36,7 @@ function congig_cpu_scaling() {
 
 function stop_devjs() {
     pushd $DEVICEJS_DIR
-    $DEVJS_STOP_CMD > $DEVICEJS_LOG 2>&1 &
+    $DEVJS_STOP_CMD > $DEVICEJS_LOG 2>&1 
     popd
 }
 function run_devjs() {
@@ -39,7 +46,9 @@ function run_devjs() {
     fi
     
     pushd $DEVICEJS_DIR
-    $DEVJS_START_CMD > $DEVICEJS_LOG 2>&1 &
+    mk_var_dir
+    $DEVJS_START_CMD > $DEVICEJS_LOG 2>&1
+    echo $? > /tmp/devjs_error
     popd
 }
 

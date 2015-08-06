@@ -3,7 +3,7 @@
 	"month": "F",
 	"year": "5",
 	"radioConfig": "01",
-	"hardwareVersion": "0.0.4",
+	"hardwareVersion": "0.0.6",
 	"relayID": "WWRL000034",
 	"ethernetMAC": [0, 165, 9, 62, 30, 187],
 	"sixBMAC": [0, 165, 9, 255, 253, 241, 90, 12],

@@ -130,7 +130,48 @@ function define_hardware(res) {
 			hw.radioProfile.SBMC_RESET = GPIOpath + "gpio10_pd9";
 			hw.radioProfile.SBMC_RTS = GPIOpath + "gpio9_pd8";
 			break;
-	}
+		case "0.0.5":
+			hw.gpioProfile.NumberOfInputs = 1;
+			hw.gpioProfile.NumberOfOutputs = 11;
+			hw.gpioProfile.RelayType = "hardware";
+			hw.gpioProfile.RED_OFF = GPIOpath + "gpio11_pb8";
+			hw.gpioProfile.BUTTON = GPIOpath + "gpio12_ph12";
+			hw.gpioProfile.TopRed = LEDspath + "/red";
+			hw.gpioProfile.TopBlue = LEDspath + "/blue";
+			hw.gpioProfile.TopGreen = LEDspath + "/green";
+			hw.radioProfile.hasSM_SBMC = true; //Solder_Module 6BEE MC13224
+			hw.radioProfile.hasSM_5304 = false; //Solder_Module Zwave 5304
+			hw.radioProfile.hasSM_U880 = false; //Solder_Module U880
+			hw.radioProfile.hasSM_BT = false; //Solder_Module Bluetooth
+			hw.radioProfile.SBMC_TTY = "/dev/ttyS2";
+			hw.radioProfile.SBMC_ERASE = GPIOpath + "gpio8_pd7";
+			hw.radioProfile.SBMC_RESET = GPIOpath + "gpio10_pd9";
+			hw.radioProfile.SBMC_RTS = GPIOpath + "gpio9_pd8";
+			break;
+		case "0.0.6":
+			hw.gpioProfile.NumberOfInputs = 1;
+			hw.gpioProfile.NumberOfOutputs = 11;
+			hw.gpioProfile.RelayType = "hardware";
+			hw.gpioProfile.RED_OFF = GPIOpath + "gpio11_pb8";
+			hw.gpioProfile.BUTTON = GPIOpath + "gpio12_ph12";
+			hw.gpioProfile.TopRed = LEDspath + "/red";
+			hw.gpioProfile.TopBlue = LEDspath + "/blue";
+			hw.gpioProfile.TopGreen = LEDspath + "/green";
+			hw.radioProfile.hasSM_SBMC = true; //Solder_Module 6BEE MC13224
+			hw.radioProfile.hasSM_5304 = false; //Solder_Module Zwave 5304
+			hw.radioProfile.hasSM_U880 = false; //Solder_Module U880
+			hw.radioProfile.hasSM_BT = false; //Solder_Module Bluetooth
+			hw.radioProfile.SBMC_TTY = "/dev/ttyS3";
+			hw.radioProfile.SBMC_ERASE = GPIOpath + "gpio3_pd2";
+			hw.radioProfile.SBMC_RESET = GPIOpath + "gpio1_pd0";
+			hw.radioProfile.SBMC_RTS = GPIOpath + "gpio2_pd1";
+			hw.radioProfile.ZWAVE_TTY = "/dev/ttyS4";
+			hw.radioProfile.ZWAVE_ERASE = GPIOpath + "gpio4_pd3";
+			hw.radioProfile.CC2520_RESET = GPIOpath + "gpio5_pd4";
+			hw.radioProfile.SBMC_RTS = GPIOpath + "gpio6_pd5";
+			break;
+	};
+
 	///may need to nest this swtich into the above in the future... just make it a huge decision tree
 	// switch (res.radioConfig) {
 	// 	case "00":
@@ -160,7 +201,12 @@ function get_all(callback) {
 	}
 	var res;
 	read(temp, str, function(done) {
-		var res = JSON.parse(done);
+		try {
+			var res = JSON.parse(done);
+		}
+		catch (e) {
+			callback(JSON.parse('{"eeprom":"not configured properly"}'));
+		}
 		res.relayID = res.BRAND + res.DEVICE + res.UUID;
 		res.cloudURL = "https://cloud.wigwag.com";
 		callback(res);
@@ -286,6 +332,10 @@ function main() {
 						});
 
 					});
+				}
+				else {
+					console.log("EEPROM is not configured properly.\n---------------------------------\nIf " + relay_dot_conf + " + " + relayconf_dot_sh + " exist, will manually use those files. Otherwise, Relay will not start up properly.");
+
 				}
 			});
 

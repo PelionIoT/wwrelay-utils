@@ -162,13 +162,15 @@ function define_hardware(res) {
 			hw.radioProfile.hasSM_U880 = false; //Solder_Module U880
 			hw.radioProfile.hasSM_BT = false; //Solder_Module Bluetooth
 			hw.radioProfile.SBMC_TTY = "/dev/ttyS3";
+			hw.radioProfile.CC2530_TTY = "/dev/ttyS1";
 			hw.radioProfile.SBMC_ERASE = GPIOpath + "gpio3_pd2";
 			hw.radioProfile.SBMC_RESET = GPIOpath + "gpio1_pd0";
 			hw.radioProfile.SBMC_RTS = GPIOpath + "gpio2_pd1";
 			hw.radioProfile.ZWAVE_TTY = "/dev/ttyS4";
 			hw.radioProfile.ZWAVE_ERASE = GPIOpath + "gpio4_pd3";
-			hw.radioProfile.CC2520_RESET = GPIOpath + "gpio5_pd4";
-			hw.radioProfile.SBMC_RTS = GPIOpath + "gpio6_pd5";
+			hw.radioProfile.CC2530_RESET = GPIOpath + "gpio5_pd4";
+			hw.radioProfile.CC2530_DBG_DATA = GPIOpath + "gpio7_pd6";
+			hw.radioProfile.CC2530_DBG_CLK = GPIOpath + "gpio6_pd5";
 			break;
 	};
 
@@ -316,7 +318,7 @@ function main() {
 			//	if (!exists) {
 			get_all(function(result) {
 				//this checks if the eeprom had valid data.  I may want to add a different check, perhaps a eeprom_version number, so this file never need to change
-				if (result.BRAND == "WW") {
+				if (result.BRAND == "WW" || result.BRAND == "WD") {
 					hw = define_hardware(result);
 					result.hardware = hw;
 					flattenobj(result, function(output) {

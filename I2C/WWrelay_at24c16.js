@@ -124,8 +124,12 @@ WWEEPROM.prototype.set = function(key, value) {
 		if (lookup.len == value.length) {
 			//console.log("calling setText");
 			setText(serial_spacenum, lookup.memaddr, value, function(err, success) {
-				if (err) reject(Error(err));
-				else resolve(success);
+				if (err) {
+					reject(Error(err));
+				}
+				else {
+					resolve(success);
+				}
 			});
 		}
 		else reject(Eror("Length mismatch, provided %s != %s", value.length, lookup.len));

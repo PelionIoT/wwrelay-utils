@@ -1,0 +1,7 @@
+#Compile
+#to get product and vendor id use: '$lsusb -v' command and filter out the one you are using 
+#command: gcc -o hello-ftdi hello-ftdi.c $(pkg-config --cflags --libs libftdi)
+#more info: http://www.ftdichip.com/Support/Documents/DataSheets/Modules/DS_UM232H-B.pdf
+#http://www.ftdichip.com/Support/Documents/DataSheets/ICs/DS_FT232H.pdf
+#http://hackaday.com/2009/09/22/introduction-to-ftdi-bitbang-mode/
+#http://stackoverflow.com/questions/14872888/undefined-reference-to-ftdi-init

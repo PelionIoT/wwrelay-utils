@@ -95,6 +95,7 @@ static unsigned verbose, progress;
 #define FADDRL		0x6271
 #define FADDRH		0x6272
 #define FWDATA		0x6273
+#define X_CHIPID	0x624A
 #define X_CHIPINFO0	0x6276
 #define X_CHIPINFO1	0x6277
 
@@ -862,6 +863,14 @@ static int cc2530_chip_identify(struct cc2530_cmd *cmd, int *flash_size)
 	if (ret) {
 		fprintf(stderr, "%s: failed to issue: %s\n", __func__, cmd->name);
 		goto out;
+	}
+
+	ret = cc2530_read_xdata_memory(cmd, X_CHIPID, result);
+	if (ret) {
+		fprintf(stderr, "failed to read X_CHIPID register\n");
+		return ret;
+	} else {
+		fprintf(stdout, "X_CHIPID: 0x%02x, 0x%02x\n", result[0], result[1]);
 	}
 
 	/* Check that we actually know that chip */

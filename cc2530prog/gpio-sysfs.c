@@ -94,8 +94,9 @@ gpio_set_direction(int n, enum gpio_direction direction)
 		[GPIO_DIRECTION_HIGH]	= "high",
 	};
 	char path[128];
+	int port = n - 1;
 
-	snprintf(path, sizeof (path), SYSFS_GPIO "/gpio%d/direction", n);
+	snprintf(path, sizeof (path), SYSFS_GPIO "/gpio%d_pd%d/direction", n, port);
 
 	return write_file(path, str[direction]);
 }
@@ -104,8 +105,8 @@ int
 gpio_get_value(int n, bool *value)
 {
 	char buf[128];
-
-	snprintf(buf, sizeof (buf), SYSFS_GPIO "/gpio%d/value", n);
+	int port = n - 1;
+	snprintf(buf, sizeof (buf), SYSFS_GPIO "/gpio%d_pd%d/value", n, port);
 
 	if (read_file(buf, buf, sizeof (buf)) < 0)
 		return -1;
@@ -119,8 +120,8 @@ int
 gpio_set_value(int n, bool value)
 {
 	char path[128];
-
-	snprintf(path, sizeof (path), SYSFS_GPIO "/gpio%d/value", n);
+	int port = n - 1;
+	snprintf(path, sizeof (path), SYSFS_GPIO "/gpio%d_pd%d/value", n, port);
 
 	return write_file(path, value ? "1" : "0");
 }

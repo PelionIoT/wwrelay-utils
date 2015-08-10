@@ -96,7 +96,7 @@ gpio_set_direction(int n, enum gpio_direction direction)
 	char path[128];
 	int port = n - 1;
 
-	fprintf(stdout, "direction: %s to pin: /gpio%d_pd%d/direction\n", str[direction], n, port);
+	// fprintf(stdout, "direction: %s to pin: /gpio%d_pd%d/direction\n", str[direction], n, port);
 	snprintf(path, sizeof (path), SYSFS_GPIO "/gpio%d_pd%d/direction", n, port);
 
 	return write_file(path, str[direction]);
@@ -108,7 +108,7 @@ gpio_get_value(int n, bool *value)
 	char buf[128];
 	int port = n - 1;
 
-	fprintf(stdout, "value: %x to pin: /gpio%d_pd%d/direction\n", value, n, port);
+	// fprintf(stdout, "value: %x to pin: /gpio%d_pd%d/direction\n", value, n, port);
 	snprintf(buf, sizeof (buf), SYSFS_GPIO "/gpio%d_pd%d/value", n, port);
 
 	if (read_file(buf, buf, sizeof (buf)) < 0)
@@ -125,7 +125,7 @@ gpio_set_value(int n, bool value)
 	char path[128];
 	int port = n - 1;
 	
-	fprintf(stdout, "value: %x to pin: /gpio%d_pd%d/direction\n", value, n, port);
+	// fprintf(stdout, "value: %x to pin: /gpio%d_pd%d/direction\n", value, n, port);
 	snprintf(path, sizeof (path), SYSFS_GPIO "/gpio%d_pd%d/value", n, port);
 
 	return write_file(path, value ? "1" : "0");

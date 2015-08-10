@@ -865,13 +865,13 @@ static int cc2530_chip_identify(struct cc2530_cmd *cmd, int *flash_size)
 		goto out;
 	}
 
-	ret = cc2530_read_xdata_memory(cmd, X_CHIPID, result);
-	if (ret) {
-		fprintf(stderr, "failed to read X_CHIPID register\n");
-		return ret;
-	} else {
-		fprintf(stdout, "X_CHIPID: 0x%02x, 0x%02x\n", result[0], result[1]);
-	}
+	// ret = cc2530_read_xdata_memory(cmd, X_CHIPID, result);
+	// if (ret) {
+	// 	fprintf(stderr, "failed to read X_CHIPID register\n");
+	// 	return ret;
+	// } else {
+	// 	fprintf(stdout, "X_CHIPID: 0x%02x, 0x%02x\n", result[0], result[1]);
+	// }
 
 	/* Check that we actually know that chip */
 	if (result[0] != CC2530_ID) {

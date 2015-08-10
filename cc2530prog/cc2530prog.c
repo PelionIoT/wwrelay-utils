@@ -320,7 +320,7 @@ static int cc2530_enter_debug(void)
 	int i;
 
 	/* pulse RST low */
-	gpio_set_value(RST_GPIO, RST_GPIO_POL 0);
+	gpio_set_value(RST_GPIO, RST_GPIO_POL 1);
 
 	for (i = 0; i < 2; i++) {
 		gpio_set_value(CCLK_GPIO, 0);
@@ -331,7 +331,7 @@ static int cc2530_enter_debug(void)
 	gpio_set_value(CCLK_GPIO, 0);
 
 	/* pulse Reset high */
-	gpio_set_value(RST_GPIO, RST_GPIO_POL 1);
+	gpio_set_value(RST_GPIO, RST_GPIO_POL 0);
 
 	debug_enabled = 1;
 
@@ -340,8 +340,8 @@ static int cc2530_enter_debug(void)
 
 static int cc2530_leave_debug(void)
 {
+	gpio_set_value(RST_GPIO, RST_GPIO_POL 1;
 	gpio_set_value(RST_GPIO, RST_GPIO_POL 0);
-	gpio_set_value(RST_GPIO, RST_GPIO_POL 1);
 
 	return 0;
 }

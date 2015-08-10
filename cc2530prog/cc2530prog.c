@@ -340,7 +340,7 @@ static int cc2530_enter_debug(void)
 
 static int cc2530_leave_debug(void)
 {
-	gpio_set_value(RST_GPIO, RST_GPIO_POL 1;
+	gpio_set_value(RST_GPIO, RST_GPIO_POL 1);
 	gpio_set_value(RST_GPIO, RST_GPIO_POL 0);
 
 	return 0;

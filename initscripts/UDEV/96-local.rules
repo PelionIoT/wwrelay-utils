@@ -1,1 +1,2 @@
-KERNEL=="sd*1",ENV{DEVTYPE}=="partition",ENV{ID_FS_LABEL}=="WWUPDATE",SYMLINK+="WWUPDATEp%n", RUN+="/wigwag/wwrelay-utils/initscripts/UDEV/WWUPDATE.sh"
+ACTION=="add",KERNEL=="sd*1",ENV{DEVTYPE}=="partition",ENV{ID_FS_LABEL}=="WWUPDATE",SYMLINK+="WWUPDATEp%n", RUN+="/wigwag/wwrelay-utils/initscripts/UDEV/WWUPDATE.sh"
+ACTION=="remove",KERNEL=="sd*1",ENV{DEVTYPE}=="partition",ENV{ID_FS_LABEL}=="WWUPDATE"m RUN+="/wigwag/wwrelay-utils/initscripts/UDEV/WWUPDATE.sh remove"

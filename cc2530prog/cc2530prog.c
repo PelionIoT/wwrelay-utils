@@ -357,13 +357,13 @@ static int cc2530_test(void)
 		gpio_set_value(RST_GPIO, RST_GPIO_POL 0);
 		gpio_set_value(DATA_GPIO, 0);
 
-		sleep(1);
+		// sleep(1);
 
-		gpio_set_value(RST_GPIO, RST_GPIO_POL 0);
-		gpio_set_value(RST_GPIO, RST_GPIO_POL 1);
-		gpio_set_value(DATA_GPIO, 1);
+		// gpio_set_value(RST_GPIO, RST_GPIO_POL 0);
+		// gpio_set_value(RST_GPIO, RST_GPIO_POL 1);
+		// gpio_set_value(DATA_GPIO, 1);
 
-		sleep(1);
+		// sleep(1);
 	}
 }
 

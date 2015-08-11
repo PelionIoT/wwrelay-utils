@@ -354,7 +354,7 @@ static int cc2530_test(void)
 {
 	while(1) {
 		gpio_set_value(RST_GPIO, RST_GPIO_POL 1);
-		gpio_set_value(RST_GPIO, RST_GPIO_POL 0);
+		gpio_set_value(CCLK_GPIO, 0);
 		gpio_set_value(DATA_GPIO, 0);
 
 		// sleep(1);
@@ -1144,7 +1144,7 @@ int main(int argc, char **argv)
 	}
 
 	if (!debug_enabled)
-		cc2530_enter_debug();
+		//cc2530_enter_debug();
 
 	if(do_test) {
 		cc2530_test();

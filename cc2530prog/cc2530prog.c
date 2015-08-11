@@ -271,11 +271,11 @@ static int cc2530_gpio_init(void)
 	unsigned int i;
 
 	for (i = 0; i < ARRAY_SIZE(gpios); i++) {
-		ret = gpio_export(gpios[i]);
-		if (ret) {
-			fprintf(stderr, "failed to export %d\n", gpios[i]);
-			return ret;
-		}
+		// ret = gpio_export(gpios[i]);
+		// if (ret) {
+		// 	fprintf(stderr, "failed to export %d\n", gpios[i]);
+		// 	return ret;
+		// }
 
 		ret = gpio_set_direction(gpios[i], GPIO_DIRECTION_OUT);
 		if (ret) {
@@ -283,6 +283,9 @@ static int cc2530_gpio_init(void)
 			return ret;
 		}
 	}
+
+	gpio_set_value(CCLK_GPIO, 0);
+	gpio_set_value(DATA_GPIO, 0);
 
 	return 0;
 }
@@ -302,11 +305,11 @@ static int cc2530_gpio_deinit(void)
 			return ret;
 		}
 
-		ret = gpio_unexport(gpios[i]);
-		if (ret) {
-			fprintf(stderr, "failed to unexport %d\n", gpios[i]);
-			return ret;
-		}
+		// ret = gpio_unexport(gpios[i]);
+		// if (ret) {
+		// 	fprintf(stderr, "failed to unexport %d\n", gpios[i]);
+		// 	return ret;
+		// }
 	}
 
 	return 0;
@@ -342,6 +345,25 @@ static int cc2530_leave_debug(void)
 {
 	gpio_set_value(RST_GPIO, RST_GPIO_POL 1);
 	gpio_set_value(RST_GPIO, RST_GPIO_POL 0);
+	gpio_set_value(DATA_GPIO, 0);
+
+	sleep(1);
+
+	gpio_set_value(RST_GPIO, RST_GPIO_POL 0);
+	gpio_set_value(RST_GPIO, RST_GPIO_POL 1);
+	gpio_set_value(DATA_GPIO, 1);
+
+	sleep(1);
+
+	return 0;
+}
+
+
+static int cc2530_test(void) 
+{
+	/* pulse RST low */
+	gpio_set_value(RST_GPIO, RST_GPIO_POL 1);
+	gpio_set_value(CCLK_GPIO, 0);
 
 	return 0;
 }
@@ -1070,6 +1092,7 @@ int main(int argc, char **argv)
 	unsigned do_readback = 0;
 	unsigned do_list = 0;
 	unsigned do_identify = 0;
+	unsigned do_test = 0;
 	char *command = NULL;
 	struct cc2530_cmd *cmd = NULL;
 	int f;
@@ -1078,7 +1101,7 @@ int main(int argc, char **argv)
 	int flash_size = 0;
 	unsigned int retry_cnt = 3;
 
-	while ((opt = getopt(argc, argv, "f:rlc:ivP")) > 0) {
+	while ((opt = getopt(argc, argv, "f:rlc:ivP:t")) > 0) {
 		switch (opt) {
 		case 'f':
 			firmware = optarg;
@@ -1102,6 +1125,9 @@ int main(int argc, char **argv)
 		case 'P':
 			progress = 1;
 			break;
+		case 't':
+			do_test = 1;
+			break;
 		default:
 			break;
 		}
@@ -1120,6 +1146,10 @@ int main(int argc, char **argv)
 
 	if (!debug_enabled)
 		cc2530_enter_debug();
+
+	if(do_test) {
+		cc2530_test();
+	}
 
 	if (do_identify) {
 		ret = cc2530_chip_identify(cmd, &flash_size);

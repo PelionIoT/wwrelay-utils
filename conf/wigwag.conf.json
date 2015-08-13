@@ -88,7 +88,9 @@
         "apps": {
             "api" : {
                 "classpath": "api",
-                "config" : {}
+                "config": {
+                    "locationImagesDirectory": "${devjs_root}/devjs-usr/App/WWWebAPI/images"
+                 }
             },
             "mobileUI": {
                 "classpath": "WWMobileUI",

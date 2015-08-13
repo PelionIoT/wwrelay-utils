@@ -86,23 +86,26 @@ function fix_red(callback) {
 			console.log("Could not enable a normal red led");
 			callback(failure, null);
 		}
+	});
+	fs.writeFile(config.hardware.gpioProfile.TopBlue + "/brightness", 1, function(err, data) {
+		if (err) {
+			console.log("Could not enable a normal blue led");
+			callback(failure, null);
+		}
+	});
+	fs.writeFile(config.hardware.gpioProfile.RED_OFF + "/value", 1, function(err, data) {
+		if (err) {
+			console.log("Could not disable the red boot flag for the Top LED");
+			callback(failure, null);
+		}
 		else {
-			fs.writeFile(config.hardware.gpioProfile.RED_OFF + "/value", 1, function(err, data) {
-				if (err) {
-					console.log("Could not disable the red boot flag for the Top LED");
-					callback(failure, null);
-				}
-				else {
-					callback(null, success);
-				}
-			});
+			callback(null, success);
 		}
 	});
 }
 
 function main() {
 	read_config(function(err, suc) {
-		console.log("startin main");
 		if (err) {
 			console.log("err reading config: %s", err);
 		}

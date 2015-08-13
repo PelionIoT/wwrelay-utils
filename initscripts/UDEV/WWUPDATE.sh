@@ -10,7 +10,7 @@ logfile="/wigwag/log/update.log"
 function mounter() {
 	echo "mounting media $disk ">> $logfile
 	mkdir -p $mountdir
-	mount $disk $mountdir
+	mount -o rw $disk $mountdir
 }
 
 #unoumnts the usb key
@@ -25,7 +25,7 @@ function runinit() {
 cd $mountdir
 if [[ -e $initscript ]]; then
 	. $initscript
-	main
+	#main
 fi
 }
 
@@ -38,14 +38,21 @@ function updater() {
 #z
 }
 
+function stamp() {
+	date > /tmp/newdate
+}
 
 
 
 
-
-pushd .
+if [ $# -eq 0 ]
+  then
+    pushd .
 mounter
 runinit
 updater
 popd
 umounter
+else
+	unmounter
+fi

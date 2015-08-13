@@ -1,5 +1,7 @@
 var led = require('./led.js');
 var led2 = require('./led.js');
+var fs = require('fs');
+
 var time = 1;
 
 var dev$Promise = require('/wigwag/FACTORY/utils/DevPromise.js');
@@ -114,7 +116,8 @@ function status_tests() {
 	_timeout(stdtime).then(function(call) {
 		cmd = "connected";
 		console.log("%s %s ms", cmd, stdtime);
-		led.setStatus(cmd);
+		//led.setStatus(cmd);
+		led._blinkColorLoop(["blue", 500, "off", 500], callback);
 	});
 	_timeout(stdtime).then(function(call) {
 		cmd = "searching";
@@ -147,5 +150,77 @@ function status_tests() {
 	});
 }
 
-status_tests();
+function direct_test() {
+
+	for (var i = 0; i < 50; i++) {
+		(function() {
+			var stdtime = 1000;
+			var mine = i;
+			_timeout(stdtime).then(function(call) {
+
+				cmd = "connected";
+				console.log("%s %s ms", cmd, stdtime);
+				//led.setStatus(cmd);
+				var num = (mine % 7);
+				console.log("num: %s, mine %s", num, mine);
+				led._blinkColorLoop(['green', 100, 'off', 100], function(err, sucess) {
+					if (err) {
+						console.log("color change error " + err);
+					}
+					else {
+						console.log("color change success: " + sucess);
+					}
+				});
+			});
+		})();
+	}
+}
+
+function crushit() {
+
+	var temp;
+
+}
+
+function console_grabber() {
+	console.log("done");
+	led._setColor("off");
+
+	var readline = require('readline'),
+		rl = readline.createInterface(process.stdin, process.stdout);
+
+	rl.setPrompt('color> ');
+	rl.prompt();
+
+	rl.on('line', function(line) {
+
+		if (line == "r") led._setColor("red");
+		else if (line == "g") led._setColor("green");
+		else if (line == "b") led._setColor("blue");
+
+		else if (line == "br") {
+			led._blinkColorLoop(['red', 500, 'off', 500], function() {});
+		}
+		else if (line == "bb") {
+			led._blinkColorLoop(['blue', 500, 'off', 500], function() {});
+		}
+		else if (line == "bg") {
+			led._blinkColorLoop(['green', 500, 'off', 500], function() {});
+		}
+		else {
+			console.log("not a valid color: " + line);
+		}
+		fs.appendFile('/wigwag/log/dummy.out', "command line got: " + line + "\n", function(err) {
+			if (err) throw err;
+		});
+		rl.prompt();
+	}).on('close', function() {
+		console.log('Have a great day !');
+		process.exit(0);
+	});
+}
+
+direct_test();
+console_grabber();
+//status_tests();
 //api_test();

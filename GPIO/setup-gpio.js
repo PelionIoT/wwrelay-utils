@@ -28,6 +28,7 @@ function read_config(callback) {
 		}
 	});
 }
+//trav
 
 function set_direction(callback) {
 	var dir = "out";
@@ -77,35 +78,68 @@ function exportGPIO(type, callback) {
 	});
 }
 
-function fix_red(callback) {
-	success = "Sucessfully set the red as desired";
-	failure = "failed to set the red as desired";
+function OS_UP_CONFIG_GOOD_COLOR(callback) {
+	success = "Sucessfully set the magenta as desired";
+	failure = "failed to set the magenta as desired";
 	fs.writeFile(config.hardware.gpioProfile.TopRed + "/brightness", 1, function(err, data) {
 		if (err) {
 			console.log("Could not enable a normal red led");
 			callback(failure, null);
 		}
+	});
+	fs.writeFile(config.hardware.gpioProfile.TopBlue + "/brightness", 1, function(err, data) {
+		if (err) {
+			console.log("Could not enable a normal blue led");
+			callback(failure, null);
+		}
+	});
+	fs.writeFile(config.hardware.gpioProfile.RED_OFF + "/value", 1, function(err, data) {
+		if (err) {
+			console.log("Could not disable the red boot flag for the Top LED");
+			callback(failure, null);
+		}
 		else {
-			fs.writeFile(config.hardware.gpioProfile.RED_OFF + "/value", 1, function(err, data) {
-				if (err) {
-					console.log("Could not disable the red boot flag for the Top LED");
-					callback(failure, null);
-				}
-				else {
-					callback(null, success);
-				}
-			});
+			callback(null, success);
+		}
+	});
+}
+
+function OS_UP_CONFIG_BAD_COLOR(callback) {
+	success = "Sucessfully set the white as desired";
+	failure = "failed to set the white as desired";
+	fs.writeFile("/sys/class/leds/red/brightness", 1, function(err, data) {
+		if (err) {
+			console.log("Could not enable a normal red led");
+			callback(failure, null);
+		}
+	});
+	fs.writeFile("/sys/class/leds/green/brightness", 1, function(err, data) {
+		if (err) {
+			console.log("Could not enable a normal blue led");
+			callback(failure, null);
+		}
+	});
+	fs.writeFile("/sys/class/leds/blue/brightness", 1, function(err, data) {
+		if (err) {
+			console.log("Could not enable a normal blue led");
+			callback(failure, null);
 		}
 	});
 }
 
 function main() {
 	read_config(function(err, suc) {
-		console.log("startin main");
 		if (err) {
 			console.log("err reading config: %s", err);
+			OS_UP_CONFIG_BAD_COLOR(function(err, success) {
+				if (err) {
+					console.log("Error: %s", err);
+				}
+				if (success) {
+					console.log("Success: %s", success);
+				}
+			});
 		}
-
 		else {
 			exportGPIO(1, function(err, success) {
 				if (err) {
@@ -115,7 +149,7 @@ function main() {
 					set_direction(function(err, success) {
 						if (err) {
 							console.log("Error now: %s", err);
-							fix_red(function(err, success) {
+							OS_UP_CONFIG_GOOD_COLOR(function(err, success) {
 								if (err) {
 									console.log("Error: %s", err);
 								}
@@ -125,7 +159,7 @@ function main() {
 							});
 						}
 						if (success) {
-							fix_red(function(err, success) {
+							OS_UP_CONFIG_GOOD_COLOR(function(err, success) {
 								if (err) {
 									console.log("Error: %s", err);
 								}

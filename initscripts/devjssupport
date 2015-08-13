@@ -13,7 +13,7 @@
 ### END INIT INFO
 
 DEVJSSUPPORT_DIR="/wigwag/support"
-DEVJSSUPPORT_START_CMD="node /wigwag/support/index.js"
+DEVJSSUPPORT_START_CMD="/wigwag/support/initialize.sh"
 
 DEVICEJSSUPPORT_LOG="/wigwag/log/devjssupport.log"
 

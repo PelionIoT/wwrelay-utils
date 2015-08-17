@@ -1,0 +1,39 @@
+!_TAG_FILE_FORMAT	2	/extended format; --format=1 will not append ;" to lines/
+!_TAG_FILE_SORTED	1	/0=unsorted, 1=sorted, 2=foldcase/
+!_TAG_PROGRAM_AUTHOR	Darren Hiebert	/dhiebert@users.sourceforge.net/
+!_TAG_PROGRAM_NAME	Exuberant Ctags	//
+!_TAG_PROGRAM_URL	http://ctags.sourceforge.net	/official site/
+!_TAG_PROGRAM_VERSION	5.9~svn20110310	//
+APP	Makefile	/^APP=slipcomms$/;"	m
+BAUDRATE	slipcomms.h	12;"	d
+CC	Makefile	/^CC?=gcc$/;"	m
+CFLAGS	Makefile	/^CFLAGS?=-g -Wall$/;"	m
+DEBUG	slipcomms.h	10;"	d
+MAX_SLIP_BUF	slipcomms.h	19;"	d
+OBJS	Makefile	/^OBJS=$(APP).o$/;"	m
+SLIP_END	slipcomms.h	14;"	d
+SLIP_ESC	slipcomms.h	15;"	d
+SLIP_ESC_END	slipcomms.h	16;"	d
+SLIP_ESC_ESC	slipcomms.h	17;"	d
+_SLIP_COMMS_H_	slipcomms.h	8;"	d
+main	slipcomms.c	/^int main(int argc, char *argv[]) $/;"	f
+slip_baudrate	slipcomms.c	/^speed_t slip_baudrate = BAUDRATE;$/;"	v
+slip_begin	slipcomms.c	/^int slip_end = 0, slip_begin = 0, slip_packet_end = 0, slip_packet_count = 0, slip_sent = 0;$/;"	v
+slip_buf	slipcomms.c	/^unsigned char slip_buf[MAX_SLIP_BUF];$/;"	v
+slip_close	slipcomms.c	/^int slip_close(void) $/;"	f
+slip_empty	slipcomms.c	/^int slip_empty(void)$/;"	f
+slip_end	slipcomms.c	/^int slip_end = 0, slip_begin = 0, slip_packet_end = 0, slip_packet_count = 0, slip_sent = 0;$/;"	v
+slip_flowcontrol	slipcomms.c	/^int slip_flowcontrol = 0;$/;"	v
+slip_flushbuf	slipcomms.c	/^int slip_flushbuf(void)$/;"	f
+slip_init	slipcomms.c	/^int slip_init(void)$/;"	f
+slip_packet_count	slipcomms.c	/^int slip_end = 0, slip_begin = 0, slip_packet_end = 0, slip_packet_count = 0, slip_sent = 0;$/;"	v
+slip_packet_end	slipcomms.c	/^int slip_end = 0, slip_begin = 0, slip_packet_end = 0, slip_packet_count = 0, slip_sent = 0;$/;"	v
+slip_send	slipcomms.c	/^int slip_send(unsigned char c) $/;"	f
+slip_sent	slipcomms.c	/^int slip_end = 0, slip_begin = 0, slip_packet_end = 0, slip_packet_count = 0, slip_sent = 0;$/;"	v
+slip_siodev	slipcomms.c	/^const char *slip_siodev = NULL;$/;"	v
+slipfd	slipcomms.c	/^int slipfd = 0;$/;"	v
+stty_telos	slipcomms.c	/^int stty_telos(void)$/;"	f
+usage	slipcomms.c	/^void usage(const char *prog) $/;"	f
+verbose	slipcomms.c	/^unsigned int verbose = 0;$/;"	v
+write_to_serial	slipcomms.c	/^void write_to_serial(const uint8_t *buf, int len) $/;"	f
+write_to_slip	slipcomms.c	/^void write_to_slip(const uint8_t *buf, int len) $/;"	f

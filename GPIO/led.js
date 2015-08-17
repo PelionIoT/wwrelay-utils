@@ -42,6 +42,7 @@ var LED = function LED() {
   this._EnabledNotifications = true;
   this._EnabledStatus = true;
   this._current_color;
+  this._id;
   this._imblinking = false;
   this._colorray = [];
   this._ledReady = false;
@@ -136,16 +137,18 @@ LED.prototype.ColorLED = function(color, callback) {
   }
 }
 
-LED.prototype._blinkColor = function() {
-  var self = this;
-  color = this._colorray.shift();
-  this._colorray.push(color);
-  time = this._colorray.shift();
-  this._colorray.push(time);
-  this.ColorLED(color);
-  setTimeout(function() {
-    if (self._imblinking) self._blinkColor();
-  }, time);
+LED.prototype._blinkColor = function(id) {
+  if (id == this._id) {
+    var self = this;
+    color = this._colorray.shift();
+    this._colorray.push(color);
+    time = this._colorray.shift();
+    this._colorray.push(time);
+    this.ColorLED(color);
+    setTimeout(function() {
+      if (self._imblinking) self._blinkColor(id);
+    }, time);
+  }
 }
 
 LED.prototype._blinkColorRecurse = function(array, callback) {
@@ -178,7 +181,8 @@ LED.prototype._blinkColorLoop = function(array, callback) {
     this._colorray = array;
     if (!this._imblinking) {
       this._imblinking = true;
-      this._blinkColor();
+      this._id = Math.random();
+      this._blinkColor(this._id);
     }
     callback(null, "Command Accepted");
   }
@@ -199,7 +203,8 @@ LED.prototype._blinkColorReturn = function(array, callback) {
       this._imblinking = false;
       this._blinkColorRecurse(array, function(err, done) {
         self._imblinking = true;
-        self._blinkColor();
+        this._id = Math.random();
+        self._blinkColor(this._id);
         callback(err, done);
       });
     }

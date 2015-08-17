@@ -9,7 +9,7 @@ var randomPort = -1; // choose a random port on the support sever
 var minPort = 19991; // smallest port number the client can reverse tunnel using
 var maxPort = 19999; // biggest port number the client can reverse tunnel using
 var port = 3000; // port of the current program
-var supportIP = '198.58.101.57'; // ip address of the server
+var supportIP = 'tunnel.wigwag.com'; // ip address of the server
 var currentIP = '0.0.0.0';
 
 function randomInt(low, high){
@@ -35,16 +35,14 @@ function startTunnel(){
 	console.log('startTunnel');
 	randomPort = randomInt(minPort, maxPort);
 
-	// var command = 'ssh -p 3232 -f -N -R ' + randomPort + ':localhost:22 support@' + supportIP + ' -i /home/joe/.ssh/relay_support_key';
-	var command = 'ssh -f -N -R ' + randomPort + ':localhost:22 support@' + supportIP + ' -i relay_support_key';
+	var command = 'ssh -f -N -R ' + randomPort + ':localhost:22 support@' + supportIP + ' -i /wigwag/support/relay_support_key';
 	var sshSupport = exec(command, function(error, stdout, stderr){
-		console.log("Started Support Tunnel");
+		console.log("Ended Support Tunnel");
 	});
 }
 
 function killTunnel(){
 	// get the PIDs of every process associated with tunneling
-	// var command = "ps ax | grep 'ssh -p 3232 -f -N -R' | awk '{ print $5" + '" "' + "$1 }'"
 	var command = "ps ax | grep 'ssh -f -N -R' | awk '{ print $5" + '" "' + "$1 }'"
 	var getPIDs = exec(command, function(error, stdout, stderr){
 		// get the tuple of {command, pid}
@@ -76,7 +74,7 @@ function generateKey(){
 			command = 'ssh-keygen -t rsa -N "" -f /home/support/.ssh/id_rsa';         
 			var genSSH = exec(command, function(error, stdout, stderr){ 
 				// create "public/" folder for exposure to user
-				command = 'cp /home/support/.ssh/id_rsa public';         
+				command = 'cp /home/support/.ssh/id_rsa /wigwag/support/public';         
 				var cpPrivate = exec(command, function(error, stdout, stderr){ 
 					// add public key to authorized_keys files       
 					command = 'cat /home/support/.ssh/id_rsa.pub >> /home/support/.ssh/authorized_keys';             
@@ -113,9 +111,39 @@ function getStop(){
 	removeKeys();
 }
 
+function copyKnownHosts(){
+	var command = "cat /home/root/.ssh/known_hosts | grep " + supportIP;
+	var checkKH = exec(command, function(error, stdout, stderr){
+		if (stdout === undefined || stdout == ""){
+			var command = "cat /wigwag/support/known_hosts >> /home/root/.ssh/known_hosts";
+			var copyHosts = exec(command, function(){
+				console.log("known hosts copied to root/.ssh");
+			});
+		}
+	});
+}
+
+function chownSupport(){
+	var command = "chown -R support:support /home/support/.ssh";
+	var chownSup = exec(command, function(error, stdout, stderr){
+		console.log("changed the ownership of support/.ssh");
+	});
+}
+
+function chmodRelaySupportKey(){
+	var command = "chmod 600 /wigwag/support/relay_support_key";
+	var chownSup = exec(command, function(error, stdout, stderr){
+		console.log("change permissions of relay_support_key");
+	});
+}
+
 function mainBody(){
+	console.log('Support Tunnel web interface starting');
 	getStop();
     getSelfIPAddr();
+    chownSupport();
+    copyKnownHosts();
+    chmodRelaySupportKey();
 
 	app.get('/', function (req, res) {
 		req.socket.on("error", function(){});
@@ -135,6 +163,8 @@ function mainBody(){
 	});
 
 	app.get('/start', function(req, res){
+		chmodRelaySupportKey();
+		copyKnownHosts();
 		getStart();
 		res.status(200).send();
 	});

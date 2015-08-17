@@ -18,10 +18,26 @@ DEVJS_STOP_CMD="./bin/devjs --shutdown -i wigwag"
 
 DEVICEJS_LOG="/wigwag/log/devicejs.log"
 
+VOLFILE=/var/volatile/devjs_var
+VARFILE=$DEVICEJS_DIR/var
+
 function mk_var_dir() {
-   if [ ! -e $DEVICEJS_DIR/var ] ; then
-      mkdir /var/volatile/devjs_var
-      ln -s /var/volatile/devjs_var $DEVICEJS_DIR/var
+   #
+   # First check to see if the directory in the volatile /var exists
+
+   if [ ! -x $VOLFILE ] ; then
+      mkdir $VOLFILE
+   fi
+   if [ -x $VARFILE ] ; then
+      if [ -h $VARFILE ] ; then
+         echo "Var Link exists"
+      elif [ -d $VARFILE ] ; then
+         echo "Var is a directory and should be a link" 
+         /bin/rm -rf $VARFILE
+         /bin/ln -s $VOLFILE $VARFILE
+      fi
+   else
+      /bin/ln -s $VOLFILE $VARFILE
    fi
 }
 
@@ -36,7 +52,7 @@ function congig_cpu_scaling() {
 
 function stop_devjs() {
     pushd $DEVICEJS_DIR
-    $DEVJS_STOP_CMD > $DEVICEJS_LOG 2>&1 
+    $DEVJS_STOP_CMD > $DEVICEJS_LOG 2>&1
     popd
 }
 function run_devjs() {

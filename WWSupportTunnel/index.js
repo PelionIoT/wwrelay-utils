@@ -91,7 +91,7 @@ function rejectedPromise(callingFunction){
 }
 
 function removeKeys(){
-	var command = 'rm -rf /home/support/.ssh/id_rsa*  && rm -rf /home/support/.ssh/authorized_keys && rm public/id_rsa';
+	var command = 'rm -rf /home/support/.ssh/id_rsa*  && rm -rf /home/support/.ssh/authorized_keys && rm /wigwag/support/public/id_rsa';
 	var removeSSH = exec(command, function(error, stdout, stderr){
 		console.log('removed keys');
 	});

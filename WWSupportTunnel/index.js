@@ -74,7 +74,7 @@ function generateKey(){
 			command = 'ssh-keygen -t rsa -N "" -f /home/support/.ssh/id_rsa';         
 			var genSSH = exec(command, function(error, stdout, stderr){ 
 				// create "public/" folder for exposure to user
-				command = 'cp /home/support/.ssh/id_rsa public';         
+				command = 'cp /home/support/.ssh/id_rsa /wigwag/support/public';         
 				var cpPrivate = exec(command, function(error, stdout, stderr){ 
 					// add public key to authorized_keys files       
 					command = 'cat /home/support/.ssh/id_rsa.pub >> /home/support/.ssh/authorized_keys';             
@@ -91,7 +91,7 @@ function rejectedPromise(callingFunction){
 }
 
 function removeKeys(){
-	var command = 'rm -rf /home/support/.ssh/id_rsa*  && rm -rf /home/support/.ssh/authorized_keys && rm public/id_rsa';
+	var command = 'rm -rf /home/support/.ssh/id_rsa*  && rm -rf /home/support/.ssh/authorized_keys && rm /wigwag/support/public/id_rsa';
 	var removeSSH = exec(command, function(error, stdout, stderr){
 		console.log('removed keys');
 	});

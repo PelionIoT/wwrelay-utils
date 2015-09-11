@@ -35,7 +35,7 @@
                         "baudrate": 115200,
                         "slip_delay": 0.03125,
 			"ww_encryption": true,
-                        "firmware_path_mc1322": "/wigwag/devicejs/core/utils/node-6lbr/slip-radio_bin/",
+                        "firmware_path_mc1322": "${devjs_root}/core/utils/node-6lbr/slip-radio_bin/",
                         "firmware_file_prefix": "slip-radio_econotag",
                         "reset_GPIO_path_firmware_mc1322": "/sys/class/gpio/gpio10_pd9/value",
                         "erase_GPIO_path_firmware_mc1322": "/sys/class/gpio/gpio8_pd7/value",
@@ -115,8 +115,8 @@
                 "classpath": "RelayUpdateApp",
                 "config": { 
                     "cloudURI": "https://cloud.wigwag.com/apps/upgrade",
-                    "stagingDirectory": "/wigwag/downloads",
-                    "installDirectory": "/wigwag/installs",
+                    "stagingDirectory": "${devjs_root}/../downloads",
+                    "installDirectory": "${devjs_root}/../installs",
                     "versionsFile": "/etc/wigwag/versions.json"
                 }
             },

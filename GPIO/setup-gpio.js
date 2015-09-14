@@ -3,12 +3,8 @@
 
 //r/w files
 var fs = require('fs');
-
 var exec = require('child_process').exec;
-//var execSync = require('child_process').execSync;
-//var execSync = require('execSync');
-
-//var path = require('path');
+var Promise = require('es6-promise').Promise;
 var gpio_path = "/sys/class/gpio/";
 var relay_dot_conf = "/etc/wigwag/relay.conf";
 var exportpath = "/sys/class/gpio/export";
@@ -30,150 +26,142 @@ function read_config(callback) {
 }
 //trav
 
-function set_direction(callback) {
-	var dir = "out";
-	var completed = 3;
-	var total = config.hardware.gpioProfile.NumberOfOutputs + config.hardware.gpioProfile.NumberOfInputs;
-	var fileray = fs.readdirSync("/sys/class/gpio/");
-	var re = /(gpio)(\d+)(.+)/i;
-	for (var i = 0; i < fileray.length; i++) {
-		if (fileray[i] != "export" && fileray[i] != "unexport" && fileray[i] != "gpiochip1") {
-			var caught = fileray[i].match(re)[2];
-			if (caught > config.hardware.gpioProfile.NumberOfOutputs) dir = "in"
-			else dir = "out";
-			fullpath = gpio_path + fileray[i] + "/direction";
-			fs.writeFile(fullpath, dir, function(err, success) {
-				if (err) {
-					callback("total failure", null);
-				}
-				else {
-					completed++;
-					if (completed >= fileray.length) {
-						callback(null, "success");
-					}
-				}
-			});
-		}
-	}
+function set_pin_direction(pindata) {
+	//console.log("called with " + pindata.writevalue);
+	return new Promise(function(resolve, reject) {
+		var fullpath = gpio_path + "gpio" + pindata.writevalue + "/direction";
+		//	console.log("set_pin_direction: " + fullpath + " " + pindata.extradata);
+		writefile(fullpath, pindata.extradata, pindata.writevalue).then(function(returndirection) {
+			//	console.log("direction set " + returndirection.writevalue + " " + returndirection.extradata);
+			resolve("direction_set");
+		});
+	});
 }
 
-function exportGPIO(type, callback) {
-	var complete = 0;
-	var total = config.hardware.gpioProfile.NumberOfOutputs + config.hardware.gpioProfile.NumberOfInputs;
-	if (type == 1) var file = exportpath;
-	else if (type == 0) var file = unexportpath;
-	else callback("type not defined", null);
-	fs.open(file, "w", 0666, function(err, fd) {
-		if (err) console.log("Error opening " + file);
-		else {
-			for (var i = 1; i <= total; i++) {
-				fs.write(fd, i, null, null, function(err, written, string) {
-					complete++;
-					//	console.log("complete (%s) of (%s)", complete, total);
-					if (err) console.log("Error writting to export");
-					if (complete == total) callback(null, "success");
+function writefile(file, value, extra) {
+	return new Promise(function(resolve, reject) {
+		//console.log("write simple called " + file + " " + value);
+		fs.writeFile(file, value, function(error) {
+			if (error) {
+				//console.log("simple write (" + file + ") " + value + " " + error);
+				reject(error + "" + value);
+			}
+			else {
+				//	console.log("simple write success " + value);
+				resolve({
+					"writevalue": value,
+					"extradata": extra
 				});
 			}
-		}
+		});
 	});
 }
 
-function OS_UP_CONFIG_GOOD_COLOR(callback) {
-	success = "Sucessfully set the magenta as desired";
-	failure = "failed to set the magenta as desired";
-	fs.writeFile(config.hardware.gpioProfile.TopRed + "/brightness", 1, function(err, data) {
-		if (err) {
-			console.log("Could not enable a normal red led");
-			callback(failure, null);
+function GPIOsetup(type) {
+	return new Promise(function(resolve, reject) {
+		if (type == "export") {
+			var file = exportpath;
 		}
-	});
-	fs.writeFile(config.hardware.gpioProfile.TopBlue + "/brightness", 1, function(err, data) {
-		if (err) {
-			console.log("Could not enable a normal blue led");
-			callback(failure, null);
-		}
-	});
-	fs.writeFile(config.hardware.gpioProfile.RED_OFF + "/value", 1, function(err, data) {
-		if (err) {
-			console.log("Could not disable the red boot flag for the Top LED");
-			callback(failure, null);
+		else if (type == "unexport") {
+			var file = unexportpath;
 		}
 		else {
-			callback(null, success);
+			reject("type not defined");
 		}
+		//	console.log("file " + file);
+		GPIOsetupRay = new Array();
+		for (var i in config.hardware.gpioProfile.pins) {
+			var pinID = config.hardware.gpioProfile.pins[i].num;
+			var pinDIR = config.hardware.gpioProfile.pins[i].direction;
+			//	console.log(pinID + " " + file + " " + pinDIR);
+			GPIOsetupRay.push(new Promise(function(resolve, reject) {
+				writefile(file, pinID, pinDIR).then(function(returnpin) {
+					set_pin_direction(returnpin).then(function(success) {
+						resolve("pin complete");
+					}, function(rej) {
+						reject(rej);
+					});
+				}, function(reej) {
+					reject(reej);
+
+				});
+
+			}));
+		}
+		Promise.all(GPIOsetupRay).then(function(succ) {
+			resolve("pins setup");
+		}, function(error) {
+			reject(error);
+		});
 	});
 }
 
-function OS_UP_CONFIG_BAD_COLOR(callback) {
-	success = "Sucessfully set the white as desired";
-	failure = "failed to set the white as desired";
-	fs.writeFile("/sys/class/leds/red/brightness", 1, function(err, data) {
-		if (err) {
-			console.log("Could not enable a normal red led");
-			callback(failure, null);
+//valid colors white magenta
+function LEDindicator(color) {
+	return new Promise(function(resolve, reject) {
+		success = "Successfully set the LED to " + color;
+		failure = "Failed to set the LED to " + color;
+		if (color != "white" && color != "magenta") {
+			reject("Not a valid color");
 		}
-	});
-	fs.writeFile("/sys/class/leds/green/brightness", 1, function(err, data) {
-		if (err) {
-			console.log("Could not enable a normal blue led");
-			callback(failure, null);
+		TR = "/sys/class/leds/red/brightness"
+		TB = "/sys/class/leds/blue/brightness"
+		TG = "/sys/class/leds/green/brightness"
+		OR = ""
+		if (config.hardware.gpioProfile.RED_OFF != "") OR = config.hardware.gpioProfile.RED_OFF + "/value";
+		if (config.hardware.gpioProfile.TopRed != "") TR = config.hardware.gpioProfile.TopRed + "/brightness";
+		if (config.hardware.gpioProfile.TopGreen != "") TG = config.hardware.gpioProfile.TopGreen + "/brightness";
+		if (config.hardware.gpioProfile.TopBlue != "") TB = config.hardware.gpioProfile.TopBlue + "/brightness";
+		Pray = new Array();
+		Pray.push(writefile(TB, 1, "back"));
+		Pray.push(writefile(TG, 1, "back"));
+		if (color == "magenta" && OR != "") {
+			Pray.push(writefile(TR, 1, "back"));
+			Pray.push(writefile(OR, 1, "back"));
 		}
-	});
-	fs.writeFile("/sys/class/leds/blue/brightness", 1, function(err, data) {
-		if (err) {
-			console.log("Could not enable a normal blue led");
-			callback(failure, null);
-		}
+		Promise.all(Pray).then(function(succ) {
+			resolve("color changed " + color);
+		}, function(err) {
+			reject("color failed " + color);
+		});
+
 	});
 }
 
 function main() {
+	console.log("Starting to setup GPIO's ");
 	read_config(function(err, suc) {
 		if (err) {
 			console.log("err reading config: %s", err);
-			OS_UP_CONFIG_BAD_COLOR(function(err, success) {
-				if (err) {
-					console.log("Error: %s", err);
-				}
-				if (success) {
-					console.log("Success: %s", success);
-				}
+			LEDindicator("white").then(function(res) {
+				console.log("led set to white");
 			});
 		}
 		else {
-			exportGPIO(1, function(err, success) {
-				if (err) {
-					console.log("Error published: %s", err);
-				}
-				if (success) {
-					set_direction(function(err, success) {
-						if (err) {
-							console.log("Error now: %s", err);
-							OS_UP_CONFIG_GOOD_COLOR(function(err, success) {
-								if (err) {
-									console.log("Error: %s", err);
-								}
-								if (success) {
-									console.log("Success: %s", success);
-								}
-							});
-						}
-						if (success) {
-							OS_UP_CONFIG_GOOD_COLOR(function(err, success) {
-								if (err) {
-									console.log("Error: %s", err);
-								}
-								if (success) {
-									console.log("Success: %s", success);
-								}
-							});
-						}
-					});
-				}
+			temp = new Promise(function(resolve, reject) {
+				GPIOsetup("export").then(function(sucesses) {
+					console.log("successfully setup all gpios");
+					resolve("good");
+				}, function(failure) {
+					console.log("failed at setting up all gpios: " + failure);
+					reject("bad");
+				});
 			});
+			temp.then(function(good) {
+				LEDindicator("magenta").then(function(res) {
+					console.log("led set to magenta");
+				});
+			}, function(bad) {
+				LEDindicator("white").then(function(res) {
+					console.log("led set to white");
+				});
+			});
+
 		}
+
 	});
 }
+
 main();
 
-//reader.readSpecial();
+//setTimeout(function() {}, 500); //reader.readSpecial();

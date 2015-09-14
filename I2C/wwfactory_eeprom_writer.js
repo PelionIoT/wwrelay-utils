@@ -1,75 +1,87 @@
-#!/usr/bin/env node
-
-//hints for i2cdump
-// ./i2cdump 
-
-var WWAT24 = require('./WWrelay_at24c16.js');
-writer = new WWAT24();
-var CI = require('./eeprom.json');
-
+var EEwriter = require('./eewriter_module.js');
 var Promise = require('es6-promise').Promise;
+var program = require('commander');
+var fs = require('fs');
+optionspassed = false;
 
-function decRay2str(array) {
-	var str = ""
-	for (var i = 0; i < array.length; i++) {
-		var hex = array[i].toString(16);
-		var charc = String.fromCharCode(array[i]);
-		//	console.log("I belive that %s is '%s' and is '%s' reversed '%s'", array[i], hex, charc, charc.charCodeAt(0));
-		str = str + charc;
-	};
-	return str;
-}
+var eeprom_obj = "";
 
-function rrec(cb) {
-	CI.REP1 = CI.relayID.substring(0, 2);
-	CI.REP2 = CI.relayID.substring(2, 4);
-	CI.REP3 = CI.relayID.substring(4, 10);
-	CI.ethernetMAC = decRay2str(CI.ethernetMAC);
-	CI.sixBMAC = decRay2str(CI.sixBMAC);
-
-	writer.set("BRAND", CI.REP1).then(function(result) {
-		console.log("complete: BRAND with [" + CI.REP1 + "]");
-		writer.set("DEVICE", CI.REP2).then(function(result) {
-			console.log("complete: DEVICE with [" + CI.REP2 + "]");
-			writer.set("UUID", CI.REP3).then(function(result) {
-				console.log("complete: UUID with [" + CI.REP3 + "]");
-				writer.set("hardwareVersion", CI.hardwareVersion).then(function(result) {
-					console.log("complete: hardwareVersion with [" + CI.hardwareVersion + "]");
-					//writer.set("firmwareVersion", CI.firmwareVersion).then(function(result) {
-					//	console.log("complete: firmwareVersion with [" + CI.firmwareVersion + "]");
-					writer.set("radioConfig", CI.radioConfig).then(function(result) {
-						console.log("complete: radioConfig with [" + CI.radioConfig + "]");
-						writer.set("year", CI.year).then(function(result) {
-							console.log("complete: year with [" + CI.year + "]");
-							writer.set("month", CI.month).then(function(result) {
-								console.log("complete: month with [" + CI.month + "]");
-								writer.set("batch", CI.batch).then(function(result) {
-									console.log("complete: batch with [" + CI.batch + "]");
-									writer.set("ethernetMAC", CI.ethernetMAC).then(function(result) {
-										console.log("complete: ethernetMAC with [" + CI.ethernetMAC + "]");
-										writer.set("sixBMAC", CI.sixBMAC).then(function(result) {
-											console.log("complete: sixBMAC with [" + CI.sixBMAC + "]");
-											writer.set("relaySecret", CI.relaySecret).then(function(result) {
-												console.log("complete: relaySecret with [" + CI.relaySecret + "]");
-												writer.set("pairingCode", CI.pairingCode).then(function(result) {
-													console.log("complete: pairingCode with [" + CI.pairingCode + "]");
-												});
-											});
-										});
-									});
-								});
-							});
-						});
-					});
-					//});
-				});
-			});
+function erase_eeprom() {
+	return new Promise(function(resolve, reject) {
+		var ewriter = new EEwriter();
+		ewriter.erase().then(function(suc) {
+			resolve("success");
+		}, function(err) {
+			reject(err);
 		});
 	});
-
 }
 
-writer.erase(0).then(function(res) {
-	console.log("primise full: now lets do it for relasz " + res);
-	rrec();
-});
+function validate_version(v) {
+	optionspassed = true;
+	switch (v) {
+		case "0.0.1":
+		case "0.0.2":
+		case "0.0.3":
+		case "0.0.4":
+		case "0.0.5":
+		case "0.0.6":
+		case "0.0.7":
+		case "0.0.8":
+			return v;
+			break;
+		default:
+			console.log(v + " is not a valid board version.");
+			return false;
+			break;
+	}
+}
+
+program
+	.version('0.0.1')
+	.usage('[options] <file ...>')
+	.option('-b, --boardversion <v>', 'update the board version', validate_version)
+	.option('-e, --erase', 'erase the eeprom')
+	.parse(process.argv);
+
+if (program.boardversion || program.erase) {
+	hasoptions = true;
+}
+
+if (program.args.length == 0 && optionspassed) {
+	if (program.erase) {
+		console.log("erasing eeprom");
+		erase_eeprom();
+	}
+	if (program.boardversion) {
+		var writer = new EEwriter();
+		writer.write_one("hardwareVersion", program.boardversion).then(function(suc) {
+			console.log("Succesfully updated board version to " + program.boardversion);
+		}, function(err) {
+			console.log("err");
+		});
+	}
+
+}
+else {
+	readfile = "eeprom.json";
+	if (program.args.length > 0) readfile = program.args[0];
+	fs.readFile(readfile, 'utf8', function(err, data) {
+		if (err) {
+			console.log("file " + program.args[0] + " does not exist");
+			throw err;
+		}
+		try {
+			eeprom_obj = JSON.parse(data);
+			var writer = new EEwriter(eeprom_obj);
+			writer.write().then(function(suc) {
+				console.log("Successfully wrote eeprom ");
+			}, function(err) {
+				console.log("Error " + err);
+			});
+		}
+		catch (e) {
+			console.log(program.args[0] + " Not a valid json file (" + e + ")");
+		}
+	});
+}

@@ -1,15 +1,10 @@
 #!/usr/bin/env node
 
+console.log("Starting EEprom Reader");
 var WWAT24 = require('./WWrelay_at24c16.js');
 reader = new WWAT24();
-
-//r/w files
 var fs = require('fs');
-
 var exec = require('child_process').exec;
-//var execSync = require('child_process').execSync;
-var execSync = require('execSync');
-
 var flatten = require('flat');
 
 //travis
@@ -83,7 +78,8 @@ function define_hardware(res) {
 	hw = new Object();
 	hw.gpioProfile = new Object();
 	hw.radioProfile = new Object();
-	//console.log("Here iam and res hwadwareverssion: " + res.hardwareVersion.toString());
+	hw.gpioProfile.pins = new Object();
+
 	switch (res.hardwareVersion.toString()) {
 		case "0.0.0":
 			hw.gpioProfile.RelayType = "software";
@@ -113,11 +109,39 @@ function define_hardware(res) {
 			break;
 		case "0.0.2":
 		case "0.0.4":
-			hw.gpioProfile.NumberOfInputs = 1;
-			hw.gpioProfile.NumberOfOutputs = 11;
+			hw.gpioProfile.pins.pb8 = {
+				"num": 40,
+				"direction": "out",
+				"desc": "disables the red led hw overide",
+				"name": "RED_OFF"
+			}
+			hw.gpioProfile.pins.pd7 = {
+				"num": 103,
+				"direction": "out",
+				"desc": "Erase 6BEE",
+				"name": "SBMC_ERASE"
+			}
+			hw.gpioProfile.pins.pd8 = {
+				"num": 104,
+				"direction": "out",
+				"desc": "RTS Pin for 6BEE",
+				"name": "SBMC_RTS"
+			}
+			hw.gpioProfile.pins.pd9 = {
+				"num": 105,
+				"direction": "out",
+				"desc": "Restes 6BEE",
+				"name": "SBMC_RESET"
+			}
+			hw.gpioProfile.pins.ph12 = {
+				"num": 236,
+				"direction": "in",
+				"desc": "Button input",
+				"name": "BUTTON"
+			}
 			hw.gpioProfile.RelayType = "hardware";
-			hw.gpioProfile.RED_OFF = GPIOpath + "gpio11_pb8";
-			hw.gpioProfile.BUTTON = GPIOpath + "gpio12_ph12";
+			hw.gpioProfile.RED_OFF = GPIOpath + "gpio" + hw.gpioProfile.pins.pb8.num;
+			hw.gpioProfile.BUTTON = GPIOpath + "gpio" + hw.gpioProfile.pins.ph12.num;
 			hw.gpioProfile.TopRed = LEDspath + "/red";
 			hw.gpioProfile.TopBlue = LEDspath + "/blue";
 			hw.gpioProfile.TopGreen = LEDspath + "/green";
@@ -126,16 +150,44 @@ function define_hardware(res) {
 			hw.radioProfile.hasSM_U880 = false; //Solder_Module U880
 			hw.radioProfile.hasSM_BT = false; //Solder_Module Bluetooth
 			hw.radioProfile.SBMC_TTY = "/dev/ttyS2";
-			hw.radioProfile.SBMC_ERASE = GPIOpath + "gpio8_pd7";
-			hw.radioProfile.SBMC_RESET = GPIOpath + "gpio10_pd9";
-			hw.radioProfile.SBMC_RTS = GPIOpath + "gpio9_pd8";
+			hw.radioProfile.SBMC_ERASE = GPIOpath + "gpio" + hw.gpioProfile.pins.pd7.num;
+			hw.radioProfile.SBMC_RESET = GPIOpath + "gpio" + hw.gpioProfile.pins.pd9.num;
+			hw.radioProfile.SBMC_RTS = GPIOpath + "gpio" + hw.gpioProfile.pins.pd8.num;
 			break;
 		case "0.0.5":
-			hw.gpioProfile.NumberOfInputs = 1;
-			hw.gpioProfile.NumberOfOutputs = 11;
+			hw.gpioProfile.pins.pb8 = {
+				"num": 40,
+				"direction": "out",
+				"desc": "disables the red led hw overide",
+				"name": "RED_OFF"
+			}
+			hw.gpioProfile.pins.pd7 = {
+				"num": 103,
+				"direction": "out",
+				"desc": "Erase 6BEE",
+				"name": "SBMC_ERASE"
+			}
+			hw.gpioProfile.pins.pd8 = {
+				"num": 104,
+				"direction": "out",
+				"desc": "RTS Pin for 6BEE",
+				"name": "SBMC_RTS"
+			}
+			hw.gpioProfile.pins.pd9 = {
+				"num": 105,
+				"direction": "out",
+				"desc": "Restes 6BEE",
+				"name": "SBMC_RESET"
+			}
+			hw.gpioProfile.pins.ph12 = {
+				"num": 236,
+				"direction": "in",
+				"desc": "Button input",
+				"name": "BUTTON"
+			}
 			hw.gpioProfile.RelayType = "hardware";
-			hw.gpioProfile.RED_OFF = GPIOpath + "gpio11_pb8";
-			hw.gpioProfile.BUTTON = GPIOpath + "gpio12_ph12";
+			hw.gpioProfile.RED_OFF = GPIOpath + "gpio" + hw.gpioProfile.pins.pb8.num;
+			hw.gpioProfile.BUTTON = GPIOpath + "gpio" + hw.gpioProfile.pins.ph12.num;
 			hw.gpioProfile.TopRed = LEDspath + "/red";
 			hw.gpioProfile.TopBlue = LEDspath + "/blue";
 			hw.gpioProfile.TopGreen = LEDspath + "/green";
@@ -143,10 +195,10 @@ function define_hardware(res) {
 			hw.radioProfile.hasSM_5304 = false; //Solder_Module Zwave 5304
 			hw.radioProfile.hasSM_U880 = false; //Solder_Module U880
 			hw.radioProfile.hasSM_BT = false; //Solder_Module Bluetooth
-			hw.radioProfile.SBMC_TTY = "/dev/ttyS2";
-			hw.radioProfile.SBMC_ERASE = GPIOpath + "gpio8_pd7";
-			hw.radioProfile.SBMC_RESET = GPIOpath + "gpio10_pd9";
-			hw.radioProfile.SBMC_RTS = GPIOpath + "gpio9_pd8";
+			hw.radioProfile.SBMC_TTY = "/dev/ttyS4";
+			hw.radioProfile.SBMC_ERASE = GPIOpath + "gpio" + hw.gpioProfile.pins.pd7.num;
+			hw.radioProfile.SBMC_RESET = GPIOpath + "gpio" + hw.gpioProfile.pins.pd9.num;
+			hw.radioProfile.SBMC_RTS = GPIOpath + "gpio" + hw.gpioProfile.pins.pd8.num;
 			break;
 		case "0.0.6":
 			hw.gpioProfile.NumberOfInputs = 1;
@@ -288,6 +340,7 @@ function eeprom2relay(uuid_eeprom, callback) {
 }
 
 function read_sw_eeprom(callback) {
+	var execSync = require('execSync');
 	var uuid = execSync.exec('dmidecode -s system-uuid');
 	var uuid_eeprom = uuid_eeprom_path + uuid.stdout.toString().trim() + ".json";
 	fs.exists(uuid_eeprom, function(exists) {
@@ -358,7 +411,6 @@ function main() {
 		}
 	});
 }
-
 main();
 
 //reader.readSpecial();

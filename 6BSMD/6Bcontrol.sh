@@ -88,7 +88,9 @@ function 6BStatus() {
 burnpid=""
 function burn() {
     debug "burn($1)"
+      if [[ $v == "-v" ]]; then
     echo -e "flashcmd given: $1\n"
+   fi 
     eval "$1" &
     burnpid=$!
 }
@@ -96,8 +98,9 @@ function burn() {
 function 6Bprogram() {
     debug "6Bprogram(file=$1)"
     echo -e "Programming the 6Bee\n"
-    burnercmd="$Loader $v -t $tty -f $Flasher -s $1 -u $Baudrate -e -c '$THISDIR/6Bcontrol.sh -R'"
-    ramburncmd="$Loader $v -t $tty -f $1 -u $Baudrate"
+    #burnercmd="$Loader $v -t $tty -f $Flasher -s $1 -u $Baudrate -e -c '$THISDIR/6Bcontrol.sh -R'"
+    ramburncmd="$Loader $v -t $tty -f $1 -u $Baudrate $x -c '$THISDIR/6Bcontrol.sh -R'"
+    burnercmd=ramburncmd
     6Berase
     6Buartsettings
     SET_PIN "$hardware_radioProfile_SBMC_RTS/value" "low"
@@ -113,7 +116,10 @@ function 6Bprogram() {
 }
 
 function 6Buartsettings(){
+    if [[ $v == "-v" ]]; then
     echo -e "6Buartsettings running"
+    echo stty -F $tty raw speed 115200 -parenb -parodd cs8 -hupcl -cstopb cread clocal -crtscts -ignbrk -brkint -ignpar -parmrk -inpck -istrip -inlcr -igncr -icrnl -ixon -ixoff -iuclc -ixany -imaxbel -iutf8 -opost -olcuc -ocrnl onlcr -onocr -onlret -ofill -ofdel nl0 cr0 tab0 bs0 vt0 ff0 -isig -icanon -iexten -echo -echoe echok -echonl -noflsh -xcase -tostop -echoprt echoctl echoke
+   fi
     stty -F $tty raw speed 115200 -parenb -parodd cs8 -hupcl -cstopb cread clocal -crtscts -ignbrk -brkint -ignpar -parmrk -inpck -istrip -inlcr -igncr -icrnl -ixon -ixoff -iuclc -ixany -imaxbel -iutf8 -opost -olcuc -ocrnl onlcr -onocr -onlret -ofill -ofdel nl0 cr0 tab0 bs0 vt0 ff0 -isig -icanon -iexten -echo -echoe echok -echonl -noflsh -xcase -tostop -echoprt echoctl echoke
     #stty -F $tty raw speed 115200 -parenb -parodd cs8 -hupcl -cstopb cread clocal -crtscts ignbrk -brkint -ignpar -parmrk -inpck -istrip -inlcr -igncr -icrnl -ixon -ixoff -iuclc -ixany -imaxbel -iutf8 -opost -olcuc -ocrnl -onlcr -onocr -onlret -ofill -ofdel nl0 cr0 tab0 bs0 vt0 ff0 -isig -icanon -iexten -echo -echoe -echok -echonl -noflsh -xcase -tostop -echoprt -echoctl -echoke   
 }
@@ -132,7 +138,7 @@ function ramburn() {
     burn "$ramburncmd"
     sleep 1
     wait $burnpid
-    setRTS 1
+    #setRTS 1
 }
 
 
@@ -165,6 +171,7 @@ function process_args(){
             -E|--Erase) 6Berase ; shift ;;
             -K|--Kill) Killallstuff ; shift ;;
             -v|--Verbose) v="-v" ; shift ;;
+            -x|--dontexit) x=""; shift ;;
             -e|--ErasePin)
                 case "$2" in
                     "") shift 2 ;;
@@ -236,6 +243,7 @@ function HELP {
     echo -e " -K, --Kill\t\tKill all 6BEE programs (Tunslip & programmers)."
     echo -e " -P, --Program\t\t$C<File>$N Programs the given file into the 6BMC13"
     echo -e "   -b, --Baud\t\t$C[${BAUDS// /|}]$N Sets baud rate. (Defualt: $Baudrate)"
+    echo -e "   -x, --dontexit\t\t$C[${LOADERS// /|}]$N exit after programming."
     echo -e "   -l, --Loader\t\t$C[${LOADERS// /|}]$N Programer to use. (Default: $Loader)"
     echo -e "   -f, --Flasher\t$C[${FLASHERS// /|}]$N Flasher to use."
     echo -e "   -t, --ttyPort\t Sets the ttyPort.  (Default: $tty)"
@@ -262,12 +270,13 @@ function HELP {
 #---------------------------------------------------------------------------------------------------------------------------------------------------
 Baudrate=115200
 Loader=$THISDIR/mc1322x-load
-Mode=Romburn
+Mode=Ramburn
 tty=$hardware_radioProfile_SBMC_TTY
 Flasher=$THISDIR/flasher.bin
 v=""
+x="-e"
 Program=""
-RESETTIME=1
+RESETTIME=3
 
 
 
@@ -293,8 +302,8 @@ MODES="Ramburn Romburn"
 #caputures the output of getopt, if error stops the script, dispays the error, and Help
 #---------------------------------------------------------------------------------------------------------------------------------------------------
 #checkargs $#
-
-PARSED_CLI=`getopt -o e:u:r:b:l:f:m:t:vcSKERP:h --long ErasePin:,RTSPin:,ResetPin:,Baud:,Loader:,Flasher:,Mode:,ttyPort:,Configure,Verbose,Kill,Status,Erase,Reset,Program:,Help -n ${SCRIPT} -- "$@" 2> /tmp/errorfile`
+#PARSED_CLI=`getopt -o e:u:r:b:l:f:m:t:vcSKERP:h --long ErasePin:,RTSPin:,ResetPin:,Baud:,Loader:,Flasher:,Mode:,ttyPort:,Configure,Verbose,Kill,Status,Erase,Reset,Program:,Help -n ${SCRIPT} -- "$@" 2> /tmp/errorfile`
+PARSED_CLI=`getopt -o e:u:r:b:l:f:m:t:vcxSKERP:h --long ErasePin:,RTSPin:,ResetPin:,Baud:,Loader:,Flasher:,Mode:,ttyPort:,Configure,dontexit,Verbose,Kill,Status,Erase,Reset,Program:,Help -n ${SCRIPT} -- "$@" 2> /tmp/errorfile`
 if [[ $? = 1 ]]; then
     ERR=$(</tmp/errorfile)
     echo -e "${C_RED}Error: $ERR${C_NORM}"
@@ -302,6 +311,8 @@ if [[ $? = 1 ]]; then
 fi
 
 process_args
+echo "here"
+Mode=Ramburn
 if [[ "$Program" != "" ]]; then
     Killallstuff
     6Bprogram "$Program"

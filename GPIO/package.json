@@ -1,0 +1,14 @@
+{
+  "name": "gpio",
+  "version": "0.0.1",
+  "description": "GPIO Tools",
+  "main": "gpio",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "author": "Trav",
+  "license": "WigWag",
+  "dependencies": {
+    "es6-promise": "~2.0.1"
+  }
+}

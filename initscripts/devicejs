@@ -11,12 +11,12 @@
 # Default-Stop:         0 1 6
 # Short-Description:    System logger
 ### END INIT INFO
-
-DEVICEJS_DIR="/wigwag/devicejs"
+WIGWAGROOT="/userdata/ww"
+DEVICEJS_DIR="${WIGWAGROOT}/devicejs"
 DEVJS_START_CMD="./bin/devjs --start --force -i wigwag -b -c conf/wigwag.conf.json"
 DEVJS_STOP_CMD="./bin/devjs --shutdown -i wigwag"
 
-DEVICEJS_LOG="/wigwag/log/devicejs.log"
+DEVICEJS_LOG="${WIGWAGROOT}/log/devicejs.log"
 
 VOLFILE=/var/volatile/devjs_var
 VARFILE=$DEVICEJS_DIR/var
@@ -64,7 +64,6 @@ function run_devjs() {
     pushd $DEVICEJS_DIR
     mk_var_dir
     $DEVJS_START_CMD > $DEVICEJS_LOG 2>&1
-    echo $? > /tmp/devjs_error
     popd
 }
 

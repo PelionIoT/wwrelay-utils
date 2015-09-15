@@ -15,9 +15,10 @@
 # Source function library.
 . /etc/init.d/functions
 
-GPIO_DIR="/wigwag/wwrelay-utils/GPIO"
-WWRELAY_LOG="/wigwag/log/wwrelay.log"
-GPIO_LOG="/wigwag/log/gpio.log"
+WIGWAGROOT="/userdata/ww"
+GPIO_DIR="${WIGWAGROOT}/wwrelay-utils/GPIO"
+WWRELAY_LOG="${WIGWAGROOT}/log/wwrelay.log"
+GPIO_LOG="${WIGWAGROOT}/log/gpio.log"
 
 
 case "$1" in
@@ -31,14 +32,14 @@ case "$1" in
             mv $GPIO_LOG $GPIO_LOG.1
         fi
 
-        cd /wigwag/wwrelay-utils/I2C
+        cd ${WIGWAGROOT}/wwrelay-utils/I2C
         /usr/bin/node ./ww_eeprom_reader.js  > $WWRELAY_LOG 2>&1
         /usr/bin/node ./enableRTC_charging.js >> $WWRELAY_LOG 2>&1
     	#$GPIO_DIR/setup-gpio.sh > $GPIO_LOG 2>&1
-        cd /wigwag/wwrelay-utils/GPIO/
+        cd ${WIGWAGROOT}/wwrelay-utils/GPIO/
         /usr/bin/node ./setup-gpio.js >> $WWRELAY_LOG 2>&1        
-        cd /wigwag/wwrelay-utils/slip-radio
-        /usr/bin/node ./wwslip-embedmac.js embedMAC /wigwag/devicejs/core/utils/node-6lbr/slip-radio_bin/slip-radio_econotag_B115200.bin slip-conf.json /wigwag/devicejs/conf/wigwag.conf.json
+        cd ${WIGWAGROOT}/wwrelay-utils/slip-radio
+        /usr/bin/node ./wwslip-embedmac.js embedMAC ${WIGWAGROOT}/devicejs/core/utils/node-6lbr/slip-radio_bin/slip-radio_econotag_B115200.bin slip-conf.json ${WIGWAGROOT}/devicejs/conf/wigwag.conf.json
 
 	;;	
     stop)

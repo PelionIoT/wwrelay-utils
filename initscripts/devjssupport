@@ -11,11 +11,11 @@
 # Default-Stop:         0 1 6
 # Short-Description:    DeviceJSApp
 ### END INIT INFO
+export WIGWAGROOT="/userdata/ww"
+DEVJSSUPPORT_DIR="${WIGWAGROOT}/support"
+DEVJSSUPPORT_START_CMD="${WIGWAGROOT}/support/initialize.sh"
 
-DEVJSSUPPORT_DIR="/wigwag/support"
-DEVJSSUPPORT_START_CMD="/wigwag/support/initialize.sh"
-
-DEVICEJSSUPPORT_LOG="/wigwag/log/devjssupport.log"
+DEVICEJSSUPPORT_LOG="${WIGWAGROOT}/log/devjssupport.log"
 
 function stop_devjssupport() {
     pushd $DEVICEJSSJUPPORT_DIR

@@ -12,11 +12,12 @@
 # Short-Description:    Device Database for WigWag
 ### END INIT INFO
 
-DEVICEDB_DIR="/wigwag/devicedb"
-DEVICEDB_CMD="/wigwag/devicejs/libexec/bin/devicedbd"
-DEVICEDB_LOG="/wigwag/log/devicedbd.log"
+WIGWAGROOT=/userdata/ww
+DEVICEDB_DIR="${WIGWAGROOT}/devicedb"
+DEVICEDB_CMD="${WIGWAGROOT}/devicejs/libexec/bin/devicedbd"
+DEVICEDB_LOG="${WIGWAGROOT}/log/devicedbd.log"
 
-export LD_LIBRARY_PATH="/wigwag/devicejs/libexec/lib"
+export LD_LIBRARY_PATH="${WIGWAGROOT}/devicejs/libexec/lib"
 
 function run_devicedb() {
     

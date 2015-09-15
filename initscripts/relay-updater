@@ -12,7 +12,7 @@
 # Short-Description:    Device Database for WigWag
 ### END INIT INFO
 
-WIGWAGROOT="/userdata/ww"
+WIGWAGROOT="/wigwag"
 RELAY_UPDATER_DIR="/updater/relay-updater"
 RELAY_UPDATER_CMD="./bin/runUpdater.sh"
 RELAY_UPDATER_LOG="${WIGWAGROOT}/log/relay-updater.log"

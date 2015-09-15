@@ -15,7 +15,7 @@
 # Source function library.
 . /etc/init.d/functions
 
-WIGWAGROOT="/userdata/ww"
+WIGWAGROOT="/wigwag"
 GPIO_DIR="${WIGWAGROOT}/wwrelay-utils/GPIO"
 WWRELAY_LOG="${WIGWAGROOT}/log/wwrelay.log"
 GPIO_LOG="${WIGWAGROOT}/log/gpio.log"

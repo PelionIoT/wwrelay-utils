@@ -11,7 +11,7 @@
 # Default-Stop:         0 1 6
 # Short-Description:    DeviceJSApp
 ### END INIT INFO
-export WIGWAGROOT="/userdata/ww"
+export WIGWAGROOT="/wigwag"
 DEVJSSUPPORT_DIR="${WIGWAGROOT}/support"
 DEVJSSUPPORT_START_CMD="${WIGWAGROOT}/support/initialize.sh"
 

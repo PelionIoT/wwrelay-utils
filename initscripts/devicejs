@@ -11,7 +11,7 @@
 # Default-Stop:         0 1 6
 # Short-Description:    System logger
 ### END INIT INFO
-WIGWAGROOT="/userdata/ww"
+WIGWAGROOT="/wigwag"
 DEVICEJS_DIR="${WIGWAGROOT}/devicejs"
 DEVJS_START_CMD="./bin/devjs --start --force -i wigwag -b -c conf/wigwag.conf.json"
 DEVJS_STOP_CMD="./bin/devjs --shutdown -i wigwag"

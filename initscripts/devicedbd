@@ -12,7 +12,7 @@
 # Short-Description:    Device Database for WigWag
 ### END INIT INFO
 
-WIGWAGROOT=/userdata/ww
+WIGWAGROOT="/wigwag"
 DEVICEDB_DIR="${WIGWAGROOT}/devicedb"
 DEVICEDB_CMD="${WIGWAGROOT}/devicejs/libexec/bin/devicedbd"
 DEVICEDB_LOG="${WIGWAGROOT}/log/devicedbd.log"

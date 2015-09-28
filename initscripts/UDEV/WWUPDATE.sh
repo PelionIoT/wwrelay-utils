@@ -2,7 +2,7 @@
 
 mountdir="/run/media/WWUPDATE"
 disk="/dev/WWUPDATEp1"
-initscript="init.sh"
+initscript="wwupdate.sh"
 logfile="/wigwag/log/update.log"
 
 
@@ -25,7 +25,6 @@ function runinit() {
 cd $mountdir
 if [[ -e $initscript ]]; then
 	. $initscript
-	#main
 fi
 }
 

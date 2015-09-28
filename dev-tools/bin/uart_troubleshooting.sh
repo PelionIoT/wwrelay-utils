@@ -18,7 +18,7 @@ THISDIR=$(getScriptDir "${BASH_SOURCE[0]}")
 
 function serial2serial_test() {
 #ttydev="/dev/ttyUSB0"
-ttydev="/dev/ttyS5"
+ttydev="/dev/ttyS4"
 #ttydev=$1
 sttyline="stty -F $ttydev raw speed 115200 -parenb -parodd cs8 hupcl -cstopb cread clocal -crtscts -ignbrk -brkint -ignpar -parmrk -inpck -istrip -inlcr -igncr icrnl ixon -ixoff -iuclc -ixany -imaxbel -iutf8 -opost -olcuc -ocrnl onlcr -onocr -onlret -ofill -ofdel nl0 cr0 tab0 bs0 vt0 ff0 -isig -icanon iexten -echo -echoe echok -echonl -noflsh -xcase -tostop -echoprt echoctl echoke"
 #sttyline2="stty -F $ttydev raw speed 115200 -parenb -parodd cs8 -hupcl -cstopb cread clocal -crtscts ignbrk -brkint -ignpar -parmrk -inpck -istrip -inlcr -igncr -icrnl -ixon -ixoff -iuclc -ixany -imaxbel -iutf8 -opost -olcuc -ocrnl -onlcr -onocr -onlret -ofill -ofdel nl0 cr0 tab0 bs0 vt0 ff0 -isig -icanon -iexten -echo -echoe -echok -echonl -noflsh -xcase -tostop -echoprt -echoctl -echoke"
@@ -35,5 +35,8 @@ cat $minicom_settings_fullpath
 minicom $miniextension
 }
 
-
+echo "proper settings for the MAC side"
+echo "generally a clean reboot is required for whatever reason"
+echo "set local echo"
+echo "set addlinefeeds"
 serial2serial_test $1

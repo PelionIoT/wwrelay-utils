@@ -4,6 +4,7 @@ COMMAND=$1
 #----------------------------CONFIG-----------------------------
 #SOFTLINKS
 #format (linkpath1 linktarget1 linkpath2 linktarget2 ...)
+#hardfloat detect: http://stackoverflow.com/questions/20555594/how-can-i-know-if-an-arm-library-is-using-hardfp
 declare -a links=("/usr/bin/gcc" "/usr/bin/arm-poky-linux-gnueabi-gcc" "/usr/bin/cc" "/usr/bin/arm-poky-linux-gnueabi-gcc" "/usr/bin/g++" "/usr/bin/arm-poky-linux-gnueabi-g++" "/usr/bin/cpp" "/usr/bin/arm-poky-linux-gnueabi-cpp")
 
 
@@ -38,10 +39,12 @@ function report(){
   testing=$1
   result=$2
   after=$3
-  if [[ $result != 1 ]]; then
-  line="${C_RED}FAIL${C_NORM}"
-  else  
+  if [[ $result == 2 ]]; then
+  line="${C_YELLOW}REPAIRED${C_NORM}"
+  elif [[ $result == 1 ]]; then
   line="${C_GREEN}PASS${C_NORM}"
+  else 
+line="${C_RED}FAIL${C_NORM}"
   fi
   count=${#testing}
  # echo "$testing $count"
@@ -224,9 +227,29 @@ done
 }
 
 
-
-
 function tattle_kernel(){
+  report_title "Kernel Configs"
+  config_SUNX=`zcat /proc/config.gz | grep SUNX`
+  config_SUN4=`zcat /proc/config.gz | grep SUN4`
+  config_SUN5=`zcat /proc/config.gz | grep SUN5`
+  config_SUN6=`zcat /proc/config.gz | grep SUN6`
+  config_SUN7=`zcat /proc/config.gz | grep SUN7`
+  config_SUN8=`zcat /proc/config.gz | grep SUN8`
+  config_SUN9=`zcat /proc/config.gz | grep SUN9`
+  for cfg in "$config_SUNX" "$config_SUN4" "$config_SUN5" "$config_SUN6" "$config_SUN7" "$config_SUN8" "$config_SUN9"; do
+    readarray -t myarray <<<"$cfg"
+    for dir in "${myarray[@]}"; do
+      pass=0  
+      if [[ $dir == *"=y" ]]; then
+        pass=1
+      fi
+      report "(SUNX)\t$dir" $pass
+    done
+  done
+
+}
+
+function tattle_kernelold(){
   report_title "Kernel Configs"
   config_GPIO=`zcat /proc/config.gz | grep CONFIG_GPIO_SUNXI`
   config_LEDS=`zcat /proc/config.gz | grep CONFIG_LEDS_SUNXI`
@@ -296,7 +319,31 @@ function status_cpu_speeds() {
 
 }
 
+
 function status_uarts() {
+report_title "UART Setup"
+
+ for arg in 2 3 4 5 6 7
+ do
+  outmsg=""
+   cmd="stty -F /dev/ttyS$arg raw speed 115200 -parenb -parodd cs8 hupcl -cstopb cread clocal -crtscts -ignbrk -brkint -ignpar -parmrk -inpck -istrip -inlcr -igncr icrnl ixon -ixoff -iuclc -ixany -imaxbel -iutf8 -opost -olcuc -ocrnl onlcr -onocr -onlret -ofill -ofdel nl0 cr0 tab0 bs0 vt0 ff0 -isig -icanon iexten -echo -echoe echok -echonl -noflsh -xcase -tostop -echoprt echoctl echoke"
+   baud=`$cmd`
+   pass=1
+   if [[ $baud != "115200" ]]; then
+    baud=`$cmd`
+    pass=2
+    if [[ $baud != "115200" ]]; then
+      pass=0
+      outmesg="$baud"
+    fi
+  fi
+  report "Setting /dev/ttyS$arg" $pass $outmesg
+done
+
+
+}
+
+function status_uarts_old() {
  report_title "UART Assignment Status"
 
  for arg in 0 1 2 3 4 5 6 7

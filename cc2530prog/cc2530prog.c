@@ -25,7 +25,13 @@
 #define ARRAY_SIZE(x)		(sizeof((x)) / sizeof((x[0])))
 #define DIV_ROUND_UP(n,d)	(((n) + (d) - 1) / (d))
 
-static unsigned int gpios[3] = { RST_GPIO, CCLK_GPIO, DATA_GPIO };
+static unsigned int data_gpio = 0;
+static unsigned int clk_gpio = 0;
+static unsigned int reset_gpio = 0;
+// static unsigned int gpios[3] = { reset_gpio, clk_gpio, data_gpio };
+static unsigned int gpios[3];
+
+int RELAY_VERSION = 0;
 
 struct cc2530_cmd {
 	char name[32];
@@ -284,8 +290,8 @@ static int cc2530_gpio_init(void)
 		}
 	}
 
-	gpio_set_value(CCLK_GPIO, 0);
-	gpio_set_value(DATA_GPIO, 0);
+	gpio_set_value(clk_gpio, 0);
+	gpio_set_value(data_gpio, 0);
 
 	return 0;
 }
@@ -323,18 +329,18 @@ static int cc2530_enter_debug(void)
 	int i;
 
 	/* pulse RST low */
-	gpio_set_value(RST_GPIO, RST_GPIO_POL 1);
+	gpio_set_value(reset_gpio, RST_GPIO_POL 1);
 
 	for (i = 0; i < 2; i++) {
-		gpio_set_value(CCLK_GPIO, 0);
-		gpio_set_value(CCLK_GPIO, 1);
+		gpio_set_value(clk_gpio, 0);
+		gpio_set_value(clk_gpio, 1);
 	}
 
 	/* Keep clock low */
-	gpio_set_value(CCLK_GPIO, 0);
+	gpio_set_value(clk_gpio, 0);
 
 	/* pulse Reset high */
-	gpio_set_value(RST_GPIO, RST_GPIO_POL 0);
+	gpio_set_value(reset_gpio, RST_GPIO_POL 0);
 
 	debug_enabled = 1;
 
@@ -343,8 +349,8 @@ static int cc2530_enter_debug(void)
 
 static int cc2530_leave_debug(void)
 {
-	gpio_set_value(RST_GPIO, RST_GPIO_POL 1);
-	gpio_set_value(RST_GPIO, RST_GPIO_POL 0);
+	gpio_set_value(reset_gpio, RST_GPIO_POL 1);
+	gpio_set_value(reset_gpio, RST_GPIO_POL 0);
 
 	return 0;
 }
@@ -353,15 +359,15 @@ static int cc2530_leave_debug(void)
 static int cc2530_test(void) 
 {
 	while(1) {
-		gpio_set_value(RST_GPIO, RST_GPIO_POL 1);
-		gpio_set_value(CCLK_GPIO, 0);
-		gpio_set_value(DATA_GPIO, 0);
+		gpio_set_value(reset_gpio, RST_GPIO_POL 1);
+		gpio_set_value(clk_gpio, 0);
+		gpio_set_value(data_gpio, 0);
 
 		// sleep(1);
 
-		// gpio_set_value(RST_GPIO, RST_GPIO_POL 0);
-		// gpio_set_value(RST_GPIO, RST_GPIO_POL 1);
-		// gpio_set_value(DATA_GPIO, 1);
+		// gpio_set_value(reset_gpio, RST_GPIO_POL 0);
+		// gpio_set_value(reset_gpio, RST_GPIO_POL 1);
+		// gpio_set_value(data_gpio, 1);
 
 		// sleep(1);
 	}
@@ -377,11 +383,11 @@ static inline void send_byte(unsigned char byte)
 	/* Data setup on rising clock edge */
 	for (i = 7; i >= 0; i--) {
 		if (byte & (1 << i))
-			gpio_set_value(DATA_GPIO, 1);
+			gpio_set_value(data_gpio, 1);
 		else
-			gpio_set_value(DATA_GPIO, 0);
-		gpio_set_value(CCLK_GPIO, 1);
-		gpio_set_value(CCLK_GPIO, 0);
+			gpio_set_value(data_gpio, 0);
+		gpio_set_value(clk_gpio, 1);
+		gpio_set_value(clk_gpio, 0);
 	}
 }
 
@@ -396,11 +402,11 @@ static inline void read_byte(unsigned char *byte)
 
 	/* data read on falling clock edge */
 	for (i = 7; i >= 0; i--) {
-		gpio_set_value(CCLK_GPIO, 1);
-		gpio_get_value(DATA_GPIO, &val);
+		gpio_set_value(clk_gpio, 1);
+		gpio_get_value(data_gpio, &val);
 		if (val)
 			*byte |= (1 << i);
-		gpio_set_value(CCLK_GPIO, 0);
+		gpio_set_value(clk_gpio, 0);
 	}
 }
 
@@ -428,7 +434,7 @@ static int cc2530_do_cmd(const struct cc2530_cmd *cmd, unsigned char *params, un
 	}
 	memset(answer, 0, cmd->out);
 
-	ret = gpio_set_direction(DATA_GPIO, GPIO_DIRECTION_OUT);
+	ret = gpio_set_direction(data_gpio, GPIO_DIRECTION_OUT);
 	if (ret) {
 		fprintf(stderr, "failed to put gpio in output direction\n");
 		goto out_exit;
@@ -449,7 +455,7 @@ static int cc2530_do_cmd(const struct cc2530_cmd *cmd, unsigned char *params, un
 
 	/* Now change the pin direction and wait for the chip to be ready
 	 * and sample the data pin until the chip is ready to answer */
-	ret = gpio_set_direction(DATA_GPIO, GPIO_DIRECTION_IN);
+	ret = gpio_set_direction(data_gpio, GPIO_DIRECTION_IN);
 	if (ret) {
 		fprintf(stderr, "failed to put back gpio in input direction\n");
 		goto out_exit;
@@ -462,13 +468,13 @@ static int cc2530_do_cmd(const struct cc2530_cmd *cmd, unsigned char *params, un
 	 * data line should then be low and we are ready to read out from the
 	 * chip.
 	 */
-	gpio_get_value(DATA_GPIO, &val);
+	gpio_get_value(data_gpio, &val);
 	while (val && timeout--) {
 		for (bytes = 0; bytes < 8; bytes++) {
-			gpio_set_value(CCLK_GPIO, 1);
-			gpio_set_value(CCLK_GPIO, 0);
+			gpio_set_value(clk_gpio, 1);
+			gpio_set_value(clk_gpio, 0);
 		}
-		gpio_get_value(DATA_GPIO, &val);
+		gpio_get_value(data_gpio, &val);
 	}
 
 	if (!timeout) {
@@ -498,7 +504,7 @@ static int cc2530_burst_write(void)
 	unsigned int timeout = DEFAULT_TIMEOUT;
 	bool val;
 
-	ret = gpio_set_direction(DATA_GPIO, GPIO_DIRECTION_OUT);
+	ret = gpio_set_direction(data_gpio, GPIO_DIRECTION_OUT);
 	if (ret) {
 		fprintf(stderr, "failed to put gpio in output direction\n");
 		return ret;
@@ -510,19 +516,19 @@ static int cc2530_burst_write(void)
 	for (i = 0; i < PROG_BLOCK_SIZE; i++)
 		send_byte(get_next_flash_byte());
 
-	ret = gpio_set_direction(DATA_GPIO, GPIO_DIRECTION_IN);
+	ret = gpio_set_direction(data_gpio, GPIO_DIRECTION_IN);
 	if (ret) {
 		fprintf(stderr, "failed to put gpio in input direction\n");
 		return ret;
 	}
 
-	gpio_get_value(DATA_GPIO, &val);
+	gpio_get_value(data_gpio, &val);
 	while (val && timeout--) {
 		for (i = 0; i < 8; i++) {
-			gpio_set_value(CCLK_GPIO, 1);
-			gpio_set_value(CCLK_GPIO, 0);
+			gpio_set_value(clk_gpio, 1);
+			gpio_set_value(clk_gpio, 0);
 		}
-		gpio_get_value(DATA_GPIO, &val);
+		gpio_get_value(data_gpio, &val);
 	}
 
 	if (!timeout) {
@@ -873,7 +879,7 @@ static int cc2530_chip_identify(struct cc2530_cmd *cmd, int *flash_size)
 	unsigned char ext_addr[8] = { 0 };
 	int i;
 
-	ret = gpio_set_direction(DATA_GPIO, GPIO_DIRECTION_OUT);
+	ret = gpio_set_direction(data_gpio, GPIO_DIRECTION_OUT);
 	if (ret) {
 		fprintf(stderr, "failed to set data gpio direction\n");
 		return ret;
@@ -1080,7 +1086,11 @@ static void usage(void)
 		"\t-f:     firmware file\n"
 		"\t-r:     perform readback\n"
 		"\t-c:     single command to send\n"
-		"\t-l:     list available commands\n");
+		"\t-l:     list available commands\n"
+		"\t-s:     relay version, <=5 uses gpio3_pd2 format, >5 uses gpio103 format\n"
+		"\t-d:     data gpio\n"
+		"\t-k:     clk gpio\n"
+		"\t-e:     reset gpio\n");
 	exit(-1);
 }
 
@@ -1100,7 +1110,7 @@ int main(int argc, char **argv)
 	int flash_size = 0;
 	unsigned int retry_cnt = 3;
 
-	while ((opt = getopt(argc, argv, "f:rlc:ivP:t")) > 0) {
+	while ((opt = getopt(argc, argv, "f:rlc:ivP:td:k:e:s:")) > 0) {
 		switch (opt) {
 		case 'f':
 			firmware = optarg;
@@ -1127,6 +1137,18 @@ int main(int argc, char **argv)
 		case 't':
 			do_test = 1;
 			break;
+		case 'd':
+			data_gpio = atoi(optarg);
+			break;
+		case 'k':
+			clk_gpio = atoi(optarg);
+			break;
+		case 'e':
+			reset_gpio = atoi(optarg);
+			break;
+		case 's':
+			RELAY_VERSION = atoi(optarg);
+			break;
 		default:
 			break;
 		}
@@ -1137,6 +1159,10 @@ int main(int argc, char **argv)
 
 	if (argc < 2)
 		usage();
+
+	gpios[0] = reset_gpio;
+	gpios[1] = clk_gpio;
+	gpios[2] = data_gpio;
 
 	if (cc2530_gpio_init()) {
 		fprintf(stderr, "failed to initialize GPIOs\n");

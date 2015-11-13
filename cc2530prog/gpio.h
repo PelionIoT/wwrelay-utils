@@ -9,10 +9,15 @@
 
 /* Reset polarity is active low */
 #define RST_GPIO        5
-#define  RST_GPIO_POL   !       /* Active low polarity */
+#define  RST_GPIO_POL   !        Active low polarity 
 #define CCLK_GPIO       6
 #define DATA_GPIO       7
 
+extern int relay_version;
+
+extern unsigned int reset_gpio;
+extern unsigned int data_gpio;
+extern unsigned int clk_gpio;
 /*
  * gpio sysfs helpers
  */
@@ -21,8 +26,6 @@ enum gpio_direction {
 	GPIO_DIRECTION_OUT,
 	GPIO_DIRECTION_HIGH,
 };
-
-extern int RELAY_VERSION;
 
 int gpio_export(int n);
 int gpio_unexport(int n);

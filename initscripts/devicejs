@@ -55,7 +55,7 @@ function run_devjs() {
     fi
     
     pushd $RUNNER_DIR
-    $RUNNER_START_CMD > $RUNNER_LOG 2>&1
+    $RUNNER_START_CMD > $RUNNER_LOG 2>&1 &
     popd
 }
 

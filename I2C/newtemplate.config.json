@@ -184,6 +184,10 @@
                 {
                     "path" : "${thisdir}/../APIProxy",
                     "config": { // add config here
+                        "cloudAPISecret": "{{apisecret}}",
+                        "apiKey": "hello",
+                        "apiSecret": "asdfdsfa"
+
                     }
                 },
                 {
@@ -202,7 +206,7 @@
                 {
                     "path" : "${thisdir}/../../wigwag-core-modules/MDNS",
                     "config": {
-                        "id":"WeLoveBen", // fix this crap
+                        "id":"{{apikey}}", // fix this crap
                         "port":8181
                     }
                 }

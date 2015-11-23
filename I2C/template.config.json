@@ -1,0 +1,243 @@
+// example configuration for Runner
+// to start executables under different users, you need the correct permissions. To do
+// so you will need the correct environmental vars to be passed at startup...
+// Example usage might be:
+// sudo NODE_EXEC=/home/ed/work/devicejs-ng/.local/bin/node NODE_PATH=/home/ed/work/devicejs-ng/.local/lib/node_modules  ./start -v3 -c example.config.json
+{
+    "logger": {
+        "type": "global",
+        "sinkaddress": "/tmp/grease.socket",
+        "config": "${thisdir}/default_logger.conf.json"  // can also be the logger config object
+    },
+    "container_templates": {
+        "example_container" : {
+            "capabilities": {
+                // kernel capabilities here. Anything not listed is not permitted
+                // see: http://man7.org/linux/man-pages/man7/capabilities.7.html
+                "NET_BIND_SERVICE" : "permitted"  // versus "inheritable" "effective"
+            },
+            "cgroup_limits" : {
+                // cgroup defintions here
+                // cgroup limits here - TBD
+            },
+            "chroot_prefix" : "/tmp/devjs_container" // this would be the default... so if 'process_group' 'xyz' used this container template
+                                                     // then the chroot fs for this process group would be: /tmp/devjs_container/xyz
+            // "no_chroot" : true // only makes sense for root/privleged containers
+        }
+    },
+    "deviceJSConfig": "/wigwag/etc/devicejs/devicejs.conf", // uses --config=X
+    "defaults" : {
+        "default_user"  : "*",  // means whoever runs it
+        "default_group" : "*"   // means whatever group runs it
+    },
+    "process_groups" : {
+        "core" : {
+            "limits" : {
+//                "container" : "example_container",
+                "cgroup_limits" : {},
+                "capabilties" : {}
+            },
+            "node_args" : [
+                "--max-executable-size=96",   // limit GC memory usage via v8 parameters
+                "--max-old-space-size=128",   // these are the 'recommended' parameters for lower memory systems
+                "--max-semi-space-size=1",     // see here: http://stackoverflow.com/questions/30252905/nodejs-decrease-v8-garbage-collector-memory-usage
+                "--nouse-idle-notification"    // and http://www.jayway.com/2015/04/13/600k-concurrent-websocket-connections-on-aws-using-node-js/
+            ],
+            "restart" : {       // try to restart on fail (default: don't retry)
+                "limit" : 10    // only try to restart 10 times (default: infinite)
+            },
+            "modules" : {},
+            "user" : "devicejs",   // run under the devicejs user
+            "group": "devicejs",
+            "deviceJSCore" : {
+                "root" : "/wigwag/devicejs-ng",  // provide path to root of devicejs
+                "opts" : [
+                ]
+            }
+        },
+        "db" : {
+//            "user" : "devicejs",   // run under the devicejs user
+//            "group": "devicejs",
+            "restart" : {
+                "limit" : 10
+            },
+            "node_args" : [
+                "--max-executable-size=96",   // limit GC memory usage via v8 parameters
+                "--max-old-space-size=128",   // these are the 'recommended' parameters for lower memory systems
+                "--max-semi-space-size=1"     // see here: http://stackoverflow.com/questions/30252905/nodejs-decrease-v8-garbage-collector-memory-usage
+            ],
+            "databaseConfig": {
+                "port": 9000,
+                "dbFile": "/wigwag/etc/devicejs/db",
+                "logger": {
+                    "enabled": true
+                }
+            }
+        },
+        "somemodules" : {
+            "limits" : {
+                "limit_group" : ""
+                // cgroup limits here - TBD
+            },
+            "node_args" : [
+                "--max-executable-size=96",   // limit GC memory usage via v8 parameters
+                "--max-old-space-size=128",   // these are the 'recommended' parameters for lower memory systems
+                "--max-semi-space-size=1"     // see here: http://stackoverflow.com/questions/30252905/nodejs-decrease-v8-garbage-collector-memory-usage
+            ],
+            "restart" : true,
+            "restart_limit" : 10,
+            "env" : {       // custom env vars for container, note, the container will *also* inherit the existing
+                            // env of the Runner process
+                "NODE_PATH": "${NODE_PATH}:${thisdir}/../node_modules:/wigwag/devicejs-core-modules/IPStack/node_modules"
+            },
+            "modules" : [                 // these modules will be under one process
+                {
+                    "path" : "${thisdir}/../AppServer",
+                    "config": {
+                       "authentication": {
+                          "enabled": true,
+                          "cloudAPISecret": "efe883fa3818dd3be69ed0001fc8144b",
+                          "redirectURL": "/wigwag-ui/s/login/"
+                       },
+                       "port": 8181
+                    }
+                },
+                {
+                    "path" : "${thisdir}/../zwave",
+                    "config": {
+                       "siodev": "{{zwavetty}}",
+                        "modpath": "",
+                        "consoleoutput": true,
+                        "logging": false,
+                        "saveconfig": false,
+                        "driverattempts": 3,
+                        "pollinterval": 500,
+                        "suppressrefresh": true,
+                        "notifytransactions": true
+                    }
+                },
+                {
+                    "path" : "${thisdir}/../APIProxy",
+                    "config": {}
+                },
+//                {
+//                    "path" : "${thisdir}/../UPnP",
+//                    "config": {}
+//                },
+                {
+                    "path" : "${thisdir}/../core-lighting",
+                    "config": {}
+                },
+                {
+                    "path" : "${thisdir}/../core-interfaces",
+                    "config": {}
+                },
+                {
+                    "path" : "${thisdir}/../wigwag-devices",
+                    "config": {
+                        "cloudURL": "{{cloudurl}}",
+                        "apiKey": "{{apikey}}",
+                        "apiSecret": "{{apisecret}}",
+                        "udpSourcePort": 3000,
+                        "udpDestinationPort": 3001,
+                        "sixlbr": {
+                            "ifname": "Witap0",
+                            "sixlbr": {
+                                "tundev": "Witap0",
+                                "use_raw_ethernet": false,
+                                "log_level": ["error"],
+                                "siodev": "{{sixlbrtty}}",
+                                "siodev_secondary": "ttyUSB1",
+                                "sixBMAC": "{{sixbmac}}",
+                                "baudrate": 115200,
+                                "slip_delay": 0,
+                                "ww_encryption": true,
+                                "firmware_path_mc1322": "/home/yashgoyal/workspace/devicejs/core/",
+                                "firmware_file_prefix": "slip-radio_econotag",
+                                "reset_GPIO_path_firmware_mc1322": "/sys/class/gpio/gpio105/value",
+                                "erase_GPIO_path_firmware_mc1322": "/sys/class/gpio/gpio103/value",
+					            "relay_version": 7,             
+                                "nvm_data": {  
+                                    "channel": 20,                      
+                                    "rpl_dio_intdoubl": 1,
+                                    "rpl_dio_intmin": 12,
+                                    "rpl_default_lifetime": 4,
+                                    "rpl_lifetime_unit": 50,
+                                    "rpl_version_id": 247
+					            }      
+				            }     
+                        }    
+                    }
+                },
+                {
+                    "path" : "${thisdir}/../IPStack",
+                    "config": {
+                        "wan": ["eth0", "eth1", "wlan0"],
+                        "dhcp": "on",
+                        "static": {
+                            "ipaddress":"10.10.20.31",
+                            "mask": "255.255.255.0",
+                            "gateway": "10.10.20.1"
+                        },
+                        "ethernetMAC": "{{ethernetmac}}"
+                    }
+                },
+                {
+                    "path" : "${thisdir}/../../wigwag-core-modules/RuleEngine",
+                    "config": {}
+                },
+                {
+                    "path" : "${thisdir}/../../wigwag-core-modules/MDNS",
+                    "config": {
+                        "id":"WeLoveBen",
+                        "port":8181
+                    }
+                },
+//                {
+//                    "path" : "${thisdir}/../../wigwag-core-modules/wigwag-ui",
+//                    "config": {
+//                        "cloudAPISecret": "efe883fa3818dd3be69ed0001fc8144b"
+//                    }
+//                },
+                {
+                    "path" : "${thisdir}/../../wigwag-core-modules/WigWagMobileUI",
+                    "config": {}
+                },
+                {
+                    "path" : "${thisdir}/../../wigwag-core-modules/cloud-tunnel",
+                    "config": {
+                       "apiKey": "{{apikey}}",
+                       "apiSecret": "{{apisecret}}",
+                       "cloudURL": "{{cloudurl}}"
+                    }
+                },
+                {
+                    "path" : "${thisdir}/../../wigwag-core-modules/moods",
+                    "config": {
+                       "jwtSecret": "jordanisagoober",
+                       "apiKey": "{{apikey}}",
+                       "apiSecret": "{{apisecret}}"
+                     }
+                }
+
+
+            ]
+        },
+        "arbitrarystuff" : {
+            "limits" : {
+                "limit_group" : ""
+                // cgroup limits here - TBD
+            },
+            "restart" : true,
+            "restart_limit" : 10,
+            "execs" : {                   // these are just other executables...
+                "stuff" : {
+                    "restart" : true,
+                    "restart_limit" : 10, // default is forever...
+                    "path" : "${thisdir}/test-exec"
+                }
+            }
+
+        }
+    }
+}

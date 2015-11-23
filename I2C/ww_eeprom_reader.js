@@ -2,23 +2,27 @@
 
 var WWAT24 = require('./WWrelay_at24c16.js');
 reader = new WWAT24();
-
 //r/w files
 var fs = require('fs');
-
 var exec = require('child_process').exec;
-//var execSync = require('child_process').execSync;
-var execSync = require('execSync');
-
+var execSync = require('child_process').execSync;
+// var execSync = require('execSync');
 var flatten = require('flat');
-
-//travis
+var jsonminify = require('jsonminify');
 var path = require('path');
-var wigwag_conf_json_file = "/wigwag/devicejs/conf/wigwag.conf.json";
-var devjs = require(wigwag_conf_json_file);
-var relay_dot_conf = "/etc/wigwag/relay.conf";
-var relayconf_dot_sh = "/etc/wigwag/relayconf.sh"
-var hw_dot_conf = "/etc/wigwag/hardware.conf"
+var handleBars = require('handlebars');
+
+
+var template_conf_file = "/wigwag/devicejs-core-modules/Runner/template.config.json";
+var relay_conf_json_file = "/wigwag/devicejs-core-modules/Runner/relay.config.json";
+var devjsconf = JSON.parse(jsonminify(fs.readFileSync(template_conf_file, 'utf8')));
+
+var cloudURL = "https://cloud.wigwag.com";
+var overwrite_conf = false;
+
+var hardware_conf = "./relay.conf";
+// var relayconf_dot_sh = "/etc/wigwag/relayconf.sh"
+// var hw_dot_conf = "/etc/wigwag/hardware.conf"
 var eeprom_dot_json = "/etc/wigwag/eeprom.json";
 var uuid_eeprom_path = "/etc/wigwag/.eeprom_";
 
@@ -94,23 +98,6 @@ function define_hardware(res) {
 			hw.radioProfile.SBMC_TTY = "/dev/ttyUSB0"
 			break;
 		case "0.0.1":
-			hw.gpioProfile.NumberOfInputs = 1;
-			hw.gpioProfile.NumberOfOutputs = 11;
-			hw.gpioProfile.RelayType = "hardware";
-			hw.gpioProfile.RED_OFF = GPIOpath + "gpio11_pb8";
-			hw.gpioProfile.BUTTON = GPIOpath + "gpio12_ph12";
-			hw.gpioProfile.TopRed = LEDspath + "/red";
-			hw.gpioProfile.TopBlue = LEDspath + "/blue";
-			hw.gpioProfile.TopGreen = LEDspath + "/green";
-			hw.radioProfile.hasSM_SBMC = true; //Solder_Module 6BEE MC13224
-			hw.radioProfile.hasSM_5304 = false; //Solder_Module Zwave 5304
-			hw.radioProfile.hasSM_U880 = false; //Solder_Module U880
-			hw.radioProfile.hasSM_BT = false; //Solder_Module Bluetooth
-			hw.radioProfile.SBMC_TTY = "/dev/ttyS4";
-			hw.radioProfile.SBMC_ERASE = GPIOpath + "gpio3_pd2";
-			hw.radioProfile.SBMC_RESET = GPIOpath + "gpio1_pd0";
-			hw.radioProfile.SBMC_RTS = GPIOpath + "gpio2_pd1";
-			break;
 		case "0.0.2":
 		case "0.0.4":
 			hw.gpioProfile.NumberOfInputs = 1;
@@ -148,7 +135,7 @@ function define_hardware(res) {
 			hw.radioProfile.SBMC_RESET = GPIOpath + "gpio10_pd9";
 			hw.radioProfile.SBMC_RTS = GPIOpath + "gpio9_pd8";
 			break;
-		case "0.0.6":
+		case "0.0.8":
 			hw.gpioProfile.NumberOfInputs = 1;
 			hw.gpioProfile.NumberOfOutputs = 11;
 			hw.gpioProfile.RelayType = "hardware";
@@ -161,12 +148,12 @@ function define_hardware(res) {
 			hw.radioProfile.hasSM_5304 = false; //Solder_Module Zwave 5304
 			hw.radioProfile.hasSM_U880 = false; //Solder_Module U880
 			hw.radioProfile.hasSM_BT = false; //Solder_Module Bluetooth
-			hw.radioProfile.SBMC_TTY = "/dev/ttyS3";
+			hw.radioProfile.SBMC_TTY = "/dev/ttyS6";
 			hw.radioProfile.CC2530_TTY = "/dev/ttyS1";
 			hw.radioProfile.SBMC_ERASE = GPIOpath + "gpio3_pd2";
 			hw.radioProfile.SBMC_RESET = GPIOpath + "gpio1_pd0";
 			hw.radioProfile.SBMC_RTS = GPIOpath + "gpio2_pd1";
-			hw.radioProfile.ZWAVE_TTY = "/dev/ttyS4";
+			hw.radioProfile.ZWAVE_TTY = "/dev/ttyS5";
 			hw.radioProfile.ZWAVE_ERASE = GPIOpath + "gpio4_pd3";
 			hw.radioProfile.CC2530_RESET = GPIOpath + "gpio5_pd4";
 			hw.radioProfile.CC2530_DBG_DATA = GPIOpath + "gpio7_pd6";
@@ -189,9 +176,23 @@ function define_hardware(res) {
 	return hw;
 }
 
+function createHandlebarsData(eeprom) {
+	var data = {};
+
+	data.apikey = eeprom.relayID;
+	data.apisecret = eeprom.relaySecret;
+	data.cloudurl = eeprom.cloudURL;
+	data.zwavetty = eeprom.hardware.radioProfile.ZWAVE_TTY;
+	data.sixlbrtty = eeprom.hardware.radioProfile.SBMC_TTY;
+	data.sixbmac = eeprom.sixBMAC_string;
+	data.ethernetmac = eeprom.ethernetMAC_string;
+
+	return data;
+}
+
 function modify_devjs(MAC, TTY) {
-	devjs.runtimeConfig.services.sixLBR.config.sixlbr.siodev = TTY;
-	devjs.runtimeConfig.services.sixLBR.config.sixlbr.sixBMAC = MAC;
+	devjsconf.runtimeConfig.services.sixLBR.config.sixlbr.siodev = TTY;
+	devjsconf.runtimeConfig.services.sixLBR.config.sixlbr.sixBMAC = MAC;
 }
 
 function get_all(callback) {
@@ -210,7 +211,7 @@ function get_all(callback) {
 			callback(JSON.parse('{"eeprom":"not configured properly"}'));
 		}
 		res.relayID = res.BRAND + res.DEVICE + res.UUID;
-		res.cloudURL = "https://cloud.wigwag.com";
+		res.cloudURL = cloudURL;
 		callback(res);
 	});
 }
@@ -228,7 +229,10 @@ function write_JSON2file(myfile, json, overwrite, cb) {
 				}
 			});
 		}
-		else cb(null, "SUCCESS");
+		else {
+			console.log('NOTE: file ' + myfile + ' exists and overwrite false');
+			cb(null, "SUCCESS");
+		}
 	});
 }
 
@@ -312,31 +316,57 @@ function read_sw_eeprom(callback) {
 
 //main fuction, first determines if we are on purpose based hardware (currently only detects WigWag Relays), or software.   It does this by detecting the EEprom type @ a specific location. 
 function main() {
+	// print process.argv
+	process.argv.forEach(function (val, index, array) {
+	  // console.log(index + ': ' + val);
+	  if(index > 1) {
+	  	cloudURL = array[2];
+	  	if(index > 2)
+	  		overwrite_conf = array[3];	
+	  }
+	});
+
 	reader.exists(function(the_eeprom_exists) {
 		if (the_eeprom_exists) {
 			console.log("Hardware based Relay found.");
 			//	if (!exists) {
 			get_all(function(result) {
 				//this checks if the eeprom had valid data.  I may want to add a different check, perhaps a eeprom_version number, so this file never need to change
+
 				if (result.BRAND == "WW" || result.BRAND == "WD") {
 					hw = define_hardware(result);
 					result.hardware = hw;
-					flattenobj(result, function(output) {
-						write_string2file(relayconf_dot_sh, output, true, function(err, succ) {
-							if (err) console.log("Error Writing file %s", err);
-						});
-					});
-					modify_devjs(result.sixBMAC.string, result.hardware.radioProfile.SBMC_TTY.split("/")[2]);
-					write_JSON2file(relay_dot_conf, result, true, function(err, suc) {
-						if (err) console.log("Error Writing file %s", err);
-						write_JSON2file(wigwag_conf_json_file, devjs, true, function(err, suc) {
-							if (err) console.log("Error Writing file %s", err);
-						});
+					// flattenobj(result, function(output) {
+					// 	write_string2file(relayconf_dot_sh, output, true, function(err, succ) {
+					// 		if (err) console.log("Error Writing file %s", err);
+					// 	});
+					// });
 
+					//replace the handlebars
+					var template = handleBars.compile(JSON.stringify(devjsconf));
+					var data = createHandlebarsData(result);
+					var conf = JSON.parse(template(data));
+
+					write_JSON2file(relay_conf_json_file, conf, overwrite_conf, function(err, suc) {
+						if (err) {
+							console.error("Error Writing file ", relay_conf_json_file, err);	
+							return;
+						} 
+
+						console.log(suc + ': wrote ' + relay_conf_json_file + ' file successfully');
+
+						write_JSON2file(hardware_conf, result, overwrite_conf, function(err, suc) {
+							if (err) {
+								console.error("Error Writing file ", hardware_conf, err);	
+								return;
+							} 
+							console.log(suc + ': wrote ' + hardware_conf + ' file successfully');
+
+						});
 					});
 				}
 				else {
-					console.log("EEPROM is not configured properly.\n---------------------------------\nIf " + relay_dot_conf + " + " + relayconf_dot_sh + " exist, will manually use those files. Otherwise, Relay will not start up properly.");
+					console.log("EEPROM is not configured properly.\n---------------------------------\nIf " + hardware_conf + " + " + relayconf_dot_sh + " exist, will manually use those files. Otherwise, Relay will not start up properly.");
 
 				}
 			});
@@ -348,8 +378,8 @@ function main() {
 				if (res) {
 					res.hw = define_hardware(res);
 					modify_devjs(res.sixBMAC.string, "ttyUSB0");
-					write_JSON2file(relay_dot_conf, res, true, function(err, suc) {
-						write_JSON2file(wigwag_conf_json_file, devjs, true, function(err, suc) {
+					write_JSON2file(hardware_conf, res, true, function(err, suc) {
+						write_JSON2file(wigwag_conf_json_file, devjsconf, true, function(err, suc) {
 							if (err) console.log("Error Writing file %s", err);
 						});
 					});

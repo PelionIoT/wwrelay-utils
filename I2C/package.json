@@ -12,6 +12,9 @@
     "i2c": "~0.1.8",
     "es6-promise": "~2.0.1",
     "execSync": "~1.0.2",
-    "flat": "~1.5.1"
+    "flat": "~1.5.1",
+    "commander": "2.9.0",
+    "jsonminify" : "^0.2.3",
+    "handlebars" : "4.0.5"
   }
 }

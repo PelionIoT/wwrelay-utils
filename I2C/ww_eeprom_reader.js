@@ -100,41 +100,9 @@ function define_hardware(res) {
 		case "0.0.1":
 		case "0.0.2":
 		case "0.0.4":
-			hw.gpioProfile.NumberOfInputs = 1;
-			hw.gpioProfile.NumberOfOutputs = 11;
-			hw.gpioProfile.RelayType = "hardware";
-			hw.gpioProfile.RED_OFF = GPIOpath + "gpio11_pb8";
-			hw.gpioProfile.BUTTON = GPIOpath + "gpio12_ph12";
-			hw.gpioProfile.TopRed = LEDspath + "/red";
-			hw.gpioProfile.TopBlue = LEDspath + "/blue";
-			hw.gpioProfile.TopGreen = LEDspath + "/green";
-			hw.radioProfile.hasSM_SBMC = true; //Solder_Module 6BEE MC13224
-			hw.radioProfile.hasSM_5304 = false; //Solder_Module Zwave 5304
-			hw.radioProfile.hasSM_U880 = false; //Solder_Module U880
-			hw.radioProfile.hasSM_BT = false; //Solder_Module Bluetooth
-			hw.radioProfile.SBMC_TTY = "/dev/ttyS2";
-			hw.radioProfile.SBMC_ERASE = GPIOpath + "gpio8_pd7";
-			hw.radioProfile.SBMC_RESET = GPIOpath + "gpio10_pd9";
-			hw.radioProfile.SBMC_RTS = GPIOpath + "gpio9_pd8";
-			break;
 		case "0.0.5":
-			hw.gpioProfile.NumberOfInputs = 1;
-			hw.gpioProfile.NumberOfOutputs = 11;
-			hw.gpioProfile.RelayType = "hardware";
-			hw.gpioProfile.RED_OFF = GPIOpath + "gpio11_pb8";
-			hw.gpioProfile.BUTTON = GPIOpath + "gpio12_ph12";
-			hw.gpioProfile.TopRed = LEDspath + "/red";
-			hw.gpioProfile.TopBlue = LEDspath + "/blue";
-			hw.gpioProfile.TopGreen = LEDspath + "/green";
-			hw.radioProfile.hasSM_SBMC = true; //Solder_Module 6BEE MC13224
-			hw.radioProfile.hasSM_5304 = false; //Solder_Module Zwave 5304
-			hw.radioProfile.hasSM_U880 = false; //Solder_Module U880
-			hw.radioProfile.hasSM_BT = false; //Solder_Module Bluetooth
-			hw.radioProfile.SBMC_TTY = "/dev/ttyS2";
-			hw.radioProfile.SBMC_ERASE = GPIOpath + "gpio8_pd7";
-			hw.radioProfile.SBMC_RESET = GPIOpath + "gpio10_pd9";
-			hw.radioProfile.SBMC_RTS = GPIOpath + "gpio9_pd8";
-			break;
+		case "0.0.6":
+		case "0.0.7":
 		case "0.0.8":
 			hw.gpioProfile.NumberOfInputs = 1;
 			hw.gpioProfile.NumberOfOutputs = 11;

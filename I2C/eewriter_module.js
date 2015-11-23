@@ -86,18 +86,6 @@ EEprom_Writer.prototype.write = function() {
 		});
 	});
 }
-
-EEprom_Writer.prototype.write_one = function(target, value) {
-	var self = this;
-	return new Promise(function(resolve, reject) {
-		writer.set(target, value).then(function(result) {
-			resolve(result);
-		}, function(err) {
-			reject(err);
-		});
-	});
-}
-
 EEprom_Writer.prototype.erase = function() {
 	var self = this;
 	return new Promise(function(resolve, reject) {

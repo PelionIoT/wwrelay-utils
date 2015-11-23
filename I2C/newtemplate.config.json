@@ -203,6 +203,12 @@
                         "ethernetMAC": "{{ethernetmac}}"
                     }
                 },
+                {                                                              
+                    "path" : "${thisdir}/../../wigwag-core-modules/wigwag-ui",
+                    "config": {
+                        "cloudAPISecret": "{{apisecret}}"
+                    }                                                           
+                },                                                              
                 {
                     "path" : "${thisdir}/../../wigwag-core-modules/MDNS",
                     "config": {

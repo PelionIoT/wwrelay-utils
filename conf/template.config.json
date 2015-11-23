@@ -74,7 +74,7 @@
                 }
             }
         },
-        "somemodules" : {
+        "core-devices" : {
             "limits" : {
                 "limit_group" : ""
                 // cgroup limits here - TBD
@@ -91,39 +91,6 @@
                 "NODE_PATH": "${NODE_PATH}:${thisdir}/../node_modules:/wigwag/devicejs-core-modules/IPStack/node_modules"
             },
             "modules" : [                 // these modules will be under one process
-                {
-                    "path" : "${thisdir}/../AppServer",
-                    "config": {
-                       "authentication": {
-                          "enabled": true,
-                          "cloudAPISecret": "efe883fa3818dd3be69ed0001fc8144b",
-                          "redirectURL": "/wigwag-ui/s/login/"
-                       },
-                       "port": 8181
-                    }
-                },
-                {
-                    "path" : "${thisdir}/../zwave",
-                    "config": {
-                       "siodev": "{{zwavetty}}",
-                        "modpath": "",
-                        "consoleoutput": true,
-                        "logging": false,
-                        "saveconfig": false,
-                        "driverattempts": 3,
-                        "pollinterval": 500,
-                        "suppressrefresh": true,
-                        "notifytransactions": true
-                    }
-                },
-                {
-                    "path" : "${thisdir}/../APIProxy",
-                    "config": {}
-                },
-//                {
-//                    "path" : "${thisdir}/../UPnP",
-//                    "config": {}
-//                },
                 {
                     "path" : "${thisdir}/../core-lighting",
                     "config": {}
@@ -156,7 +123,7 @@
                                 "firmware_file_prefix": "slip-radio_econotag",
                                 "reset_GPIO_path_firmware_mc1322": "/sys/class/gpio/gpio105/value",
                                 "erase_GPIO_path_firmware_mc1322": "/sys/class/gpio/gpio103/value",
-					            "relay_version": 7,             
+                                "relay_version": 7,             
                                 "nvm_data": {  
                                     "channel": 20,                      
                                     "rpl_dio_intdoubl": 1,
@@ -164,9 +131,63 @@
                                     "rpl_default_lifetime": 4,
                                     "rpl_lifetime_unit": 50,
                                     "rpl_version_id": 247
-					            }      
-				            }     
-                        }    
+                                }      
+                            }     
+                        }  
+                    }
+                },
+                {
+                    "path" : "${thisdir}/../zwave",
+                    "config": {
+                       "siodev": "{{zwavetty}}",
+                        "modpath": "",
+                        "consoleoutput": false,
+                        "logging": false,
+                        "saveconfig": false,
+                        "driverattempts": 3,
+                        "pollinterval": 500,
+                        "suppressrefresh": true,
+                        "notifytransactions": true
+                    }
+                } // TODO add Zigbee
+            ]
+
+        },
+        "core-servers" : {
+            "limits" : {
+                "limit_group" : ""
+                // cgroup limits here - TBD
+            },
+            "node_args" : [
+                "--max-executable-size=96",   // limit GC memory usage via v8 parameters
+                "--max-old-space-size=128",   // these are the 'recommended' parameters for lower memory systems
+                "--max-semi-space-size=1"     // see here: http://stackoverflow.com/questions/30252905/nodejs-decrease-v8-garbage-collector-memory-usage
+            ],
+            "restart" : true,
+            "restart_limit" : 10,
+            "env" : {       // custom env vars for container, note, the container will *also* inherit the existing
+                            // env of the Runner process
+                "NODE_PATH": "${NODE_PATH}:${thisdir}/../node_modules:/wigwag/devicejs-core-modules/IPStack/node_modules"
+            },
+            "modules" : [                 // these modules will be under one process
+                {
+                    "path" : "${thisdir}/../AppServer",
+                    "config": {
+                       "authentication": {
+                          "enabled": true,
+                          "cloudAPISecret": "{{apisecret}}",
+                          "redirectURL": "/wigwag-ui/s/login/"
+                       },
+                       "port": 8181
+                    }
+                },
+                {
+                    "path" : "${thisdir}/../APIProxy",
+                    "config": { // add config here
+                        "cloudAPISecret": "{{apisecret}}",
+                        "apiKey": "hello",
+                        "apiSecret": "asdfdsfa"
+
                     }
                 },
                 {
@@ -183,24 +204,37 @@
                     }
                 },
                 {
-                    "path" : "${thisdir}/../../wigwag-core-modules/RuleEngine",
+                    "path" : "${thisdir}/../../wigwag-core-modules/MDNS",
+                    "config": {
+                        "id":"{{apikey}}", // fix this crap
+                        "port":8181
+                    }
+                }
+            ]
+        },
+        "wigwag-servers" : {
+            "limits" : {
+                "limit_group" : ""
+                // cgroup limits here - TBD
+            },
+            "node_args" : [
+                "--max-executable-size=96",   // limit GC memory usage via v8 parameters
+                "--max-old-space-size=128",   // these are the 'recommended' parameters for lower memory systems
+                "--max-semi-space-size=1"     // see here: http://stackoverflow.com/questions/30252905/nodejs-decrease-v8-garbage-collector-memory-usage
+            ],
+            "restart" : true,
+            "restart_limit" : 10,
+            "env" : {       // custom env vars for container, note, the container will *also* inherit the existing
+                            // env of the Runner process
+                "NODE_PATH": "${NODE_PATH}:${thisdir}/../node_modules"
+            },
+            "modules" : [                 // add all WigWag servers / apps here
+                {
+                    "path" : "${thisdir}/../../wigwag-core-modules/WigWagMobileUI",
                     "config": {}
                 },
                 {
-                    "path" : "${thisdir}/../../wigwag-core-modules/MDNS",
-                    "config": {
-                        "id":"WeLoveBen",
-                        "port":8181
-                    }
-                },
-//                {
-//                    "path" : "${thisdir}/../../wigwag-core-modules/wigwag-ui",
-//                    "config": {
-//                        "cloudAPISecret": "efe883fa3818dd3be69ed0001fc8144b"
-//                    }
-//                },
-                {
-                    "path" : "${thisdir}/../../wigwag-core-modules/WigWagMobileUI",
+                    "path" : "${thisdir}/../../wigwag-core-modules/WWRelayWebUI",
                     "config": {}
                 },
                 {
@@ -219,25 +253,30 @@
                        "apiSecret": "{{apisecret}}"
                      }
                 }
-
-
             ]
         },
-        "arbitrarystuff" : {
+        "user" : {
             "limits" : {
                 "limit_group" : ""
                 // cgroup limits here - TBD
             },
+            "node_args" : [
+                "--max-executable-size=96",   // limit GC memory usage via v8 parameters
+                "--max-old-space-size=128",   // these are the 'recommended' parameters for lower memory systems
+                "--max-semi-space-size=1"     // see here: http://stackoverflow.com/questions/30252905/nodejs-decrease-v8-garbage-collector-memory-usage
+            ],
             "restart" : true,
             "restart_limit" : 10,
-            "execs" : {                   // these are just other executables...
-                "stuff" : {
-                    "restart" : true,
-                    "restart_limit" : 10, // default is forever...
-                    "path" : "${thisdir}/test-exec"
+            "env" : {       // custom env vars for container, note, the container will *also* inherit the existing
+                            // env of the Runner process
+                "NODE_PATH": "${NODE_PATH}:${thisdir}/../node_modules"
+            },
+            "modules" : [                 // add Rule UI here
+                {
+                    "path" : "${thisdir}/../../wigwag-core-modules/RuleEngine",
+                    "config": {}
                 }
-            }
-
+            ]
         }
     }
 }

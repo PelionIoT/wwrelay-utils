@@ -54,7 +54,7 @@ function run_devjs() {
 	mv $RUNNER_LOG $RUNNER_LOG.1
     fi
     
-    unlimit -c unlimited
+    ulimit -c unlimited
     pushd $RUNNER_DIR
     $RUNNER_START_CMD > $RUNNER_LOG 2>&1 &
     popd

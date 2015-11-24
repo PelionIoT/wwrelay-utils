@@ -109,6 +109,7 @@
                         "udpDestinationPort": 3001,
                         "sixlbr": {
                             "ifname": "Witap0",
+                            "wsnNet": "bbbb::100",
                             "sixlbr": {
                                 "tundev": "Witap0",
                                 "use_raw_ethernet": false,

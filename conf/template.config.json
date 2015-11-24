@@ -237,7 +237,7 @@
                 {
                     "path" : "${thisdir}/../../wigwag-core-modules/wigwag-ui",
                     "config": {
-                       "apiSecret": "{{apisecret}}"
+                       "cloudAPISecret": "{{apisecret}}"
                     }
                 },
                 {

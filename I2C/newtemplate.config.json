@@ -203,16 +203,11 @@
                         "ethernetMAC": "{{ethernetmac}}"
                     }
                 },
-                {                                                              
-                    "path" : "${thisdir}/../../wigwag-core-modules/wigwag-ui",
-                    "config": {
-                        "cloudAPISecret": "{{apisecret}}"
-                    }                                                           
-                },                                                              
                 {
                     "path" : "${thisdir}/../../wigwag-core-modules/MDNS",
                     "config": {
-                        "id":"{{apikey}}", // fix this crap
+                        "id":"{{apikey}}",
+                        "waitForIPStack": true,
                         "port":8181
                     }
                 }
@@ -238,6 +233,12 @@
                 {
                     "path" : "${thisdir}/../../wigwag-core-modules/WigWagMobileUI",
                     "config": {}
+                },
+                {
+                    "path" : "${thisdir}/../../wigwag-core-modules/wigwag-ui",
+                    "config": {
+                       "cloudAPISecret": "{{apisecret}}"
+                    }
                 },
                 {
                     "path" : "${thisdir}/../../wigwag-core-modules/WWRelayWebUI",

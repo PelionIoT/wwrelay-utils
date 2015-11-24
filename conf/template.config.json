@@ -256,7 +256,7 @@
                 {
                     "path" : "${thisdir}/../../wigwag-core-modules/moods",
                     "config": {
-                       "jwtSecret": "jordanisagoober",
+                       "jwtSecret": "IXPySxxr0f5X2CIqdB45eK",
                        "apiKey": "{{apikey}}",
                        "apiSecret": "{{apisecret}}"
                      }

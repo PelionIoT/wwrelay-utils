@@ -232,9 +232,7 @@
             "modules" : [                 // add all WigWag servers / apps here
                 {
                     "path" : "${thisdir}/../../wigwag-core-modules/WigWagMobileUI",
-                    "config": {
-                       "apiSecret": "{{apisecret}}",
-                    }
+                    "config": {}
                 },
                 {
                     "path" : "${thisdir}/../../wigwag-core-modules/wigwag-ui",

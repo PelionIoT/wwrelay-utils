@@ -176,7 +176,8 @@
                        "authentication": {
                           "enabled": true,
                           "cloudAPISecret": "{{apisecret}}",
-                          "redirectURL": "/wigwag-ui/s/login/"
+                          "redirectURL": "/wigwag-ui/s/login/",
+                          "cloudRedirectURL": "{{cloudurl}}/s/login"
                        },
                        "port": 8181
                     }

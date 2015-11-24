@@ -38,7 +38,6 @@ case "$1" in
     	#$GPIO_DIR/setup-gpio.sh > $GPIO_LOG 2>&1
         cd ${WIGWAGROOT}/wwrelay-utils/GPIO/
         /usr/bin/node ./setup-gpio.js >> $WWRELAY_LOG 2>&1        
-        cd ${WIGWAGROOT}/wwrelay-utils/slip-radio
 
 	;;	
     stop)

@@ -18,7 +18,7 @@ DEVJSSUPPORT_START_CMD="${WIGWAGROOT}/support/initialize.sh"
 DEVICEJSSUPPORT_LOG="${WIGWAGROOT}/log/devjssupport.log"
 
 function stop_devjssupport() {
-    pushd $DEVICEJSSJUPPORT_DIR
+    pushd $DEVJSSUPPORT_DIR
     $DEVJS_STOP_CMD > $DEVICEJSSUPPORT_LOG 2>&1 &
     popd
 }
@@ -28,7 +28,7 @@ function run_devjssupport() {
 	mv $DEVICEJSSUPPORT_LOG $DEVICEJSSUPPORT_LOG.1
     fi
     
-    pushd $DEVICEJSSUPPORT_DIR
+    pushd $DEVJSSUPPORT_DIR
     $DEVJSSUPPORT_START_CMD > $DEVICEJSSUPPORT_LOG 2>&1 &
     popd
 }

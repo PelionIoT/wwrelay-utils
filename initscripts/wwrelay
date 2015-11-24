@@ -33,7 +33,7 @@ case "$1" in
         fi
 
         cd ${WIGWAGROOT}/wwrelay-utils/I2C
-        /usr/bin/node ./ww_eeprom_reader.js  > $WWRELAY_LOG 2>&1
+        /usr/bin/node ./ww_eeprom_reader.js  http://45.56.67.145:8080 > $WWRELAY_LOG 2>&1
         /usr/bin/node ./enableRTC_charging.js >> $WWRELAY_LOG 2>&1
     	#$GPIO_DIR/setup-gpio.sh > $GPIO_LOG 2>&1
         cd ${WIGWAGROOT}/wwrelay-utils/GPIO/

@@ -38,6 +38,9 @@ function temp_gpio_stuff() {
   echo 102 > /sys/class/gpio/export 
   echo out > /sys/class/gpio/gpio102/direction 
   echo 1 > /sys/class/gpio/gpio102/value
+  echo 101 > /sys/class/gpio/export
+  echo out > /sys/class/gpio/gpio101/direction
+  echo 1 > /sys/class/gpio/gpio101/value
 }
 
 function stop_devjs() {

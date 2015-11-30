@@ -11,35 +11,15 @@
 # Default-Stop:         0 1 6
 # Short-Description:    System logger
 ### END INIT INFO
+WIGWAGROOT="/wigwag"
+RUNNER_DIR="${WIGWAGROOT}/devicejs-core-modules/Runner"
+RUNNER_START_CMD="./start -c ./relay.config.json"
+RUNNER_STOP_CMD="echo Need_Stop_Command"
+export NODE_PATH=${WIGWAGROOT}/devicejs-core-modules/Runner/node_modules 
 
-DEVICEJS_DIR="/wigwag/devicejs"
-DEVJS_START_CMD="./bin/devjs --start --force -i wigwag -b -c conf/wigwag.conf.json"
-DEVJS_STOP_CMD="./bin/devjs --shutdown -i wigwag"
 
-DEVICEJS_LOG="/wigwag/log/devicejs.log"
 
-VOLFILE=/var/volatile/devjs_var
-VARFILE=$DEVICEJS_DIR/var
-
-function mk_var_dir() {
-   #
-   # First check to see if the directory in the volatile /var exists
-
-   if [ ! -x $VOLFILE ] ; then
-      mkdir $VOLFILE
-   fi
-   if [ -x $VARFILE ] ; then
-      if [ -h $VARFILE ] ; then
-         echo "Var Link exists"
-      elif [ -d $VARFILE ] ; then
-         echo "Var is a directory and should be a link" 
-         /bin/rm -rf $VARFILE
-         /bin/ln -s $VOLFILE $VARFILE
-      fi
-   else
-      /bin/ln -s $VOLFILE $VARFILE
-   fi
-}
+RUNNER_LOG="${WIGWAGROOT}/log/runner.log"
 
 function congig_cpu_scaling() {
    MAX_FREQ=/sys/devices/system/cpu/cpu0/cpufreq/scaling_max_freq
@@ -50,21 +30,29 @@ function congig_cpu_scaling() {
    cat $MAX_FREQ > $MIN_FREQ
 }
 
+function temp_gpio_stuff() {
+  echo 103 > /sys/class/gpio/export 
+  echo 105 > /sys/class/gpio/export 
+  echo out > /sys/class/gpio/gpio103/direction 
+  echo out > /sys/class/gpio/gpio105/direction 
+}
+
 function stop_devjs() {
-    pushd $DEVICEJS_DIR
-    $DEVJS_STOP_CMD > $DEVICEJS_LOG 2>&1
+    pushd $RUNNER_DIR
+    $RUNNER_STOP_CMD > $RUNNER_LOG 2>&1
     popd
 }
 function run_devjs() {
-    if [ -e $DEVICEJS_LOG ]; then
+
+    temp_gpio_stuff
+
+    if [ -e $RUNNER_LOG ]; then
 	# some trivial log rotation
-	mv $DEVICEJS_LOG $DEVICEJS_LOG.1
+	mv $RUNNER_LOG $RUNNER_LOG.1
     fi
     
-    pushd $DEVICEJS_DIR
-    mk_var_dir
-    $DEVJS_START_CMD > $DEVICEJS_LOG 2>&1
-    echo $? > /tmp/devjs_error
+    pushd $RUNNER_DIR
+    $RUNNER_START_CMD > $RUNNER_LOG 2>&1
     popd
 }
 

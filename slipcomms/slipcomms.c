@@ -23,6 +23,7 @@ unsigned int verbose = 0;
 const char *slip_siodev = NULL;
 speed_t slip_baudrate = BAUDRATE;
 int slip_flowcontrol = 0;
+int slipTestBytes[2];
 
 
 static int usermode = 0;
@@ -38,6 +39,8 @@ int slip_end = 0, slip_begin = 0, slip_packet_end = 0, slip_packet_count = 0, sl
 unsigned char slip_buf[MAX_SLIP_BUF];
 unsigned char input_packet[MAX_SLIP_BUF];
 int input_packet_len = 0;
+int byteIndex = 0;
+int slipTestMode = 0;
 
 #if RX_STATS
 int last_seq = -1;
@@ -290,6 +293,17 @@ int serial_input(void)
             if(channelstudymode) {
               if(input_packet[0] == 0x21 && input_packet[1] == 0x51) {
                 got_channelstudy(&input_packet[2]);
+              }
+            }
+            if(slipTestMode) {
+              if(input_packet[0] == 0x21 && input_packet[1] == 0x54) {
+                if(input_packet[2] == (slipTestBytes[0] + slipTestBytes[1])) {
+                  fprintf(stdout, "Test successfull, slip working... \n");
+                  exit(0);
+                } else {
+                  fprintf(stderr, "Test unsuccessful, slip not working... \n");
+                  exit(2);
+                }
               }
             }
             i++;
@@ -955,6 +969,17 @@ void request_channel(void)
   slip_flushbuf(); 
 }
 //---------------------------------------------------------------------------
+void testSlipRadio(void)
+{
+  uint8_t buf[10];
+  buf[0] = '?';
+  buf[1] = 'T';
+  buf[2] = slipTestBytes[0];
+  buf[3] = slipTestBytes[1];
+  write_to_slip(buf, 4);
+  slip_flushbuf(); 
+}
+//---------------------------------------------------------------------------
 void send_txpower(uint8_t power)
 {
   uint8_t buf[10];
@@ -1191,6 +1216,7 @@ void usage(const char *prog)
   fprintf(stderr, " [-v]          verbose      - Trace/Debug statements\n");
   fprintf(stderr, " [-d siodev]   Slip I/0 dev - Serial device (default /dev/ttyUSB0)\n");
   fprintf(stderr, " [-B baudrate] Baudrate - 9600, 19200, 38400. 57600, 115200 (default 115200)\n");
+  fprintf(stderr, " [-t byte1 byte2] Slip-radio test mode - slip will return sum to two input bytes\n");
 }
 //---------------------------------------------------------------------------
 void slip_usage(void) 
@@ -1246,7 +1272,7 @@ int main(int argc, char *argv[])
 
   //parse the command line arguments
   // ":" - colon decides whether the option requires an argument or not
-  while((c = getopt(argc, argv, "hvd:B:")) != -1) {
+  while((c = getopt(argc, argv, "hvd:B:t:")) != -1) {
     switch(c) {
       case 'v':
         verbose = 1;
@@ -1269,6 +1295,11 @@ int main(int argc, char *argv[])
 
       case 'B':
         slip_baudrate = atoi(optarg);
+        break;
+
+      case 't':
+        slipTestMode = 1;
+        slipTestBytes[byteIndex++] = atoi(optarg);
         break;
 
       case 'h':
@@ -1331,6 +1362,12 @@ int main(int argc, char *argv[])
       fprintf(stdout, "Slip initialized successfully\n");
     }
   }
+
+  if(slipTestMode) {
+    fprintf(stdout, "Testing slip radio with bytes: %d, %d\n", slipTestBytes[0], slipTestBytes[1]);
+    testSlipRadio();
+  }
+
 
   //Start sigalarm handler
   struct sigaction sa;
@@ -1651,7 +1688,7 @@ int main(int argc, char *argv[])
     }
   }
 
-
+end:
   slip_close();
 
   return 0;

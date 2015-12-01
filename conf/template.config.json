@@ -205,6 +205,11 @@
                         "id":"WeLoveBen", // fix this crap
                         "port":8181
                     }
+                },
+                {
+                    "path" : "${thisdir}/../../wigwag-core-modules/LEDController",
+                    "config": {
+                    }
                 }
             ]
         },

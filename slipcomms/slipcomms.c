@@ -297,7 +297,8 @@ int serial_input(void)
             }
             if(slipTestMode) {
               if(input_packet[0] == 0x21 && input_packet[1] == 0x54) {
-                if(input_packet[2] == (slipTestBytes[0] + slipTestBytes[1])) {
+                //2, 3 bytes represents the version 1.1 (latest), 4th byte is the sum of two input bytes
+                if((input_packet[4] == (slipTestBytes[0] + slipTestBytes[1])) && input_packet[2] == 0x01 && input_packet[3] == 0x01) {
                   fprintf(stdout, "Test successfull, slip working... \n");
                   exit(0);
                 } else {

@@ -213,7 +213,13 @@
                         "waitForIPStack": true,
                         "port":8181
                     }
+                },
+                {
+                    "path" : "${thisdir}/../../wigwag-core-modules/LEDController",
+                    "config": {
+                    }
                 }
+
             ]
         },
         "wigwag-servers" : {

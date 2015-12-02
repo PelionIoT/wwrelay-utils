@@ -28,7 +28,7 @@ function run_devjsmon() {
 	mv $DEVICEJSMON_LOG $DEVICEJSMON_LOG.1
     fi
     
-    pushd $DEVICEJSMON_DIR
+    pushd $DEVJSMON_DIR
     $DEVJSMON_START_CMD > $DEVICEJSMON_LOG 2>&1 &
     popd
 }

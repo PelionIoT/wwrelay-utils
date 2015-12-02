@@ -151,7 +151,7 @@ function createHandlebarsData(eeprom) {
 	data.apisecret = eeprom.relaySecret;
 	data.cloudurl = eeprom.cloudURL;
 	data.zwavetty = eeprom.hardware.radioProfile.ZWAVE_TTY;
-	data.sixlbrtty = eeprom.hardware.radioProfile.SBMC_TTY;
+	data.sixlbrtty = eeprom.hardware.radioProfile.SBMC_TTY.split("/")[2];
 	data.sixbmac = eeprom.sixBMAC.string;
 	data.ethernetmac = eeprom.ethernetMAC.string;
 

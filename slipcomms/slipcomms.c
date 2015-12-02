@@ -23,7 +23,7 @@ unsigned int verbose = 0;
 const char *slip_siodev = NULL;
 speed_t slip_baudrate = BAUDRATE;
 int slip_flowcontrol = 0;
-int slipTestBytes[2];
+int slipTestBytes[4];
 
 
 static int usermode = 0;
@@ -298,7 +298,7 @@ int serial_input(void)
             if(slipTestMode) {
               if(input_packet[0] == 0x21 && input_packet[1] == 0x54) {
                 //2, 3 bytes represents the version 1.1 (latest), 4th byte is the sum of two input bytes
-                if((input_packet[4] == (slipTestBytes[0] + slipTestBytes[1])) && input_packet[2] == 0x01 && input_packet[3] == 0x01) {
+                if((input_packet[4] == (slipTestBytes[0] + slipTestBytes[1])) && input_packet[2] == slipTestBytes[2] && input_packet[3] == slipTestBytes[3]) {
                   fprintf(stdout, "Test successfull, slip working... \n");
                   exit(0);
                 } else {
@@ -1366,6 +1366,7 @@ int main(int argc, char *argv[])
 
   if(slipTestMode) {
     fprintf(stdout, "Testing slip radio with bytes: %d, %d\n", slipTestBytes[0], slipTestBytes[1]);
+    fprintf(stdout, "Expected version: %d.%d\n", slipTestBytes[2], slipTestBytes[3]);
     testSlipRadio();
   }
 

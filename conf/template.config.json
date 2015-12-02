@@ -109,6 +109,7 @@
                         "udpDestinationPort": 3001,
                         "sixlbr": {
                             "ifname": "Witap0",
+                            "wsnNet": "bbbb::100",
                             "sixlbr": {
                                 "tundev": "Witap0",
                                 "use_raw_ethernet": false,
@@ -123,6 +124,7 @@
                                 "firmware_file_prefix": "slip-radio_econotag",
                                 "reset_GPIO_path_firmware_mc1322": "/sys/class/gpio/gpio105/value",
                                 "erase_GPIO_path_firmware_mc1322": "/sys/class/gpio/gpio103/value",
+			        "reset_GPIO_path_firmware_cc2530": "/sys/class/gpio/gpio102/value",
                                 "relay_version": 7,             
                                 "nvm_data": {  
                                     "channel": 20,                      
@@ -176,7 +178,8 @@
                        "authentication": {
                           "enabled": true,
                           "cloudAPISecret": "{{apisecret}}",
-                          "redirectURL": "/wigwag-ui/s/login/"
+                          "redirectURL": "/wigwag-ui/s/login/",
+                          "cloudRedirectURL": "{{cloudurl}}/s/login"
                        },
                        "port": 8181
                     }
@@ -184,6 +187,10 @@
                 {
                     "path" : "${thisdir}/../APIProxy",
                     "config": { // add config here
+                        "cloudAPISecret": "{{apisecret}}",
+                        "apiKey": "hello",
+                        "apiSecret": "asdfdsfa"
+
                     }
                 },
                 {
@@ -202,7 +209,8 @@
                 {
                     "path" : "${thisdir}/../../wigwag-core-modules/MDNS",
                     "config": {
-                        "id":"WeLoveBen", // fix this crap
+                        "id":"{{apikey}}",
+                        "waitForIPStack": true,
                         "port":8181
                     }
                 },
@@ -211,6 +219,7 @@
                     "config": {
                     }
                 }
+
             ]
         },
         "wigwag-servers" : {
@@ -235,6 +244,12 @@
                     "config": {}
                 },
                 {
+                    "path" : "${thisdir}/../../wigwag-core-modules/wigwag-ui",
+                    "config": {
+                       "cloudAPISecret": "{{apisecret}}"
+                    }
+                },
+                {
                     "path" : "${thisdir}/../../wigwag-core-modules/WWRelayWebUI",
                     "config": {}
                 },
@@ -249,7 +264,7 @@
                 {
                     "path" : "${thisdir}/../../wigwag-core-modules/moods",
                     "config": {
-                       "jwtSecret": "jordanisagoober",
+                       "jwtSecret": "IXPySxxr0f5X2CIqdB45eK",
                        "apiKey": "{{apikey}}",
                        "apiSecret": "{{apisecret}}"
                      }

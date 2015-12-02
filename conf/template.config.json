@@ -131,7 +131,7 @@
                                     "rpl_dio_intdoubl": 1,
                                     "rpl_dio_intmin": 12,
                                     "rpl_default_lifetime": 4,
-                                    "rpl_lifetime_unit": 50,
+                                    "rpl_lifetime_unit": 100,
                                     "rpl_version_id": 247
                                 }      
                             }     

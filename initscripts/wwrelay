@@ -23,6 +23,7 @@ GPIO_LOG="${WIGWAGROOT}/log/gpio.log"
 
 case "$1" in
     start)
+        /wigwag/wwrelay-utils/GPIO/led.sh 10 0 10
 	echo "Starting WigWag Relay"
         if [ -x $WWRELAY_LOG ] ; then
             mv $WWRELAY_LOG $WWRLAY_LOG.1

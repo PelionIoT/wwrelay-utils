@@ -6,6 +6,7 @@ reader = new WWAT24();
 var fs = require('fs');
 var exec = require('child_process').exec;
 var execSync = require('child_process').execSync;
+var Promise = require('es6-promise').Promise;
 // var execSync = require('execSync');
 var flatten = require('flat');
 var jsonminify = require('jsonminify');
@@ -154,6 +155,7 @@ function createHandlebarsData(eeprom) {
 	data.sixlbrtty = eeprom.hardware.radioProfile.SBMC_TTY.split("/")[2];
 	data.sixbmac = eeprom.sixBMAC.string;
 	data.ethernetmac = eeprom.ethernetMAC.string;
+	data.wwplatform = "wwrelay_v8";
 
 	return data;
 }
@@ -281,82 +283,147 @@ function read_sw_eeprom(callback) {
 	});
 
 }
+function setupLEDGPIOs() {                                                                        
+    return new Promise(function(resolve, reject) {                                                
+        exec('echo 37 > /sys/class/gpio/export', function (error, stdout, stderr) {   
+        	try {
+	        	execSync('echo out > /sys/class/gpio/gpio37/direction');                      
+	            exec('echo 38 > /sys/class/gpio/export', function (error, stdout, stderr) {   
+	                execSync('echo out > /sys/class/gpio/gpio38/direction');              
+	                console.log('setupLEDGPIOs successful');
+	                resolve();                                                            
+	            }); 	
+        	} catch(err) {
+        		console.error('setupLEDGPIOs failed: ', err);
+        		reject(err);
+        	}    
+                                                                                      
+        });                                                                                   
+    });                                                                                           
+}
+
+function enableRTC() {
+	return new Promise(function(resolve, reject) {
+		var i2c = require('i2c');
+		var i2cbus = '/dev/i2c-0';
+		//the PMU AXP that is used on the relay can charge the RTC battery.  In order to successfully do so, we need to tell the PMU to charge at a voltage of 2.97.  This is enabled by writing an 0x82 into the data address 0x35, of the AXP Chip (@ address 0x35) on the i2c-0 bus.
+		var chipaddress = 0x34;
+		var recharge_register = 0x35;
+		var recharge_data = 0x82; //decimal = 130;
+		var cpuvoltage_register = 0x23;
+		var cpu_data = 0x14;
+
+		PMU = new i2c(chipaddress, {
+			device: i2cbus
+		});
+
+		PMU.readBytes(recharge_register, 1, function(err, res) {
+			if (err) {
+				console.log("Error: %s", err);
+				resolve(err);
+			}
+			if (res.readUInt8(0) != recharge_data) {
+				console.log("Currently set to: 0x%s.  Setting to 0x82", res.readUInt8(0).toString(16));
+				PMU.writeBytes(recharge_register, [recharge_data], function(err) {
+					if (err) console.log("Error: %s", err);
+				});
+			}
+			else {
+				console.log("RTC battery is charging: we are currently set to 0x%s", res.readUInt8(0).toString(16));
+			}
+			resolve();
+		});
+	});
+
+}
 
 //main fuction, first determines if we are on purpose based hardware (currently only detects WigWag Relays), or software.   It does this by detecting the EEprom type @ a specific location. 
 function main() {
-	// print process.argv
-	process.argv.forEach(function (val, index, array) {
-	  // console.log(index + ': ' + val);
-	  if(index > 1) {
-	  	cloudURL = array[2];
-	  	if(index > 2)
-	  		overwrite_conf = array[3];	
-	  }
-	});
+	return new Promise(function(resolve, reject) {
+		// print process.argv
+		process.argv.forEach(function (val, index, array) {
+		  // console.log(index + ': ' + val);
+		  if(index > 1) {
+		  	cloudURL = array[2];
+		  	if(index > 2)
+		  		overwrite_conf = array[3];	
+		  }
+		});
 
-	reader.exists(function(the_eeprom_exists) {
-		if (the_eeprom_exists) {
-			console.log("Hardware based Relay found.");
-			//	if (!exists) {
-			get_all(function(result) {
-				//this checks if the eeprom had valid data.  I may want to add a different check, perhaps a eeprom_version number, so this file never need to change
+		reader.exists(function(the_eeprom_exists) {
+			if (the_eeprom_exists) {
+				console.log("Hardware based Relay found.");
+				//	if (!exists) {
+				get_all(function(result) {
+					//this checks if the eeprom had valid data.  I may want to add a different check, perhaps a eeprom_version number, so this file never need to change
 
-				if (result.BRAND == "WW" || result.BRAND == "WD") {
-					hw = define_hardware(result);
-					result.hardware = hw;
-					// flattenobj(result, function(output) {
-					// 	write_string2file(relayconf_dot_sh, output, true, function(err, succ) {
-					// 		if (err) console.log("Error Writing file %s", err);
-					// 	});
-					// });
+					if (result.BRAND == "WW" || result.BRAND == "WD") {
+						hw = define_hardware(result);
+						result.hardware = hw;
+						// flattenobj(result, function(output) {
+						// 	write_string2file(relayconf_dot_sh, output, true, function(err, succ) {
+						// 		if (err) console.log("Error Writing file %s", err);
+						// 	});
+						// });
 
-					//replace the handlebars
-					var template = handleBars.compile(JSON.stringify(devjsconf));
-					var data = createHandlebarsData(result);
-					var conf = JSON.parse(template(data));
+						//replace the handlebars
+						var template = handleBars.compile(JSON.stringify(devjsconf));
+						var data = createHandlebarsData(result);
+						var conf = JSON.parse(template(data));
 
-					write_JSON2file(relay_conf_json_file, conf, overwrite_conf, function(err, suc) {
-						if (err) {
-							console.error("Error Writing file ", relay_conf_json_file, err);	
-							return;
-						} 
-
-						console.log(suc + ': wrote ' + relay_conf_json_file + ' file successfully');
-
-						write_JSON2file(hardware_conf, result, overwrite_conf, function(err, suc) {
+						write_JSON2file(relay_conf_json_file, conf, overwrite_conf, function(err, suc) {
 							if (err) {
-								console.error("Error Writing file ", hardware_conf, err);	
-								return;
+								console.error("Error Writing file ", relay_conf_json_file, err);	
+								resolve(err);
 							} 
-							console.log(suc + ': wrote ' + hardware_conf + ' file successfully');
 
+							console.log(suc + ': wrote ' + relay_conf_json_file + ' file successfully');
+
+							write_JSON2file(hardware_conf, result, overwrite_conf, function(err, suc) {
+								if (err) {
+									console.error("Error Writing file ", hardware_conf, err);	
+									resolve(err);
+								} 
+								console.log(suc + ': wrote ' + hardware_conf + ' file successfully');
+								resolve();
+							});
 						});
-					});
-				}
-				else {
-					console.log("EEPROM is not configured properly.\n---------------------------------\nIf " + hardware_conf + " + " + relayconf_dot_sh + " exist, will manually use those files. Otherwise, Relay will not start up properly.");
+					}
+					else {
+						console.log("EEPROM is not configured properly.\n---------------------------------\nIf " + hardware_conf + " + " + relayconf_dot_sh + " exist, will manually use those files. Otherwise, Relay will not start up properly.");
+						resolve();
 
-				}
-			});
+					}
+				});
 
-		}
-		else { //eprom doesn't exist... must do other things.  Assume the relay.conf just exists in desired form
-			console.log("Software based Relay found");
-			read_sw_eeprom(function(err, res) {
-				if (res) {
-					res.hw = define_hardware(res);
-					modify_devjs(res.sixBMAC.string, "ttyUSB0");
-					write_JSON2file(hardware_conf, res, true, function(err, suc) {
-						write_JSON2file(wigwag_conf_json_file, devjsconf, true, function(err, suc) {
-							if (err) console.log("Error Writing file %s", err);
+			}
+			else { //eprom doesn't exist... must do other things.  Assume the relay.conf just exists in desired form
+				console.log("Software based Relay found");
+				read_sw_eeprom(function(err, res) {
+					if (res) {
+						res.hw = define_hardware(res);
+						modify_devjs(res.sixBMAC.string, "ttyUSB0");
+						write_JSON2file(hardware_conf, res, true, function(err, suc) {
+							write_JSON2file(wigwag_conf_json_file, devjsconf, true, function(err, suc) {
+								if (err) {
+									console.log("Error Writing file %s", err);
+									resolve();
+								}
+								resolve();
+							});
 						});
-					});
-				}
-			});
-		}
+					}
+				});
+			}
+		});
 	});
 }
 
-main();
+main().then(function() {
+	setupLEDGPIOs().then(function() {
+		enableRTC();
+	});
+});
+
 
 //reader.readSpecial();

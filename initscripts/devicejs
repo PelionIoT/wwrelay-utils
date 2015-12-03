@@ -17,10 +17,6 @@ RUNNER_START_CMD="./start -c ./relay.config.json"
 RUNNER_STOP_CMD="echo Need_Stop_Command"
 export NODE_PATH=${WIGWAGROOT}/devicejs-core-modules/node_modules 
 
-RSMI_DIR="${WIGWAGROOT}/devicejs-core-modules/rsmi"
-RSMI_START_CMD="/usr/bin/node index.js"
-RSMI_LOG="${WIGWAGROOT}/log/rsmi.log"
-
 RUNNER_LOG="${WIGWAGROOT}/log/runner.log"
 
 function congig_cpu_scaling() {
@@ -38,11 +34,6 @@ function stop_devjs() {
     popd
 }
 function run_devjs() {
-
-    pushd $RSMI_DIR
-    $RSMI_START_CMD > $RSMI_LOG 2>&1 &
-    popd
-        
 
     if [ -e $RUNNER_LOG ]; then
 	# some trivial log rotation

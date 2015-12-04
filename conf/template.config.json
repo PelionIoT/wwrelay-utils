@@ -254,6 +254,10 @@
                     "config": {}
                 },
                 {
+                    "path" : "${thisdir}/../../wigwag-core-modules/RuleUI",
+                    "config": {}
+                },
+                {
                     "path" : "${thisdir}/../../wigwag-core-modules/cloud-tunnel",
                     "config": {
                        "apiKey": "{{apikey}}",

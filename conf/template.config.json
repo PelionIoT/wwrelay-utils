@@ -107,6 +107,7 @@
                         "apiSecret": "{{apisecret}}",
                         "udpSourcePort": 3000,
                         "udpDestinationPort": 3001,
+                        "platform": "{{wwplatform}}",
                         "sixlbr": {
                             "ifname": "Witap0",
                             "wsnNet": "bbbb::100",
@@ -149,7 +150,8 @@
                         "driverattempts": 3,
                         "pollinterval": 500,
                         "suppressrefresh": true,
-                        "notifytransactions": true
+                        "notifytransactions": true,
+                        "platform": "{{wwplatform}}"
                     }
                 } // TODO add Zigbee
             ]

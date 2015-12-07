@@ -1,8 +1,9 @@
 {
     "tags": [],
+    "filterOut": ["verbose", "info", "debug"],
     "targets": { "default":
     {
-        "file": "/wigwag/log/devicejs-log",  // this target is to the tty console
+        "file": "/wigwag/log/devicejs.log",
         "format":
         { "time": "[%ld:%03d] ",
             "level": "%-10s ",    // use some fancy printf stuff to keep the columns straight

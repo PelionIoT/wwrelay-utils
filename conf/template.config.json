@@ -7,7 +7,7 @@
     "logger": {
         "type": "global",
         "sinkaddress": "/tmp/grease.socket",
-        "config": "${thisdir}/default_logger.conf.json"  // can also be the logger config object
+        "config": "${thisdir}/relay_logger.conf.json"  // can also be the logger config object
     },
     "container_templates": {
         "example_container" : {

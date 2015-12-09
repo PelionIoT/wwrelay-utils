@@ -1,53 +1,56 @@
 {
-    "tags": [],
-    "filterOut": ["verbose", "info", "debug"],
-    "targets": { "default":
-    {
-        "file": "/wigwag/log/devicejs.log",
-        "format":
-        { "time": "[%ld:%03d] ",
-            "level": "%-10s ",    // use some fancy printf stuff to keep the columns straight
-            "tag": "\u001b[33m%-10s\u001b[39m ",
-            "origin": "\u001b[37m\u001b[100m%-10s\u001b[39m\u001b[49m " },
-        "filters":
-            [
-                { "target": "default",
-                    "mask": "debug",
-                    "pre": "\u001b[36m",
-                    "post": "\u001b[39m" },
-                { "target": "default",
-                    "mask": "verbose",
-                    "pre": "\u001b[33m",
-                    "post": "\u001b[39m" },
-                { "target": "default",
-                    "mask": "info",
-                    "pre": "\u001b[33m",
-                    "post": "\u001b[39m" },
-                { "target": "default",
-                    "mask": "trace",
-                    "pre": "\u001b[90m",
-                    "post": "\u001b[39m" },
-                { "target": "default",
-                    "mask": "warn",
-                    "pre": "\u001b[33m",
-                    "post": "\u001b[39m" },
-                { "target": "default",
-                    "mask": "error",
-                    "pre": "\u001b[31m",
-                    "post":"\u001b[39m" },
-                { "target": "default",
-                    "mask": "success",
-                    "pre": "\u001b[32m",
-                    "post": "\u001b[39m" },
-                { "target": "default", "mask": "log", "pre": "\u001b[39m" },
-                // let's do special stuff for the stdout and stderr tags
-                { "mask": "log",
-                    "tag": "stdout",
-                    "post_fmt_pre_msg": "\u001b[90m[console] \u001b[39m" }, // place this before the actual log "message"
-                { "tag": "stderr",
-                    "mask": "error",
-                    "post_fmt_pre_msg": "\u001b[90m[console] \u001b[31m",
-                    "post": "\u001b[39m" } ]
+  "filterOut" : [ "log", "console", "verbose" ], // will filter out all trace calls (will not be logged on any target)
+  "targets" : {
+    "default": {
+     "file": "/wigwag/log/devicejs.log", // comment above, and uncomment this line if you want logs to this file instead...
+     "rotate": {  // file roation settings
+       "max_files": 5,
+       "max_file_size":  5000000, // 1 MB per file
+       "max_total_size": 250000000, // 10 MB max
+       "rotate_on_start": true
+     },
+      // NOTE: all strings can be any UTF8 value, but for using unicode escape see below.
+      "delim" : "\n",    // this is the delimitter between log entries. It can be any string.
+      "format": {
+        //			    	pre: '', // pre: "pre>"   // using pre & post you can wrap each log entry
+        "time": "[%ld:%d] ",
+        "level": "<%s> ",
+        "tag": "{%s} ",
+        "origin": "(%s) "
+        //			    	post: "<POST" // post: "<post"
+      },
+      "filters": [ // if a filter for level (mask) is not in here, it won't go to the file...
+        {
+         "mask": "debug",
+         "pre": "\u001B[36m", // would make the text 'grey' using escape codes. (if you do this in JS not JSON, then it would be: "\\x1B[36m" - this is a color escape code)
+         "post": "\u001B[39m"
+        },
+        {
+         "mask": "warn",
+         "pre": "\u001B[33m", // yellow
+         "post": "\u001B[39m"
+        },
+        {
+         "mask": "error",
+         "pre": "\u001B[31m", // red
+         "post": "\u001B[39m"
+        },
+        {
+          "mask": "success",
+         "pre": "\u001B[32m", // green
+         "post": "\u001B[39m"
+        },
+        {
+          "mask": "log",
+          "pre": "\u001B[39m" // default
+//          				post: '\x1B[39m'
+        },
+        {
+          "mask": "trace",
+          "pre": "\u001B[39m",
+   				"post": "\u001B[39m"
+        }
+      ]
     }
-}
+  }
 }

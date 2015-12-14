@@ -172,7 +172,12 @@
 							"redirectURL": "/wigwag-ui/s/login/",
 							 "cloudRedirectURL": "{{cloudurl}}/s/login"
 						},
-						"port": 80
+						"port": 80,
+                                                "ssl": {
+                                                    "key": "${thisdir}/../AppServer/sampleCerts/server.key",
+                                                    "certificate": "${thisdir}/../AppServer/sampleCerts/server.crt",
+                                                    "certificateAuthority": "${thisdir}/../AppServer/sampleCerts/ca.crt"
+                                                }
 					}
 				},
 				{

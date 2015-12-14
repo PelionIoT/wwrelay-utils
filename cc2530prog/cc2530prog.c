@@ -1248,7 +1248,7 @@ int main(int argc, char **argv)
 		goto out;
 	}
 
-	if (fwsize > flash_size) {
+	if (fwsize > flash_size*2) {
 		fprintf(stderr, "firmware file too big: %ld (max: %d)\n",
 						fwsize, flash_size);
 		goto out;

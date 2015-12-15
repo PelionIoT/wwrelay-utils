@@ -174,9 +174,9 @@
 						},
 						"port": 80,
                                                 "ssl": {
-                                                    "key": "${thisdir}/../AppServer/sampleCerts/server.key",
-                                                    "certificate": "${thisdir}/../AppServer/sampleCerts/server.crt",
-                                                    "certificateAuthority": "${thisdir}/../AppServer/sampleCerts/ca.crt"
+                                                    "key": "${thisdir}/../AppServer/Certs/server.key",
+                                                    "certificate": "${thisdir}/../AppServer/Certs/server.crt",
+                                                    "certificateAuthority": "${thisdir}/../AppServer/Certs/ca.crt"
                                                 }
 					}
 				},

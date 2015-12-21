@@ -102,7 +102,7 @@
 								"tundev": "Witap0",
 								"use_raw_ethernet": false,
 								"log_level": [
-									"error"
+									"error", "routing"
 								],
                                                                 "platform": "{{wwplatform}}",
                                                                 "siodev": "{{sixlbrtty}}",
@@ -115,7 +115,7 @@
 								"firmware_file_prefix": "slip-radio_econotag",
 								"reset_GPIO_path_firmware_mc1322": "/sys/class/gpio/gpio105/value",
 								"erase_GPIO_path_firmware_mc1322": "/sys/class/gpio/gpio103/value",
-								"reset_GPIO_path_firmware_cc2530": "/sys/class/gpio/gpio102/value",
+								"reset_GPIO_path_firmware_cc2530": "{{sixlbrreset}}",
 								"relay_version": 7,
 								"nvm_data": {
 									"channel": 20,

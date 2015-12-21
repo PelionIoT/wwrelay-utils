@@ -117,10 +117,10 @@ function define_hardware(res) {
 			hw.radioProfile.hasSM_5304 = false; //Solder_Module Zwave 5304
 			hw.radioProfile.hasSM_U880 = false; //Solder_Module U880
 			hw.radioProfile.hasSM_BT = false; //Solder_Module Bluetooth
-			hw.radioProfile.SBMC_TTY = "/dev/ttyS6";
+			hw.radioProfile.SBMC_TTY = "/dev/ttyS4";
 			hw.radioProfile.CC2530_TTY = "/dev/ttyS1";
 			hw.radioProfile.SBMC_ERASE = GPIOpath + "gpio3_pd2";
-			hw.radioProfile.SBMC_RESET = GPIOpath + "gpio1_pd0";
+			hw.radioProfile.SBMC_RESET = GPIOpath + "gpio98/value";
 			hw.radioProfile.SBMC_RTS = GPIOpath + "gpio2_pd1";
 			hw.radioProfile.ZWAVE_TTY = "/dev/ttyS5";
 			hw.radioProfile.ZWAVE_ERASE = GPIOpath + "gpio4_pd3";
@@ -153,6 +153,7 @@ function createHandlebarsData(eeprom) {
 	data.cloudurl = eeprom.cloudURL;
 	data.zwavetty = eeprom.hardware.radioProfile.ZWAVE_TTY;
 	data.sixlbrtty = eeprom.hardware.radioProfile.SBMC_TTY.split("/")[2];
+	data.sixlbrreset = eeprom.hardware.radioProfile.SBMC_RESET;
 	data.sixbmac = eeprom.sixBMAC.string;
 	data.ethernetmac = eeprom.ethernetMAC.string;
 	data.wwplatform = "wwrelay_v8";

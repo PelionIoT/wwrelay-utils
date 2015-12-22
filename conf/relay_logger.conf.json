@@ -1,5 +1,5 @@
 {
-  "filterOut" : [ "log", "console", "verbose" ], // will filter out all trace calls (will not be logged on any target)
+  "filterOut" : [ "console", "verbose" ], // will filter out all trace calls (will not be logged on any target)
   "targets" : {
     "default": {
      "file": "/wigwag/log/devicejs.log", // comment above, and uncomment this line if you want logs to this file instead...

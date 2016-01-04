@@ -252,7 +252,16 @@
 				},
 				{
 					"path": "${thisdir}/../../wigwag-core-modules/RuleUI",
-					"config": {}
+					"config": {
+                                           "debug_mode":true,
+                                           "debug_level" : 3, // goes up to 3, default 1
+                                           "RULE_NODE_TYPES_DIRECTORY": [
+                                               "${thisdir}/../RuleEngine/src/nodes"
+                                           ],
+                                           "FORMS_DIR" : [
+                                               { "path": "${thisdir}/schemaFormDialogs", "ignores" : ["_public"] }
+                                           ]
+                                         }
 				},
 				{
 					"path": "${thisdir}/../../wigwag-core-modules/cloud-tunnel",

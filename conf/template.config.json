@@ -259,7 +259,7 @@
                                                "${thisdir}/../RuleEngine/src/nodes"
                                            ],
                                            "FORMS_DIR" : [
-                                               { "path": "${thisdir}/schemaFormDialogs", "ignores" : ["_public"] }
+                                               { "path": "${thisdir}/../../wigwag-core-modules/RuleUI/schemaFormDialogs", "ignores" : ["_public"] }
                                            ]
                                          }
 				},

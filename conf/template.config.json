@@ -216,6 +216,15 @@
 				{
 					"path": "${thisdir}/../../wigwag-core-modules/LEDController",
 					"config": {
+						"ledBrightness": 10,
+				        "redAlertMail": true,
+				        "sendTo": "dev@izuma.net",
+				        "attachments":[
+				            {   
+				                "filename": "devicejs.log",
+				                "path": "/wigwag/log/devicejs.log"
+				            }
+				        ]
 					}
 				}
 			]

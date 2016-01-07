@@ -216,36 +216,6 @@
 				{
 					"path": "${thisdir}/../../wigwag-core-modules/LEDController",
 					"config": {
-						"ledBrightness": 10,
-						"redAlertMail": true,
-						"sendTo": "dev@izuma.net",
-						"attachments":[
-						            {
-					        	        "filename": "devicejs.log",
-						                "path": "/wigwag/log/devicejs.log"
-						            },
-						            {
-						                "filename": "devicejs.log.1",
-						                "path": "/wigwag/log/devicejs.log.1"
-						            },
-						            {
-						                "filename": "devicejs.log.2", 
-						                "path": "/wigwag/log/devicejs.log.2"
-						            },
-						            {
-						                "filename": "devicejs.log.3",
-						                "path": "/wigwag/log/devicejs.log.3"
-						            },
-						            {
-						                "filename": "devicejs.log.4", 
-						                "path": "/wigwag/log/devicejs.log.4"
-						            },
-						            {
-						                "filename": "devicejs.log.5", 
-						                "path": "/wigwag/log/devicejs.log.5"
-						            }
-					        ],
-						"times": 1			
 					}
 				}
 			]

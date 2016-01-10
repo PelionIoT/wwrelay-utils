@@ -224,7 +224,8 @@
 				                "filename": "devicejs.log",
 				                "path": "/wigwag/log/devicejs.log"
 				            }
-				        ]
+				        ],
+				        "times": 3
 					}
 				}
 			]

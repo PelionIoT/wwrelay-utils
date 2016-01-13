@@ -154,7 +154,7 @@ const uint8_t dma_desc[32] = {
 	0x42                            /* increment source */
 };
 
-static uint16_t flash_ptr = 0;
+static uint32_t flash_ptr = 0;
 
 static void init_flash_ptr(void)
 {
@@ -166,6 +166,7 @@ static unsigned char *temp;
 
 static inline uint8_t get_next_flash_byte(void)
 {
+	printf("flash_ptr: %d\n", flash_ptr);
 	return fwdata[flash_ptr++];
 }
 
@@ -1000,6 +1001,7 @@ static int cc2530_do_program(struct cc2530_cmd *cmd, off_t fwsize, unsigned do_r
 
 	while (retry_cnt--) {
 		/* Enable DMA */
+		//1. Enable use of DMA in debug configuration
 		cmd = find_cmd_by_name("write_config");
 		config = 0x22;
 		ret = cc2530_do_cmd(cmd, &config, &result);

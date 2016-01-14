@@ -133,7 +133,7 @@
 					"path": "${thisdir}/../zwave",
 					"config": {
 						"siodev": "{{zwavetty}}",
-						"modpath": "",
+						"modpath": "/../node_modules/ww-node-openzwave/",
 						"consoleoutput": false,
 						"logging": false,
 						"saveconfig": false,

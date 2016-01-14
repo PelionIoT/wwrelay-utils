@@ -68,7 +68,7 @@
             ],
             "databaseConfig": {
                 "port": 9000,
-                "dbFile": "/wigwag/etc/devicejs/db",
+                "dbFile": "/userdata/etc/devicejs/db",
                 "logger": {
                     "enabled": true
                 }

@@ -154,7 +154,7 @@ const uint8_t dma_desc[32] = {
 	0x42                            /* increment source */
 };
 
-static uint32_t flash_ptr = 0;
+static uint64_t flash_ptr = 0;
 
 static void init_flash_ptr(void)
 {
@@ -166,7 +166,6 @@ static unsigned char *temp;
 
 static inline uint8_t get_next_flash_byte(void)
 {
-	printf("flash_ptr: %d\n", flash_ptr);
 	return fwdata[flash_ptr++];
 }
 
@@ -1045,13 +1044,13 @@ static int cc2530_do_program(struct cc2530_cmd *cmd, off_t fwsize, unsigned do_r
 		return ret;
 	}
 
-	//init_flash_ptr();
+	init_flash_ptr();
 
-	//blocks = DIV_ROUND_UP(fwsize, PROG_BLOCK_SIZE);
+	blocks = DIV_ROUND_UP(fwsize, PROG_BLOCK_SIZE);
 
-	// ret = cc2530_program_flash(cmd, blocks);
-	// if (ret && verbose)
-	// 	printf("Programmed at maximum speed\n");
+	ret = cc2530_program_flash(cmd, blocks);
+	if (ret && verbose)
+		printf("Programmed at maximum speed with flash_ptr %d\n", flash_ptr);
 
 	if (!do_readback)
 		goto cc2530_reset_mcu;

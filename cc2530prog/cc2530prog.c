@@ -1045,13 +1045,13 @@ static int cc2530_do_program(struct cc2530_cmd *cmd, off_t fwsize, unsigned do_r
 		return ret;
 	}
 
-	init_flash_ptr();
+	//init_flash_ptr();
 
-	blocks = DIV_ROUND_UP(fwsize, PROG_BLOCK_SIZE);
+	//blocks = DIV_ROUND_UP(fwsize, PROG_BLOCK_SIZE);
 
-	ret = cc2530_program_flash(cmd, blocks);
-	if (ret && verbose)
-		printf("Programmed at maximum speed\n");
+	// ret = cc2530_program_flash(cmd, blocks);
+	// if (ret && verbose)
+	// 	printf("Programmed at maximum speed\n");
 
 	if (!do_readback)
 		goto cc2530_reset_mcu;

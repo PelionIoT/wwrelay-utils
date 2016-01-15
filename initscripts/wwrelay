@@ -19,6 +19,13 @@ WIGWAGROOT="/wigwag"
 GPIO_DIR="${WIGWAGROOT}/wwrelay-utils/GPIO"
 WWRELAY_LOG="${WIGWAGROOT}/log/wwrelay.log"
 GPIO_LOG="${WIGWAGROOT}/log/gpio.log"
+DBDIR="/userdata/etc/devicejs/db"
+
+function prepDB() {                          
+  if [ ! -e ${DBDIR} ]; then
+     mkdir -p ${DBDIR}
+  fi                                                                    
+}                                                                       
 
 function genCerts() {
 
@@ -46,6 +53,7 @@ case "$1" in
     start)
         /wigwag/wwrelay-utils/GPIO/led.sh 10 0 10
 	echo "Starting WigWag Relay"
+        prepDB
         genCerts
         if [ -x $WWRELAY_LOG ] ; then
             mv $WWRELAY_LOG $WWRLAY_LOG.1

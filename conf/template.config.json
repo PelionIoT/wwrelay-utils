@@ -236,7 +236,7 @@
 				{
 					"path": "${thisdir}/../../wigwag-core-modules/LEDController",
 					"config": {
-						"ledBrightness": 10,
+						"ledBrightness": 5,
 				        "redAlertMail": true,
 				        "sendTo": "dev@izuma.net",
 				        "attachments":[

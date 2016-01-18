@@ -70,9 +70,9 @@
                             "--max-old-space-size=128",
                             "--max-semi-space-size=1"
 			],
-                        "restart" : {
-                            "limit" : 10,
-                            "timeout" : 5000
+                        "restart": {          // not required, but options are:
+                            "timeout" : 5000,  // the timeout between restarts will still take affect
+                            "force_restart" : [ 1, "days" ] // this array are parameters to moment.duration()
                         },
 			"env": {
 				"NODE_PATH": "${NODE_PATH}:${thisdir}/../node_modules:/wigwag/devicejs-core-modules/IPStack/node_modules"

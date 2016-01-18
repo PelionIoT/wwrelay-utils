@@ -60,7 +60,7 @@
 				}
 			}
 		},
-		"core-devices": {
+                "core-comm": {
 			"limits": {
 				"limit_group": ""
                                 // cgroup limits here - TBD
@@ -77,15 +77,7 @@
 			"env": {
 				"NODE_PATH": "${NODE_PATH}:${thisdir}/../node_modules:/wigwag/devicejs-core-modules/IPStack/node_modules"
 			},
-			"modules": [
-				{
-					"path": "${thisdir}/../core-lighting",
-					"config": {}
-				},
-				{
-					"path": "${thisdir}/../core-interfaces",
-					"config": {}
-				},
+                        "modules": [                                           
 				{
 					"path": "${thisdir}/../wigwag-devices",
 					"config": {
@@ -128,6 +120,34 @@
 							}
 						}
 					}
+				}
+                        ]
+                },
+		"core-devices": {
+			"limits": {
+				"limit_group": ""
+                                // cgroup limits here - TBD
+			},
+			"node_args": [
+                            "--max-executable-size=96",
+                            "--max-old-space-size=128",
+                            "--max-semi-space-size=1"
+			],
+                        "restart": {          // not required, but options are:
+                            "timeout" : 5000,  // the timeout between restarts will still take affect
+                            "limit" : 10
+                        },
+			"env": {
+				"NODE_PATH": "${NODE_PATH}:${thisdir}/../node_modules:/wigwag/devicejs-core-modules/IPStack/node_modules"
+			},
+			"modules": [
+				{
+					"path": "${thisdir}/../core-lighting",
+					"config": {}
+				},
+				{
+					"path": "${thisdir}/../core-interfaces",
+					"config": {}
 				},
 				{
 					"path": "${thisdir}/../zwave",

@@ -64,7 +64,7 @@ case "$1" in
         fi
 
         cd ${WIGWAGROOT}/wwrelay-utils/I2C
-        /usr/bin/node ./ww_eeprom_reader.js  http://45.56.67.145:8080 true > $WWRELAY_LOG 2>&1
+        /usr/bin/node ./ww_eeprom_reader.js  https://cloud.wigwag.com true > $WWRELAY_LOG 2>&1
 
 	;;	
     stop)

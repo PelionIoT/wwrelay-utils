@@ -54,7 +54,7 @@ function read(ray, str, callback) {
 				for (var i = 0; i < res.length; i++) {
 					tempi = res.readUInt8(i);
 					temps = tempi.toString(16);
-					if (temps.length == 1) temps += "0";
+					if (temps.length == 1) newstr += "0";
 					newray.push(tempi);
 					newstr += temps;
 				};

@@ -24,6 +24,8 @@ const char *slip_siodev = NULL;
 speed_t slip_baudrate = BAUDRATE;
 int slip_flowcontrol = 0;
 int slipTestBytes[4];
+int factoryTestBytes[3]; //player, num, delay
+char *factoryPlayer;
 
 
 static int usermode = 0;
@@ -41,6 +43,7 @@ unsigned char input_packet[MAX_SLIP_BUF];
 int input_packet_len = 0;
 int byteIndex = 0;
 int slipTestMode = 0;
+int factoryTestMode = 0;
 
 #if RX_STATS
 int last_seq = -1;
@@ -51,12 +54,17 @@ int s = 0, n = 0;
 #endif //RX_STATS
 
 #if RELAY_1
-static unsigned char ext_addr[8] = {0x00, 0xA5, 0x90, 0x00, 0x00, 0x39, 0xBB, 0x01};
-static unsigned char dstaddr[8] = {0x00, 0xA5, 0x90, 0x00, 0x00, 0x08, 0xBB, 0x02}; 
+static unsigned char ext_addr[8] = {0x00, 0xA5, 0x09, 0x00, 0x00, 0x39, 0xBB, 0x01};
+static unsigned char dstaddr[8] = {0x00, 0xA5, 0x09, 0x00, 0x00, 0x08, 0xBB, 0x02}; 
 #else 
-static unsigned char dstaddr[8] = {0x00, 0xA5, 0x90, 0x00, 0x00, 0x39, 0xBB, 0x01}; //BB - RL
-static unsigned char ext_addr[8] = {0x00, 0xA5, 0x90, 0x00, 0x00, 0x08, 0xBB, 0x02}; //EA - EM
+static unsigned char dstaddr[8] = {0x00, 0xA5, 0x09, 0x00, 0x00, 0x39, 0xBB, 0x01}; //BB - RL
+static unsigned char ext_addr[8] = {0x00, 0xA5, 0x09, 0x00, 0x00, 0x08, 0xBB, 0x02}; //EA - EM
 #endif //RELAY
+
+uint8_t src_mac_addr[8];
+uint8_t dest_mac_addr[8];
+
+uint8_t possible_mac_addrs[2][8] = { {0x00, 0xA5, 0x09, 0x00, 0x00, 0x39, 0xBB, 0x01}, {0x00, 0xA5, 0x09, 0x00, 0x00, 0x08, 0xBB, 0x02} };
 
 
 #define ZWAVE_COMMAND_RESP_ENABLE_INTERFACE1   0xAA
@@ -128,6 +136,10 @@ int lost_pp_packets = 0;
 int lost_pp_seqnos[100];
 int pp_first_packet = 1;
 int previous_rx_seqno = 0;
+int8_t packet_stat[100][3];
+
+
+int total_replied = 0;
 
 int throttle_ok = 1;
 void pingpong_rx(int num);
@@ -141,29 +153,40 @@ void handle_alarm(int sig)
 void get_tx_stats(void) 
 {
   fprintf(stdout, "****************TX-STATUS*****************\n");
-  fprintf(stdout, "Total number of packets transmitted: %d\n", num_tx_packets - starting_tx_seqno);
-  fprintf(stdout, "Total number of packets responded: %d\n", total_num_responded);
-  fprintf(stdout, "Number of MAC_TX_OK: %d\n",            tx_stat_array[MAC_TX_OK][0]);
-  fprintf(stdout, "Number of MAC_TX_COLLISION: %d\n",     tx_stat_array[MAC_TX_COLLISION][0]);
-  fprintf(stdout, "Number of MAC_TX_NOACK: %d\n",         tx_stat_array[MAC_TX_NOACK][0]);
-  fprintf(stdout, "Number of MAC_TX_DEFERRED: %d\n",      tx_stat_array[MAC_TX_DEFERRED][0]);
-  fprintf(stdout, "Number of MAC_TX_ERR: %d\n",           tx_stat_array[MAC_TX_ERR][0]);
-  fprintf(stdout, "Number of MAC_TX_ERR_FATAL: %d\n",     tx_stat_array[MAC_TX_ERR_FATAL][0]);
+  fprintf(stdout, "\tTotal number of packets transmitted: %d\n", num_tx_packets - starting_tx_seqno);
+  fprintf(stdout, "\tTotal number of packets responded: %d\n", total_num_responded);
+  fprintf(stdout, "\tNumber of MAC_TX_OK: %d\n",            tx_stat_array[MAC_TX_OK][0]);
+  fprintf(stdout, "\tNumber of MAC_TX_COLLISION: %d\n",     tx_stat_array[MAC_TX_COLLISION][0]);
+  fprintf(stdout, "\tNumber of MAC_TX_NOACK: %d\n",         tx_stat_array[MAC_TX_NOACK][0]);
+  fprintf(stdout, "\tNumber of MAC_TX_DEFERRED: %d\n",      tx_stat_array[MAC_TX_DEFERRED][0]);
+  fprintf(stdout, "\tNumber of MAC_TX_ERR: %d\n",           tx_stat_array[MAC_TX_ERR][0]);
+  fprintf(stdout, "\tNumber of MAC_TX_ERR_FATAL: %d\n",     tx_stat_array[MAC_TX_ERR_FATAL][0]);
+  fprintf(stdout, "******************************************\n");
+}
+void get_rx_stats(void) 
+{
+  fprintf(stdout, "****************RX-STATUS*****************\n");
+  fprintf(stdout, "\tTotal number of packets received: %d\n", total_replied);
+  fprintf(stdout, "\tSID\tOutgoingRSSI\tIncomingRSSI\n");
+  int i = 0;
+  for(i = 0; i < (num_tx_packets - starting_tx_seqno); i++) {
+    fprintf(stdout, "\t%d\t%d\t%d\n", packet_stat[0], packet_stat[1], packet_stat[2]);
+  }
   fprintf(stdout, "******************************************\n");
 }
 //---------------------------------------------------------------------------
-void get_rx_stats(void) 
-{
-  int i = 0;
-  fprintf(stdout, "****************RX-STATUS*****************\n");
-  fprintf(stdout, "Total number of packets lost: %d\n", lost_pp_packets);
-  fprintf(stdout, "Lost seqnos: \n");
-  for(i = 0; i < lost_pp_packets; i++) {
-    fprintf(stdout, "%d ", lost_pp_seqnos[i]);
-  }
-  fprintf(stdout, "\n");
-  fprintf(stdout, "******************************************\n");
-}
+// void get_rx_stats(void) 
+// {
+//   int i = 0;
+//   fprintf(stdout, "****************RX-STATUS*****************\n");
+//   fprintf(stdout, "Total number of packets lost: %d\n", lost_pp_packets);
+//   fprintf(stdout, "Lost seqnos: \n");
+//   for(i = 0; i < lost_pp_packets; i++) {
+//     fprintf(stdout, "%d ", lost_pp_seqnos[i]);
+//   }
+//   fprintf(stdout, "\n");
+//   fprintf(stdout, "******************************************\n");
+// }
 //---------------------------------------------------------------------------
 void report_tx_stat(int sid, int status) 
 {
@@ -184,7 +207,14 @@ void start_tx_monitor(int num)
   total_num_responded = 0;
   //clear the counters
   memset(tx_stat_array, 0, sizeof(tx_stat_array[0][0])*MAC_TX_STAT_END*1);
+  memset(packet_stat, 0, sizeof(packet_stat[0][0])*100*3);
 }
+//---------------------------------------------------------------------------
+// void parse_factory_received_packet(unsigned char *data, int len) 
+// {
+//   uint8_t sid = data[]
+//   packet_stat[]
+// }
 //---------------------------------------------------------------------------
 void start_rx_monitor(int num)
 {
@@ -256,6 +286,86 @@ void print_packet(void)
 }
 // #endif // DEBUG_RAW
 
+//---------------------------------------------------------------------------
+static void send_802154frame(unsigned char *data, int len, int sid)
+{
+
+  int pos = 0, size = 0;
+  int i = 0;
+  uint8_t buf[28 * 3 + PACKETBUF_SIZE + 3];
+
+  memset(frame802154, 0, sizeof(frame802154));
+  /* Frame Control Field: [7] 0-Reserved,                                                         */
+  /*                      [6] 1-Intra PAN {1-Source PAN ID ommitted, 0-Source PAN ID required},   */
+  /*                      [5] 1-Ack req,                                                          */
+  /*                      [4] 0-Frame Pending                                                     */
+  /*                      [3] 1-Security Enabled,                                                 */
+  /*                      [0-2] 001-Frame type                                                    */
+  frame802154[pos++] = 0x41;
+
+  //Frame Control Field:  [14-15] 11-Source addressing mode,                                      */
+  /*                      [12-13] 00-Reserved                                                     */
+  /*                      [10-11] 11-Destin addressing mode,                                      */
+  /*                      [8-9] 00-Reserved                                                       */
+#if !DEST_BROADCAST_ADDR
+  frame802154[pos++] = 0xCC;  
+#else
+  frame802154[pos++] = 0xC8;
+#endif //DEST_BROADCAST_ADDR
+
+  frame802154[pos++] = sid; /*Sequence Number*/
+  frame802154[pos++] = IEEE802154_PANID & 0xFF; /*Destination PAN ID*/
+  frame802154[pos++] = (IEEE802154_PANID >> 8) & 0xFF;
+
+#if !DEST_BROADCAST_ADDR
+  for(i=LINKADDR_SIZE-1; i >= 0; i--) { /*Destination address*/
+    frame802154[pos++] = dstaddr[i];    
+  }    
+#else
+  for(i=2-1; i >= 0; i--) { /*Destination address*/
+    frame802154[pos++] = 0xFF;    
+  } 
+#endif //DEST_BROADCAST_ADDR
+ 
+  /*If the Intra PAN bit is set, then ignore the Source PAN ID
+  Otherwise*/
+  if ((frame802154[0] & 0x40) == 0x00) {
+    frame802154[pos++] = IEEE802154_PANID & 0xFF; //Source PAN ID
+    frame802154[pos++] = (IEEE802154_PANID >> 8) & 0xFF;
+  }
+
+  // srcaddr.copy(buf, pos, 0, MAC_ADDR_LEN);
+  // pos += 8;
+  for(i=LINKADDR_SIZE-1; i >= 0; i--) { //Source address
+    frame802154[pos++] = ext_addr[i];    
+  }
+
+  /* Auxillary Header - enable if security */
+  if((frame802154[0] & 0x08)) {
+    /* security enabled */
+    frame802154[pos++] = (0x04 << 5) | (0x01 << 3); /* Security Control */
+    frame802154[pos++] = 0x00; /* 4 Bytes - Frame Counter */
+    frame802154[pos++] = 0x00;
+    frame802154[pos++] = 0x00;
+    frame802154[pos++] = 0x00;
+    frame802154[pos++] = 0x01; /* Key Index */
+  }
+ 
+  for(i=0; i<len; i++) {
+    frame802154[pos++] = data[i];   //data
+  }  
+
+  buf[0] = '!';
+  buf[1] = 'S';
+  buf[2] = sid;
+  
+  size = packetutils_serialize_atts(&buf[3], sizeof(buf) - 3);
+  memcpy(&buf[3 + size], frame802154, pos);
+  
+  write_to_slip(buf, pos + size + 3);
+  slip_flushbuf(); 
+}
+
 int m = 0;
 int serial_input(void) 
 {
@@ -304,6 +414,31 @@ int serial_input(void)
                 } else {
                   fprintf(stderr, "Test unsuccessful, slip not working... \n");
                   exit(2);
+                }
+              }
+            }
+            if(factoryTestMode) {
+              if(strcmp(factoryPlayer, "rx") == 0) {
+                //receive the packet, get the RSSI value, add it to the buffer and forward the data.
+                int8_t receivedRSSI = input_packet[1];
+                uint8_t sid = input_packet[5];
+                input_packet[34] = receivedRSSI & 0xFF;
+                input_packet[35] = sid & 0xFF;
+                fprintf(stdout, "sid: %d, received RSSI: %d\n", sid, receivedRSSI);
+                send_802154frame(input_packet[23], 12, sid);
+              } else if(strcmp(factoryPlayer, "tx") == 0) {
+                //received the reboud packet and report both RSSI with seqnumber
+                if(input_packet[0] == 0x21 && input_packet[1] == 0x52) {
+                  report_tx_stat(input_packet[2], input_packet[3]);
+                } else {
+                  total_replied++;
+                  int8_t reboudRSSI = input_packet[1];
+                  int8_t outgoingRSSI = input_packet[34];
+                  uint8_t sid = input_packet[35];
+                  packet_stat[sid][0] = 0x01;
+                  packet_stat[sid][1] = outgoingRSSI;
+                  packet_stat[sid][2] = reboudRSSI;
+                  fprintf(stdout, "Got the reply for sid: %d, outgoingRSSI: %d, incomingRSSI: %d\n", sid, outgoingRSSI, reboudRSSI);
                 }
               }
             }
@@ -813,85 +948,6 @@ packetutils_deserialize_atts(const uint8_t *data, int size)
   fprintf(stdout, "\n");
   return pos;
 }
-//---------------------------------------------------------------------------
-static void send_802154frame(unsigned char *data, int len, int sid)
-{
-
-  int pos = 0, size = 0;
-  int i = 0;
-  uint8_t buf[28 * 3 + PACKETBUF_SIZE + 3];
-
-  memset(frame802154, 0, sizeof(frame802154));
-  /* Frame Control Field: [7] 0-Reserved,                                                         */
-  /*                      [6] 1-Intra PAN {1-Source PAN ID ommitted, 0-Source PAN ID required},   */
-  /*                      [5] 1-Ack req,                                                          */
-  /*                      [4] 0-Frame Pending                                                     */
-  /*                      [3] 1-Security Enabled,                                                 */
-  /*                      [0-2] 001-Frame type                                                    */
-  frame802154[pos++] = 0x41;
-
-  //Frame Control Field:  [14-15] 11-Source addressing mode,                                      */
-  /*                      [12-13] 00-Reserved                                                     */
-  /*                      [10-11] 11-Destin addressing mode,                                      */
-  /*                      [8-9] 00-Reserved                                                       */
-#if !DEST_BROADCAST_ADDR
-  frame802154[pos++] = 0xCC;  
-#else
-  frame802154[pos++] = 0xC8;
-#endif //DEST_BROADCAST_ADDR
-
-  frame802154[pos++] = sid; /*Sequence Number*/
-  frame802154[pos++] = IEEE802154_PANID & 0xFF; /*Destination PAN ID*/
-  frame802154[pos++] = (IEEE802154_PANID >> 8) & 0xFF;
-
-#if !DEST_BROADCAST_ADDR
-  for(i=LINKADDR_SIZE-1; i >= 0; i--) { /*Destination address*/
-    frame802154[pos++] = dstaddr[i];    
-  }    
-#else
-  for(i=2-1; i >= 0; i--) { /*Destination address*/
-    frame802154[pos++] = 0xFF;    
-  } 
-#endif //DEST_BROADCAST_ADDR
- 
-  /*If the Intra PAN bit is set, then ignore the Source PAN ID
-  Otherwise*/
-  if ((frame802154[0] & 0x40) == 0x00) {
-    frame802154[pos++] = IEEE802154_PANID & 0xFF; //Source PAN ID
-    frame802154[pos++] = (IEEE802154_PANID >> 8) & 0xFF;
-  }
-
-  // srcaddr.copy(buf, pos, 0, MAC_ADDR_LEN);
-  // pos += 8;
-  for(i=LINKADDR_SIZE-1; i >= 0; i--) { //Source address
-    frame802154[pos++] = ext_addr[i];    
-  }
-
-  /* Auxillary Header - enable if security */
-  if((frame802154[0] & 0x08)) {
-    /* security enabled */
-    frame802154[pos++] = (0x04 << 5) | (0x01 << 3); /* Security Control */
-    frame802154[pos++] = 0x00; /* 4 Bytes - Frame Counter */
-    frame802154[pos++] = 0x00;
-    frame802154[pos++] = 0x00;
-    frame802154[pos++] = 0x00;
-    frame802154[pos++] = 0x01; /* Key Index */
-  }
- 
-  for(i=0; i<len; i++) {
-    frame802154[pos++] = data[i];   //data
-  }  
-
-  buf[0] = '!';
-  buf[1] = 'S';
-  buf[2] = sid;
-  
-  size = packetutils_serialize_atts(&buf[3], sizeof(buf) - 3);
-  memcpy(&buf[3 + size], frame802154, pos);
-  
-  write_to_slip(buf, pos + size + 3);
-  slip_flushbuf(); 
-}
 
 void send_dummy_packet(void) 
 {
@@ -1079,6 +1135,30 @@ void start_tx(int num, int delay)
   num_tx_packets = seqno;
 }
 //---------------------------------------------------------------------------
+void factoryTestRadio(int num, int delay) 
+{
+  if(strcmp(factoryPlayer, "rx") == 0) {
+
+  } else if (strcmp(factoryPlayer, "tx") == 0) {
+    uint8_t buf[10] = "0123456789";
+    int i = 0;
+    start_tx_monitor(seqno);
+    for(i = 0; i < num; i++) {
+      packet_stat[i][0] = 0;
+      packet_stat[i][1] = 0;
+      packet_stat[i][2] = 0;
+      send_802154frame(buf, sizeof(buf), seqno);
+      fprintf(stdout, "Sent packet seqno: %d\n", seqno);
+      seqno++;
+      usleep(delay*1000);
+      //Should have received the reply by now.
+      //verify the reply and sid and move on.
+    }
+    //get_tx_stats(seqno);
+    num_tx_packets = seqno;
+  }
+}
+//---------------------------------------------------------------------------
 void pingpong_rx(int num) 
 {
   // if(pp_first_packet) {
@@ -1218,6 +1298,7 @@ void usage(const char *prog)
   fprintf(stderr, " [-d siodev]   Slip I/0 dev - Serial device (default /dev/ttyUSB0)\n");
   fprintf(stderr, " [-B baudrate] Baudrate - 9600, 19200, 38400. 57600, 115200 (default 115200)\n");
   fprintf(stderr, " [-t byte1 byte2] Slip-radio test mode - slip will return sum to two input bytes\n");
+  fprintf(stderr, " [-f player channel num delay] factory test, similar to pingpong\n");
 }
 //---------------------------------------------------------------------------
 void slip_usage(void) 
@@ -1303,6 +1384,15 @@ int main(int argc, char *argv[])
         slipTestBytes[byteIndex++] = atoi(optarg);
         break;
 
+      case 'f':
+        factoryTestMode = 1;
+        if(byteIndex == 0) {
+          factoryPlayer = optarg;
+        } else {
+          factoryTestBytes[byteIndex++] = atoi(optarg);
+        }
+        break;
+
       case 'h':
         usage(prog);
         return 1;
@@ -1368,6 +1458,45 @@ int main(int argc, char *argv[])
     fprintf(stdout, "Testing slip radio with bytes: %d, %d\n", slipTestBytes[0], slipTestBytes[1]);
     fprintf(stdout, "Expected version: %d.%d\n", slipTestBytes[2], slipTestBytes[3]);
     testSlipRadio();
+  }
+
+  if(factoryTestMode) {
+    //Set the channel
+    int channel = factoryTestBytes[0];
+    if(channel > 10 && channel < 26) {
+      send_channel(channel); 
+      // send_channel(channel); 
+      fprintf(stdout, "Channel %d, set\n", channel);
+    } else {
+      fprintf(stderr, "Channel %d invalid, input between 11-25\n", channel);
+      exit(2);
+    }
+    // usleep(100);
+
+    //set the mac address based on the player
+    if(strcmp(factoryPlayer, "rx") == 0) {
+      fprintf(stdout, "Starting factory radio as RECEIVER\n");
+      memcpy(src_mac_addr, possible_mac_addrs[0], LINKADDR_SIZE);
+      memcpy(dest_mac_addr, possible_mac_addrs[1], LINKADDR_SIZE);
+      send_macaddr(src_mac_addr);
+      usleep(1000);
+    } else if (strcmp(factoryPlayer, "tx") == 0) {
+      fprintf(stdout, "Starting factory radio as TRANSMITTER\n");
+      memcpy(src_mac_addr, possible_mac_addrs[1], LINKADDR_SIZE);
+      memcpy(dest_mac_addr, possible_mac_addrs[0], LINKADDR_SIZE);
+      send_macaddr(src_mac_addr);
+      usleep(1000);
+    } else {
+      fprintf(stderr, "Factory test player %s not allowed\n", factoryPlayer);
+      exit(2);
+    }
+
+    // request_macaddr(); //store the macaddr into src_mac_addr
+
+    factoryTestRadio(factoryTestBytes[1], factoryTestBytes[2]);
+    get_tx_stats();
+    get_rx_stats();
+    exit(0);
   }
 
 

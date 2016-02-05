@@ -25,6 +25,6 @@
 #define PACKETBUF_SIZE 128
 #define LINKADDR_SIZE 8
 
-#define DEST_BROADCAST_ADDR 1
+#define DEST_BROADCAST_ADDR 0
 
 #endif /* _SLIP_COMMS_H_ */

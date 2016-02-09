@@ -7,7 +7,7 @@
 #ifndef _SLIP_COMMS_H_
 #define _SLIP_COMMS_H_
 
-#define DEBUG 1
+#define DEBUG 0
 #define DEBUG_RAW 1
 #define RX_STATS 0
 

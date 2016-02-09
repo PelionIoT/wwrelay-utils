@@ -24,8 +24,10 @@ const char *slip_siodev = NULL;
 speed_t slip_baudrate = BAUDRATE;
 int slip_flowcontrol = 0;
 int slipTestBytes[4];
-int factoryTestBytes[3]; //player, num, delay
+int factoryTestBytes[3]; //player, channel, num, delay
 char *factoryPlayer;
+char *resultFileName;
+uint8_t srcMacProvided = 0;
 
 
 static int usermode = 0;
@@ -44,6 +46,9 @@ int input_packet_len = 0;
 int byteIndex = 0;
 int slipTestMode = 0;
 int factoryTestMode = 0;
+int factor = 1000;
+int timer = 0;
+int tx_interval = 0;
 
 #if RX_STATS
 int last_seq = -1;
@@ -65,7 +70,6 @@ uint8_t src_mac_addr[8];
 uint8_t dest_mac_addr[8];
 
 uint8_t possible_mac_addrs[2][8] = { {0x00, 0xA5, 0x09, 0x00, 0x00, 0x39, 0xBB, 0x01}, {0x00, 0xA5, 0x09, 0x00, 0x00, 0x08, 0xBB, 0x02} };
-
 
 #define ZWAVE_COMMAND_RESP_ENABLE_INTERFACE1   0xAA
 #define ZWAVE_COMMAND_RESP_ENABLE_INTERFACE2   0x55
@@ -150,6 +154,28 @@ void handle_alarm(int sig)
 {
   throttle_ok = 1;
 }
+
+void write_json_obj(void) 
+{
+#define JSON_SIZE 200
+  char buffer[JSON_SIZE];
+  int cx = 0;
+  int i = 0;
+
+  memset(buffer, 0, sizeof(buffer));
+
+  cx += snprintf(buffer + cx, JSON_SIZE - cx, "{");
+  for(i = 0; i < (num_tx_packets - starting_tx_seqno); i++)  {
+    cx += snprintf(buffer + cx, JSON_SIZE - cx, "\"%d\": [%d,%d,%d],", i, packet_stat[i][0], (uint8_t)packet_stat[i][1], (uint8_t)packet_stat[i][2]);
+  }
+  cx += snprintf(buffer + cx - 1, JSON_SIZE - cx + 1, "}") - 1;
+
+  FILE * pFile;
+  pFile = fopen (resultFileName, "wb");
+  fwrite (buffer , sizeof(char), cx, pFile);
+  fclose (pFile);
+}
+
 void get_tx_stats(void) 
 {
   fprintf(stdout, "****************TX-STATUS*****************\n");
@@ -167,10 +193,10 @@ void get_rx_stats(void)
 {
   fprintf(stdout, "****************RX-STATUS*****************\n");
   fprintf(stdout, "\tTotal number of packets received: %d\n", total_replied);
-  fprintf(stdout, "\tSID\tOutgoingRSSI\tIncomingRSSI\n");
+  fprintf(stdout, "\tSID\tStatus\toRSSI\tiRSSI\n");
   int i = 0;
   for(i = 0; i < (num_tx_packets - starting_tx_seqno); i++) {
-    fprintf(stdout, "\t%d\t%d\t%d\n", packet_stat[0], packet_stat[1], packet_stat[2]);
+    fprintf(stdout, "\t%d\t%d\t%d\t%d\n", i, packet_stat[i][0], packet_stat[i][1], packet_stat[i][2]);
   }
   fprintf(stdout, "******************************************\n");
 }
@@ -417,28 +443,64 @@ int serial_input(void)
                 }
               }
             }
-            if(factoryTestMode) {
+            if(factoryTestMode && input_packet_len > 0) {
               if(strcmp(factoryPlayer, "rx") == 0) {
                 //receive the packet, get the RSSI value, add it to the buffer and forward the data.
-                int8_t receivedRSSI = input_packet[1];
-                uint8_t sid = input_packet[5];
-                input_packet[34] = receivedRSSI & 0xFF;
-                input_packet[35] = sid & 0xFF;
-                fprintf(stdout, "sid: %d, received RSSI: %d\n", sid, receivedRSSI);
-                send_802154frame(input_packet[23], 12, sid);
+                dest_mac_addr[0] = input_packet[15];
+                dest_mac_addr[1] = input_packet[14];
+                dest_mac_addr[2] = input_packet[13];
+                dest_mac_addr[3] = input_packet[12];
+                dest_mac_addr[4] = input_packet[11];
+                dest_mac_addr[5] = input_packet[10];
+                dest_mac_addr[6] = input_packet[9];
+                dest_mac_addr[7] = input_packet[8];
+
+                if(memcmp(dest_mac_addr, ext_addr, LINKADDR_SIZE) == 0) {
+                  int8_t receivedRSSI = input_packet[1];
+                  uint8_t sid = input_packet[5];
+                  uint8_t data[12];
+                  input_packet[34] = receivedRSSI & 0xFF;
+                  input_packet[35] = sid & 0xFF;
+                  fprintf(stdout, "sid: %d, received RSSI: %d\n", sid, receivedRSSI);
+                  memcpy(data, input_packet + 24, 12);
+                  // fprintf(stdout, "copeid data\n");
+                  dstaddr[0] = input_packet[23];
+                  dstaddr[1] = input_packet[22];
+                  dstaddr[2] = input_packet[21];
+                  dstaddr[3] = input_packet[20];
+                  dstaddr[4] = input_packet[19];
+                  dstaddr[5] = input_packet[18];
+                  dstaddr[6] = input_packet[17];
+                  dstaddr[7] = input_packet[16];
+                  send_802154frame(data, sizeof(data), sid);
+                }
               } else if(strcmp(factoryPlayer, "tx") == 0) {
+                // fprintf(stdout, "GOT SOMETHING\n");
                 //received the reboud packet and report both RSSI with seqnumber
                 if(input_packet[0] == 0x21 && input_packet[1] == 0x52) {
                   report_tx_stat(input_packet[2], input_packet[3]);
                 } else {
-                  total_replied++;
-                  int8_t reboudRSSI = input_packet[1];
-                  int8_t outgoingRSSI = input_packet[34];
-                  uint8_t sid = input_packet[35];
-                  packet_stat[sid][0] = 0x01;
-                  packet_stat[sid][1] = outgoingRSSI;
-                  packet_stat[sid][2] = reboudRSSI;
-                  fprintf(stdout, "Got the reply for sid: %d, outgoingRSSI: %d, incomingRSSI: %d\n", sid, outgoingRSSI, reboudRSSI);
+                  //only parse its packet
+                  dest_mac_addr[0] = input_packet[15];
+                  dest_mac_addr[1] = input_packet[14];
+                  dest_mac_addr[2] = input_packet[13];
+                  dest_mac_addr[3] = input_packet[12];
+                  dest_mac_addr[4] = input_packet[11];
+                  dest_mac_addr[5] = input_packet[10];
+                  dest_mac_addr[6] = input_packet[9];
+                  dest_mac_addr[7] = input_packet[8];
+
+                  if(memcmp(dest_mac_addr, ext_addr, LINKADDR_SIZE) == 0) {
+
+                    total_replied++;
+                    int8_t reboudRSSI = input_packet[1];
+                    int8_t outgoingRSSI = input_packet[34];
+                    uint8_t sid = input_packet[35];
+                    packet_stat[sid][0] = 0x01;
+                    packet_stat[sid][1] = outgoingRSSI;
+                    packet_stat[sid][2] = reboudRSSI;
+                    fprintf(stdout, "Got the reply for sid: %d, outgoingRSSI: %d, incomingRSSI: %d\n", sid, outgoingRSSI, reboudRSSI);
+                  }
                 }
               }
             }
@@ -575,6 +637,14 @@ int serial_input(void)
     if(txmode) {
       txmode = 0;
       get_tx_stats();
+    }
+
+    if(factoryTestMode && (strcmp(factoryPlayer, "tx") == 0)) {
+      factoryTestMode = 0;
+      get_tx_stats();
+      get_rx_stats();
+      write_json_obj();
+      exit(0);
     }
 
 #if RX_STATS
@@ -1154,7 +1224,7 @@ void factoryTestRadio(int num, int delay)
       //Should have received the reply by now.
       //verify the reply and sid and move on.
     }
-    //get_tx_stats(seqno);
+    // get_tx_stats(seqno);
     num_tx_packets = seqno;
   }
 }
@@ -1298,7 +1368,9 @@ void usage(const char *prog)
   fprintf(stderr, " [-d siodev]   Slip I/0 dev - Serial device (default /dev/ttyUSB0)\n");
   fprintf(stderr, " [-B baudrate] Baudrate - 9600, 19200, 38400. 57600, 115200 (default 115200)\n");
   fprintf(stderr, " [-t byte1 byte2] Slip-radio test mode - slip will return sum to two input bytes\n");
-  fprintf(stderr, " [-f player channel num delay] factory test, similar to pingpong\n");
+  fprintf(stderr, " [-m srcmac -f player filename channel num delay] factory test, similar to pingpong\n");
+  fprintf(stderr, " factory test, tx example: ./slipcomms -v -d /dev/ttyS4 -B 115200 -m 00 a5 09 00 00 10 43 43 -f tx radioTX1.json 25 5 1000\n");
+  fprintf(stderr, " factory test, rx example: ./slipcomms -v -d /dev/ttyS6 -B 115200 -f rx radioRX.json 25 2 10\n");
 }
 //---------------------------------------------------------------------------
 void slip_usage(void) 
@@ -1354,7 +1426,7 @@ int main(int argc, char *argv[])
 
   //parse the command line arguments
   // ":" - colon decides whether the option requires an argument or not
-  while((c = getopt(argc, argv, "hvd:B:t:")) != -1) {
+  while((c = getopt(argc, argv, "hvd:B:t:m:f:")) != -1) {
     switch(c) {
       case 'v':
         verbose = 1;
@@ -1384,12 +1456,27 @@ int main(int argc, char *argv[])
         slipTestBytes[byteIndex++] = atoi(optarg);
         break;
 
+      case 'm':
+        srcMacProvided = 1;
+        optind--;
+        int p = optind + 8;
+        int q = 0;
+        for( ;optind < p; optind++) {    
+          ext_addr[q++] = (uint8_t)strtol(argv[optind], NULL, 16);
+        }
+
+        fprintf(stdout, "SourceMac %02x:%02x:%02x:%02x:%02x:%02x:%02x:%02x\n", ext_addr[0],ext_addr[1],ext_addr[2],
+                                                  ext_addr[3],ext_addr[4],ext_addr[5],ext_addr[6],ext_addr[7]);
+        break;
+
       case 'f':
         factoryTestMode = 1;
-        if(byteIndex == 0) {
-          factoryPlayer = optarg;
-        } else {
-          factoryTestBytes[byteIndex++] = atoi(optarg);
+        optind--;
+        factoryPlayer = argv[optind++];
+        resultFileName = argv[optind++];
+
+        for( ;optind < argc && *argv[optind] != '-'; optind++) {
+          factoryTestBytes[byteIndex++] = atoi(argv[optind]);    
         }
         break;
 
@@ -1458,45 +1545,6 @@ int main(int argc, char *argv[])
     fprintf(stdout, "Testing slip radio with bytes: %d, %d\n", slipTestBytes[0], slipTestBytes[1]);
     fprintf(stdout, "Expected version: %d.%d\n", slipTestBytes[2], slipTestBytes[3]);
     testSlipRadio();
-  }
-
-  if(factoryTestMode) {
-    //Set the channel
-    int channel = factoryTestBytes[0];
-    if(channel > 10 && channel < 26) {
-      send_channel(channel); 
-      // send_channel(channel); 
-      fprintf(stdout, "Channel %d, set\n", channel);
-    } else {
-      fprintf(stderr, "Channel %d invalid, input between 11-25\n", channel);
-      exit(2);
-    }
-    // usleep(100);
-
-    //set the mac address based on the player
-    if(strcmp(factoryPlayer, "rx") == 0) {
-      fprintf(stdout, "Starting factory radio as RECEIVER\n");
-      memcpy(src_mac_addr, possible_mac_addrs[0], LINKADDR_SIZE);
-      memcpy(dest_mac_addr, possible_mac_addrs[1], LINKADDR_SIZE);
-      send_macaddr(src_mac_addr);
-      usleep(1000);
-    } else if (strcmp(factoryPlayer, "tx") == 0) {
-      fprintf(stdout, "Starting factory radio as TRANSMITTER\n");
-      memcpy(src_mac_addr, possible_mac_addrs[1], LINKADDR_SIZE);
-      memcpy(dest_mac_addr, possible_mac_addrs[0], LINKADDR_SIZE);
-      send_macaddr(src_mac_addr);
-      usleep(1000);
-    } else {
-      fprintf(stderr, "Factory test player %s not allowed\n", factoryPlayer);
-      exit(2);
-    }
-
-    // request_macaddr(); //store the macaddr into src_mac_addr
-
-    factoryTestRadio(factoryTestBytes[1], factoryTestBytes[2]);
-    get_tx_stats();
-    get_rx_stats();
-    exit(0);
   }
 
 
@@ -1816,7 +1864,80 @@ int main(int argc, char *argv[])
     } else {
       serial_input();
       // fprintf(stdout, "No data within five seconds.\n");
+      // if(factoryTestMode) {
+      //   if(strcmp(factoryPlayer, "tx") == 0) {
+      //     timer++;
+      //     int tx_interval = (factoryTestBytes[3] * factor);
+      //     // fprintf(stdout, "timer: %d, interval: %d\n", timer, tx_interval);
+      //     if(timer > tx_interval) {
+      //       timer = 0;
+      //       fprintf(stdout, "Timer overflowed\n");
+      //       timer = 0;
+
+      //       //send the packet
+      //       if(factoryTestBytes[2] > 0) {
+      //         factoryTestBytes[2]--;
+      //         uint8_t buf[10] = "0123456789";
+      //         packet_stat[seqno][0] = 0;
+      //         packet_stat[seqno][1] = 0;
+      //         packet_stat[seqno][2] = 0;
+      //         send_802154frame(buf, sizeof(buf), seqno);
+      //         fprintf(stdout, "Sent packet seqno: %d\n", seqno);
+      //         seqno++;
+      //       } else {
+      //         num_tx_packets = seqno;
+      //         get_tx_stats();
+      //         get_rx_stats();
+      //         exit(0);
+      //       }
+      //     } 
+      //   }
+      // }
     }
+
+    if( (factoryTestMode & 0X02) == 0x00) {
+      factoryTestMode = 3;
+      //Set the channel
+      fprintf(stdout, "Got bytes: %02x, %02x, %02x\n", factoryTestBytes[0], factoryTestBytes[1], factoryTestBytes[2]);
+      int channel = factoryTestBytes[0];
+      if(channel > 10 && channel < 26) {
+        send_channel(channel); 
+        // send_channel(channel); 
+        fprintf(stdout, "Channel %d, set\n", channel);
+      } else {
+        fprintf(stderr, "Channel %d invalid, input between 11-25\n", channel);
+        exit(2);
+      }
+      // usleep(100);
+
+      //set the mac address based on the player
+      if(strcmp(factoryPlayer, "rx") == 0) {
+        fprintf(stdout, "Starting factory radio as RECEIVER\n");
+        if(!srcMacProvided)
+          memcpy(ext_addr, possible_mac_addrs[0], LINKADDR_SIZE);
+        memcpy(dstaddr, possible_mac_addrs[1], LINKADDR_SIZE);
+        send_macaddr(ext_addr);
+        usleep(1000);
+      } else if (strcmp(factoryPlayer, "tx") == 0) {
+        fprintf(stdout, "Starting factory radio as TRANSMITTER\n");
+        if(!srcMacProvided)
+          memcpy(ext_addr, possible_mac_addrs[1], LINKADDR_SIZE);
+        memcpy(dstaddr, possible_mac_addrs[0], LINKADDR_SIZE);
+        send_macaddr(ext_addr);
+        usleep(1000);
+
+        factoryTestRadio(factoryTestBytes[1], factoryTestBytes[2]);
+        // usleep(10000000);
+        // exit(0);
+
+      } else {
+        fprintf(stderr, "Factory test player %s not allowed\n", factoryPlayer);
+        exit(2);
+      }
+
+      // request_macaddr(); //store the macaddr into src_mac_addr
+    }
+
   }
 
 end:

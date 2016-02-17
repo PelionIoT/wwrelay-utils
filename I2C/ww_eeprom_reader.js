@@ -391,9 +391,8 @@ function main() {
 						});
 					}
 					else {
-						console.log("EEPROM is not configured properly.\n---------------------------------\nIf " + hardware_conf + " + " + relayconf_dot_sh + " exist, will manually use those files. Otherwise, Relay will not start up properly.");
-						resolve();
-
+						console.log("EEPROM is not configured properly.");
+						reject(new Error('EEPROM is not configured properly.'));
 					}
 				});
 
@@ -424,6 +423,8 @@ main().then(function() {
 	setupLEDGPIOs().then(function() {
 		enableRTC();
 	});
+}, function(err) {
+	process.exit(1);
 });
 
 

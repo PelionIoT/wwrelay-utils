@@ -65,7 +65,13 @@ case "$1" in
 
         cd ${WIGWAGROOT}/wwrelay-utils/I2C
         /usr/bin/node ./ww_eeprom_reader.js  https://cloud.wigwag.com true > $WWRELAY_LOG 2>&1
-
+        OUT=$?                                                                                
+        if [ $OUT -eq 0 ]; then                                                                                                                                                           
+          echo "EEPROM written properly, relay.config.json successfully generated"                               
+        else                                                                                  
+          echo "EEPROM not written properly, relay.config.json is not generated."                      
+          /wigwag/wwrelay-utils/GPIO/led.sh 0 10 0                                      
+        fi 
 	;;	
     stop)
 	echo "Stopping WigWag Relay"

@@ -13,13 +13,17 @@ var jsonminify = require('jsonminify');
 var path = require('path');
 var handleBars = require('handlebars');
 
+var program = require('commander');
 
-var template_conf_file = "/wigwag/devicejs-core-modules/Runner/template.config.json";
-var relay_conf_json_file = "/wigwag/devicejs-core-modules/Runner/relay.config.json";
-var devjsconf = JSON.parse(jsonminify(fs.readFileSync(template_conf_file, 'utf8')));
+
+var template_conf_file = null;
+var relay_conf_json_file = null;
+var sw_eeprom_file = null;
+var devjsconf = null;
 
 var cloudURL = "https://cloud.wigwag.com";
 var overwrite_conf = false;
+var softwareBasedRelay = false;
 
 var hardware_conf = "./relay.conf";
 // var relayconf_dot_sh = "/etc/wigwag/relayconf.sh"
@@ -229,7 +233,7 @@ function MACarray2string(mray) {
 	var temps = "";
 	for (var i = 0; i < mray.length; i++) {
 		temps = mray[i].toString(16);
-		if (temps.length == 1) temps += "0";
+		if (temps.length == 1) finalstring += "0";
 		finalstring += temps;
 	};
 	return finalstring;
@@ -240,6 +244,7 @@ function eeprom2relay(uuid_eeprom, callback) {
 	var ethernetMAC = new Object();
 	var sixBMAC = new Object();
 	var CI = require(uuid_eeprom);
+
 	R.BRAND = CI.relayID.substring(0, 2);
 	R.DEVICE = CI.relayID.substring(2, 4);
 	R.UUID = CI.relayID.substring(4, 10);
@@ -258,9 +263,9 @@ function eeprom2relay(uuid_eeprom, callback) {
 	R.relaySecret = CI.relaySecret;
 	R.pairingCode = CI.pairingCode;
 	R.relayID = CI.relayID;
-	R.cloudURL = CI.cloudURL;
+	R.cloudURL = cloudURL;
 	callback(null, R);
-}
+} 
 
 function read_sw_eeprom(callback) {
 	var uuid = execSync.exec('dmidecode -s system-uuid');
@@ -282,7 +287,6 @@ function read_sw_eeprom(callback) {
 		}
 
 	});
-
 }
 function setupLEDGPIOs() {                                                                        
     return new Promise(function(resolve, reject) {                                                
@@ -342,14 +346,14 @@ function enableRTC() {
 function main() {
 	return new Promise(function(resolve, reject) {
 		// print process.argv
-		process.argv.forEach(function (val, index, array) {
-		  // console.log(index + ': ' + val);
-		  if(index > 1) {
-		  	cloudURL = array[2];
-		  	if(index > 2)
-		  		overwrite_conf = array[3];	
-		  }
-		});
+		// process.argv.forEach(function (val, index, array) {
+		//   // console.log(index + ': ' + val);
+		//   if(index > 1) {
+		//   	cloudURL = array[2];
+		//   	if(index > 2)
+		//   		overwrite_conf = array[3];	
+		//   }
+		// });
 
 		reader.exists(function(the_eeprom_exists) {
 			if (the_eeprom_exists) {
@@ -399,19 +403,62 @@ function main() {
 			}
 			else { //eprom doesn't exist... must do other things.  Assume the relay.conf just exists in desired form
 				console.log("Software based Relay found");
-				read_sw_eeprom(function(err, res) {
-					if (res) {
-						res.hw = define_hardware(res);
-						modify_devjs(res.sixBMAC.string, "ttyUSB0");
-						write_JSON2file(hardware_conf, res, true, function(err, suc) {
-							write_JSON2file(wigwag_conf_json_file, devjsconf, true, function(err, suc) {
+				softwareBasedRelay = true;
+
+				eeprom2relay(sw_eeprom_file, function(err, result) {
+					if (result) {
+
+						if (result.BRAND == "WW" || result.BRAND == "WD") {
+							hw = define_hardware(result);
+							result.hardware = hw;
+							// flattenobj(result, function(output) {
+							// 	write_string2file(relayconf_dot_sh, output, true, function(err, succ) {
+							// 		if (err) console.log("Error Writing file %s", err);
+							// 	});
+							// });
+
+							//replace the handlebars
+							var template = handleBars.compile(JSON.stringify(devjsconf));
+							var data = createHandlebarsData(result);
+							var conf = JSON.parse(template(data));
+
+							write_JSON2file(relay_conf_json_file, conf, overwrite_conf, function(err, suc) {
 								if (err) {
-									console.log("Error Writing file %s", err);
+									console.error("Error Writing file ", relay_conf_json_file, err);	
+									resolve(err);
+								} 
+
+								console.log(suc + ': wrote ' + relay_conf_json_file + ' file successfully');
+
+								write_JSON2file(hardware_conf, result, overwrite_conf, function(err, suc) {
+									if (err) {
+										console.error("Error Writing file ", hardware_conf, err);	
+										resolve(err);
+									} 
+									console.log(suc + ': wrote ' + hardware_conf + ' file successfully');
 									resolve();
-								}
-								resolve();
+								});
 							});
-						});
+						}
+						else {
+							console.log("EEPROM is not configured properly.");
+							reject(new Error('EEPROM is not configured properly.'));
+						}
+
+
+
+
+						// res.hw = define_hardware(res);
+						// modify_devjs(res.sixBMAC.string, "ttyUSB0");
+						// write_JSON2file(hardware_conf, res, true, function(err, suc) {
+						// 	write_JSON2file(wigwag_conf_json_file, devjsconf, true, function(err, suc) {
+						// 		if (err) {
+						// 			console.log("Error Writing file %s", err);
+						// 			resolve();
+						// 		}
+						// 		resolve();
+						// 	});
+						// });
 					}
 				});
 			}
@@ -419,10 +466,59 @@ function main() {
 	});
 }
 
+program
+  .version('0.0.1')
+  .option('-c, --cloudURL [URL]', 'Specify cloud URL for your relay', 'https://cloud.wigwag.com')
+  .option('-o, --overwrite [true/false]', 'overwrite relay.config.json', 'false')
+  .option('-e, --eepromFile [filepath]', 'For software based relay specify the eeprom json object file path')
+  .option('-t, --templateFile [filepath]', 'Specify the template config file')
+  .option('-r, --relayConfFile [true/false]', 'Specify the path for relay.config.json for Runner')
+  .parse(process.argv);
+
+
+if(program.cloudURL) {
+	cloudURL = program.cloudURL;
+	console.log('Using cloud URL- ', cloudURL);
+}
+
+if (program.eepromFile) {
+	sw_eeprom_file = program.eepromFile;
+	console.log('Using eepromFile- ', sw_eeprom_file);
+}
+
+if (program.templateFile) {
+	template_conf_file = program.templateFile;
+	console.log('Using templateFile- ', template_conf_file);
+	try {
+		devjsconf = JSON.parse(jsonminify(fs.readFileSync(template_conf_file, 'utf8')));
+	} catch(e) {
+		console.error('Could not open template file', e);
+		process.exit(1);
+	}
+
+	if(program.relayConfFile) {
+		relay_conf_json_file = program.relayConfFile;
+		console.log('Using relayConfFile- ', relay_conf_json_file);
+	} else {
+		console.error('Please specify the relay.config.json file path');
+		process.exit(1);
+	}
+} else {
+	console.error('Please specify relay template file');
+	process.exit(1);
+}
+
+if(program.overwrite) {
+	overwrite_conf = program.overwrite == 'true';
+	console.log('Using overwrite- ', overwrite_conf);
+}
+
 main().then(function() {
-	setupLEDGPIOs().then(function() {
-		enableRTC();
-	});
+	if(!softwareBasedRelay) {
+		setupLEDGPIOs().then(function() {
+			enableRTC();
+		});
+	}
 }, function(err) {
 	process.exit(1);
 });

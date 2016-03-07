@@ -13,7 +13,7 @@
 			"chroot_prefix": "/tmp/devjs_container"
 		}
 	},
-	"deviceJSConfig": "/wigwag/etc/devicejs/devicejs.conf",
+	"deviceJSConfig": "/etc/devicejs/devicejs.conf",
 	"defaults": {
 		"default_user": "*",  // means whoever runs it
 		"default_group": "*"  // means whatever group runs it
@@ -38,7 +38,7 @@
 			"user": "devicejs",
 			"group": "devicejs",
 			"deviceJSCore": {
-				"root": "/wigwag/devicejs-ng",
+				"root": "${thisdir}/../../devicejs-ng",
 				"opts": []
 			}
 		},
@@ -75,7 +75,7 @@
                             "limit" : 10
                         },
 			"env": {
-				"NODE_PATH": "${NODE_PATH}:${thisdir}/../node_modules:/wigwag/devicejs-core-modules/IPStack/node_modules"
+				"NODE_PATH": "${NODE_PATH}:${thisdir}/../node_modules:${thisdir}/../IPStack/node_modules"
 			},
 			"modules": [
 				{
@@ -102,7 +102,7 @@
                             "timeout" : 5000
                         },
 			"env": {
-				"NODE_PATH": "${NODE_PATH}:${thisdir}/../node_modules:/wigwag/devicejs-core-modules/IPStack/node_modules"
+				"NODE_PATH": "${NODE_PATH}:${thisdir}/../node_modules:${thisdir}/../IPStack/node_modules"
 			},
 			"modules": [
 				{

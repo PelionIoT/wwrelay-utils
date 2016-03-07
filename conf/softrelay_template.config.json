@@ -35,8 +35,8 @@
                             "timeout" : 5000
                         },
 			"modules": {},
-			"user": "devicejs",
-			"group": "devicejs",
+//			"user": "devicejs",
+//			"group": "devicejs",
 			"deviceJSCore": {
 				"root": "${thisdir}/../../devicejs-ng",
 				"opts": []
@@ -54,7 +54,7 @@
 			],
 			"databaseConfig": {
 				"port": 9000,
-				"dbFile": "/userdata/etc/devicejs/db",
+				"dbFile": "/etc/devicejs/db",
 				"logger": {
 					"enabled": true
 				}

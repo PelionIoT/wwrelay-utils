@@ -123,7 +123,7 @@
 				}
                         ]
                 },
-        "core-zigbee": {
+        "core-comm2": {
 			"limits": {
 				"limit_group": ""
                                 // cgroup limits here - TBD

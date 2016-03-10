@@ -109,6 +109,8 @@ function define_hardware(res) {
 		case "0.0.6":
 		case "0.0.7":
 		case "0.0.8":
+		case "0.0.9":
+		case "0.0.10":
 			hw.gpioProfile.NumberOfInputs = 1;
 			hw.gpioProfile.NumberOfOutputs = 11;
 			hw.gpioProfile.RelayType = "hardware";
@@ -128,6 +130,7 @@ function define_hardware(res) {
 			hw.radioProfile.SBMC_RTS = GPIOpath + "gpio2_pd1";
 			hw.radioProfile.ZWAVE_TTY = "/dev/ttyS5";
 			hw.radioProfile.ZWAVE_ERASE = GPIOpath + "gpio4_pd3";
+			hw.radioProfile.ZIGBEEHA_TTY = "/dev/ttyS6";
 			hw.radioProfile.CC2530_RESET = GPIOpath + "gpio5_pd4";
 			hw.radioProfile.CC2530_DBG_DATA = GPIOpath + "gpio7_pd6";
 			hw.radioProfile.CC2530_DBG_CLK = GPIOpath + "gpio6_pd5";
@@ -156,6 +159,7 @@ function createHandlebarsData(eeprom) {
 	data.apisecret = eeprom.relaySecret;
 	data.cloudurl = eeprom.cloudURL;
 	data.zwavetty = eeprom.hardware.radioProfile.ZWAVE_TTY;
+	data.zigbeehatty = eeprom.hardware.radioProfile.ZIGBEEHA_TTY;
 	data.sixlbrtty = eeprom.hardware.radioProfile.SBMC_TTY.split("/")[2];
 	data.sixlbrreset = eeprom.hardware.radioProfile.SBMC_RESET;
 	data.sixbmac = eeprom.sixBMAC.string;

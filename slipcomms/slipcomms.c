@@ -1895,7 +1895,7 @@ int main(int argc, char *argv[])
       // }
     }
 
-    if( (factoryTestMode & 0X02) == 0x00) {
+    if( ((factoryTestMode & 0X02) == 0x00) && !slipTestMode) {
       factoryTestMode = 3;
       //Set the channel
       fprintf(stdout, "Got bytes: %02x, %02x, %02x\n", factoryTestBytes[0], factoryTestBytes[1], factoryTestBytes[2]);

@@ -19,6 +19,7 @@ var program = require('commander');
 var template_conf_file = null;
 var radioProfile_template_conf_file = null;
 var relay_conf_json_file = null;
+var rsmi_conf_json_file = null;
 var sw_eeprom_file = null;
 var devjsconf = null;
 var radioModuleConf = null;
@@ -440,13 +441,13 @@ function main() {
 							var radioData = createHandlebarsDataForRSMI(result);
 							var radioConf = JSON.parse(radioConfTemplate(radioData));
 
-							write_JSON2file(radioProfile_template_conf_file, radioConf, overwrite_conf, function(err, suc) {
+							write_JSON2file(rsmi_conf_json_file, radioConf, overwrite_conf, function(err, suc) {
 								if (err) {
-									console.error("Error Writing file ", radioProfile_template_conf_file, err);	
+									console.error("Error Writing file ", rsmi_conf_json_file, err);	
 									resolve(err);
 								} 
 
-								console.log(suc + ': wrote ' + radioProfile_template_conf_file + ' file successfully');
+								console.log(suc + ': wrote ' + rsmi_conf_json_file + ' file successfully');
 							});		
 						}	
 					}
@@ -528,8 +529,9 @@ program
   .option('-o, --overwrite [true/false]', 'overwrite relay.config.json', 'false')
   .option('-e, --eepromFile [filepath]', 'For software based relay specify the eeprom json object file path')
   .option('-t, --templateFile [filepath]', 'Specify the template config file')
-  .option('-p, --radioProfiletemplateFile [filepath]', 'Specify the rsmi template config file')
   .option('-r, --relayConfFile [true/false]', 'Specify the path for relay.config.json for Runner')
+  .option('-p, --radioProfiletemplateFile [filepath]', 'Specify the rsmi template config file')
+  .option('-s, --rsmiConfFile [filepath]', 'Specify the rsmi radioProfile.config.json for RSMI')
   .parse(process.argv);
 
 
@@ -568,6 +570,14 @@ if (program.templateFile) {
 			radioModuleConf = JSON.parse(jsonminify(fs.readFileSync(radioProfile_template_conf_file, 'utf8')));
 		} catch(e) {
 			console.error('Could not open radio profile template file', e);
+			process.exit(1);
+		}
+
+		if(program.rsmiConfFile) {
+			rsmi_conf_json_file = program.rsmiConfFile;
+			console.log('Using rsmiConfFile- ', rsmi_conf_json_file);
+		} else {
+			console.error('Please specify the radioProfile.config.json file path');
 			process.exit(1);
 		}
 	} else {

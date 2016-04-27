@@ -17,9 +17,11 @@ var program = require('commander');
 
 
 var template_conf_file = null;
+var radioProfile_template_conf_file = null;
 var relay_conf_json_file = null;
 var sw_eeprom_file = null;
 var devjsconf = null;
+var radioModuleConf = null;
 
 var cloudURL = "https://cloud.wigwag.com";
 var overwrite_conf = false;
@@ -92,6 +94,7 @@ function define_hardware(res) {
 	hw = new Object();
 	hw.gpioProfile = new Object();
 	hw.radioProfile = new Object();
+	hw.radioModule = new Object();
 	//console.log("Here iam and res hwadwareverssion: " + res.hardwareVersion.toString());
 	switch (res.hardwareVersion.toString()) {
 		case "0.0.0":
@@ -109,6 +112,31 @@ function define_hardware(res) {
 		case "0.0.6":
 		case "0.0.7":
 		case "0.0.8":
+			hw.gpioProfile.NumberOfInputs = 1;
+			hw.gpioProfile.NumberOfOutputs = 11;
+			hw.gpioProfile.RelayType = "hardware";
+			hw.gpioProfile.RED_OFF = GPIOpath + "gpio11_pb8";
+			hw.gpioProfile.BUTTON = GPIOpath + "gpio12_ph12";
+			hw.gpioProfile.TopRed = LEDspath + "/red";
+			hw.gpioProfile.TopBlue = LEDspath + "/blue";
+			hw.gpioProfile.TopGreen = LEDspath + "/green";
+			hw.radioProfile.hasSM_SBMC = true; //Solder_Module 6BEE MC13224
+			hw.radioProfile.hasSM_5304 = false; //Solder_Module Zwave 5304
+			hw.radioProfile.hasSM_U880 = false; //Solder_Module U880
+			hw.radioProfile.hasSM_BT = false; //Solder_Module Bluetooth
+			hw.radioProfile.SBMC_TTY = "/dev/ttyS4";
+			hw.radioProfile.CC2530_TTY = "/dev/ttyS1";
+			hw.radioProfile.SBMC_ERASE = GPIOpath + "gpio3_pd2";
+			hw.radioProfile.SBMC_RESET = GPIOpath + "gpio98/value";
+			hw.radioProfile.SBMC_RTS = GPIOpath + "gpio2_pd1";
+			hw.radioProfile.ZWAVE_TTY = "/dev/ttyS5";
+			hw.radioProfile.ZWAVE_ERASE = GPIOpath + "gpio4_pd3";
+			hw.radioProfile.ZIGBEEHA_TTY = "/dev/ttyS6";
+			hw.radioProfile.CC2530_RESET = GPIOpath + "gpio5_pd4";
+			hw.radioProfile.CC2530_DBG_DATA = GPIOpath + "gpio7_pd6";
+			hw.radioProfile.CC2530_DBG_CLK = GPIOpath + "gpio6_pd5";
+			break;
+
 		case "0.0.9":
 		case "0.0.10":
 			hw.gpioProfile.NumberOfInputs = 1;
@@ -152,7 +180,7 @@ function define_hardware(res) {
 	return hw;
 }
 
-function createHandlebarsData(eeprom) {
+function createHandlebarsData(eeprom, platform) {
 	var data = {};
 
 	data.apikey = eeprom.relayID;
@@ -164,7 +192,16 @@ function createHandlebarsData(eeprom) {
 	data.sixlbrreset = eeprom.hardware.radioProfile.SBMC_RESET;
 	data.sixbmac = eeprom.sixBMAC.string;
 	data.ethernetmac = eeprom.ethernetMAC.string;
-	data.wwplatform = "wwrelay_v8";
+	data.wwplatform = platform;
+
+	return data;
+}
+
+function createHandlebarsDataForRSMI(eeprom) {
+	var data = {};
+
+	data.hardwareVersion = eeprom.hardwareVersion;
+	data.radioConfig = eeprom.radioConfig;
 
 	return data;
 }
@@ -377,7 +414,7 @@ function main() {
 
 						//replace the handlebars
 						var template = handleBars.compile(JSON.stringify(devjsconf));
-						var data = createHandlebarsData(result);
+						var data = createHandlebarsData(result, "wwrelay_v" + result.hardware.hardwareVersion.toString());
 						var conf = JSON.parse(template(data));
 
 						write_JSON2file(relay_conf_json_file, conf, overwrite_conf, function(err, suc) {
@@ -397,6 +434,21 @@ function main() {
 								resolve();
 							});
 						});
+
+						if(radioProfile_template_conf_file) {
+							var radioConfTemplate = handleBars.compile(JSON.stringify(radioModuleConf));
+							var radioData = createHandlebarsDataForRSMI(result);
+							var radioConf = JSON.parse(radioConfTemplate(radioData));
+
+							write_JSON2file(radioProfile_template_conf_file, radioConf, overwrite_conf, function(err, suc) {
+								if (err) {
+									console.error("Error Writing file ", radioProfile_template_conf_file, err);	
+									resolve(err);
+								} 
+
+								console.log(suc + ': wrote ' + radioProfile_template_conf_file + ' file successfully');
+							});		
+						}	
 					}
 					else {
 						console.log("EEPROM is not configured properly.");
@@ -423,7 +475,7 @@ function main() {
 
 							//replace the handlebars
 							var template = handleBars.compile(JSON.stringify(devjsconf));
-							var data = createHandlebarsData(result);
+							var data = createHandlebarsData(result, "softrelay");
 							var conf = JSON.parse(template(data));
 
 							write_JSON2file(relay_conf_json_file, conf, overwrite_conf, function(err, suc) {
@@ -476,6 +528,7 @@ program
   .option('-o, --overwrite [true/false]', 'overwrite relay.config.json', 'false')
   .option('-e, --eepromFile [filepath]', 'For software based relay specify the eeprom json object file path')
   .option('-t, --templateFile [filepath]', 'Specify the template config file')
+  .option('-p, --radioProfiletemplateFile [filepath]', 'Specify the rsmi template config file')
   .option('-r, --relayConfFile [true/false]', 'Specify the path for relay.config.json for Runner')
   .parse(process.argv);
 
@@ -505,6 +558,20 @@ if (program.templateFile) {
 		console.log('Using relayConfFile- ', relay_conf_json_file);
 	} else {
 		console.error('Please specify the relay.config.json file path');
+		process.exit(1);
+	}
+
+	if(program.radioProfiletemplateFile) {
+		radioProfile_template_conf_file = program.radioProfiletemplateFile;
+		console.log('Using radio profile templateFile- ', radioProfile_template_conf_file);
+		try {
+			radioModuleConf = JSON.parse(jsonminify(fs.readFileSync(radioProfile_template_conf_file, 'utf8')));
+		} catch(e) {
+			console.error('Could not open radio profile template file', e);
+			process.exit(1);
+		}
+	} else {
+		console.error('Please specify radio profile template file');
 		process.exit(1);
 	}
 } else {

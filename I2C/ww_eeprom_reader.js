@@ -139,7 +139,7 @@ function define_hardware(res) {
 			break;
 
 		case "0.0.9":
-		case "0.0.10":
+		case "0.1.0":
 			hw.gpioProfile.NumberOfInputs = 1;
 			hw.gpioProfile.NumberOfOutputs = 11;
 			hw.gpioProfile.RelayType = "hardware";
@@ -415,7 +415,7 @@ function main() {
 
 						//replace the handlebars
 						var template = handleBars.compile(JSON.stringify(devjsconf));
-						var data = createHandlebarsData(result, "wwrelay_v" + result.hardware.hardwareVersion.toString());
+						var data = createHandlebarsData(result, "wwrelay_v" + result.hardwareVersion.toString());
 						var conf = JSON.parse(template(data));
 
 						write_JSON2file(relay_conf_json_file, conf, overwrite_conf, function(err, suc) {

@@ -64,7 +64,7 @@ case "$1" in
         fi
 
         cd ${WIGWAGROOT}/wwrelay-utils/I2C
-        /usr/bin/node ./ww_eeprom_reader.js -c https://cloud.wigwag.com -o true -t ${WIGWAGROOT}/devicejs-core-modules/Runner/template.config.json -r ${WIGWAGROOT}/devicejs-core-modules/Runner/relay.config.json 
+        /usr/bin/node ./ww_eeprom_reader.js -c https://cloud.wigwag.com -o true -t ${WIGWAGROOT}/devicejs-core-modules/Runner/template.config.json -r ${WIGWAGROOT}/devicejs-core-modules/Runner/relay.config.json \
         -p ${WIGWAGROOT}/devicejs-core-modules/rsmi/radioProfile.template.json -s ${WIGWAGROOT}/devicejs-core-modules/rsmi/radioProfile.config.json > $WWRELAY_LOG 2>&1
         OUT=$?                                                                                
         if [ $OUT -eq 0 ]; then                                                                                                                                                           

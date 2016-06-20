@@ -182,17 +182,14 @@
 					"config": {}
 				},
 				{
-					"path": "${thisdir}/../zwave",
+					"path": "${thisdir}/../ww-zwave",
 					"config": {
-						"siodev": "{{zwavetty}}",
-						"modpath": "/../node_modules/ww-node-openzwave/",
-						"consoleoutput": false,
-						"logging": false,
-						"saveconfig": false,
-						"driverattempts": 3,
-						"pollinterval": 500,
-						"suppressrefresh": true,
-						"notifytransactions": true,
+						"serialInterfaceOptions": {
+							"siodev": "{{zwavetty}}",
+							"baudrate": 115200,
+							"dataBits": 8,
+							"stopBits": 1
+						},
 						"platform": "{{wwplatform}}"
 					}
 				}

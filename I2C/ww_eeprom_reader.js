@@ -2,6 +2,10 @@
 
 var WWAT24 = require('./WWrelay_at24c16.js');
 reader = new WWAT24();
+var DiskStorage = require("./diskstore.js");
+var diskprom = new DiskStorage("/dev/mmcblk0p1", "/mnt/.boot/", ".ssl");
+var mkdirp = require('mkdirp');
+
 //r/w files
 var fs = require('fs');
 var exec = require('child_process').exec;
@@ -15,6 +19,14 @@ var handleBars = require('handlebars');
 
 var program = require('commander');
 
+var sslPathDefault = "/wigwag/devicejs-core-modules/Runner/.ssl/";
+mkdirp.sync(sslPathDefault);
+var ssl_client_key = "client.key.pem";
+var ssl_client_cert = "client.cert.pem";
+var ssl_server_key = "server.key.pem";
+var ssl_server_cert = "server.cert.pem";
+var ssl_ca_cert = "ca.cert.pem";
+var ssl_ca_int = "intermediate.cert.pem";
 
 var template_conf_file = null;
 var radioProfile_template_conf_file = null;
@@ -22,6 +34,7 @@ var relay_conf_json_file = null;
 var rsmi_conf_json_file = null;
 var sw_eeprom_file = null;
 var devjsconf = null;
+var secConfObj = null;
 var radioModuleConf = null;
 
 var cloudURL = "https://cloud.wigwag.com";
@@ -140,6 +153,7 @@ function define_hardware(res) {
 
 		case "0.0.9":
 		case "0.1.0":
+		default:
 			hw.gpioProfile.NumberOfInputs = 1;
 			hw.gpioProfile.NumberOfOutputs = 11;
 			hw.gpioProfile.RelayType = "hardware";
@@ -307,7 +321,7 @@ function eeprom2relay(uuid_eeprom, callback) {
 	R.relayID = CI.relayID;
 	R.cloudURL = cloudURL;
 	callback(null, R);
-} 
+}
 
 function read_sw_eeprom(callback) {
 	var uuid = execSync.exec('dmidecode -s system-uuid');
@@ -330,23 +344,25 @@ function read_sw_eeprom(callback) {
 
 	});
 }
-function setupLEDGPIOs() {                                                                        
-    return new Promise(function(resolve, reject) {                                                
-        exec('echo 37 > /sys/class/gpio/export', function (error, stdout, stderr) {   
-        	try {
-	        	execSync('echo out > /sys/class/gpio/gpio37/direction');                      
-	            exec('echo 38 > /sys/class/gpio/export', function (error, stdout, stderr) {   
-	                execSync('echo out > /sys/class/gpio/gpio38/direction');              
-	                console.log('setupLEDGPIOs successful');
-	                resolve();                                                            
-	            }); 	
-        	} catch(err) {
-        		console.error('setupLEDGPIOs failed: ', err);
-        		reject(err);
-        	}    
-                                                                                      
-        });                                                                                   
-    });                                                                                           
+
+function setupLEDGPIOs() {
+	return new Promise(function(resolve, reject) {
+		exec('echo 37 > /sys/class/gpio/export', function(error, stdout, stderr) {
+			try {
+				execSync('echo out > /sys/class/gpio/gpio37/direction');
+				exec('echo 38 > /sys/class/gpio/export', function(error, stdout, stderr) {
+					execSync('echo out > /sys/class/gpio/gpio38/direction');
+					console.log('setupLEDGPIOs successful');
+					resolve();
+				});
+			}
+			catch (err) {
+				console.error('setupLEDGPIOs failed: ', err);
+				reject(err);
+			}
+
+		});
+	});
 }
 
 function enableRTC() {
@@ -384,6 +400,24 @@ function enableRTC() {
 
 }
 
+function writeSecurity() {
+	var DProm = new Array();
+	DProm.push(diskprom.cpFile(ssl_client_key, sslPathDefault + ssl_client_key, POM));
+	DProm.push(diskprom.cpFile(ssl_client_cert, sslPathDefault + ssl_client_cert, POM));
+	DProm.push(diskprom.cpFile(ssl_server_key, sslPathDefault + ssl_server_key, POM));
+	DProm.push(diskprom.cpFile(ssl_server_cert, sslPathDefault + ssl_server_cert, POM));
+	DProm.push(diskprom.cpFile(ssl_ca_cert, sslPathDefault + ssl_ca_cert, POM));
+	DProm.push(diskprom.cpFile(ssl_ca_int, sslPathDefault + ssl_ca_int, POM));
+	console.log("calling the big DProm");
+	Promise.all(DProm).then(function(result) {
+		diskprom.disconnect();
+		console.log("debug", "get sslclientkey resolved: " + result);
+		console.dir(result);
+	}).catch(function(error) {
+		diskprom.disconnect();
+		console.log("debug", "get sslclientkey errored: " + error);
+	});
+}
 //main fuction, first determines if we are on purpose based hardware (currently only detects WigWag Relays), or software.   It does this by detecting the EEprom type @ a specific location. 
 function main() {
 	return new Promise(function(resolve, reject) {
@@ -413,6 +447,7 @@ function main() {
 						// 	});
 						// });
 
+						writeSecurity();
 						//replace the handlebars
 						var template = handleBars.compile(JSON.stringify(devjsconf));
 						var data = createHandlebarsData(result, "wwrelay_v" + result.hardwareVersion.toString());
@@ -420,36 +455,36 @@ function main() {
 
 						write_JSON2file(relay_conf_json_file, conf, overwrite_conf, function(err, suc) {
 							if (err) {
-								console.error("Error Writing file ", relay_conf_json_file, err);	
+								console.error("Error Writing file ", relay_conf_json_file, err);
 								resolve(err);
-							} 
+							}
 
 							console.log(suc + ': wrote ' + relay_conf_json_file + ' file successfully');
 
 							write_JSON2file(hardware_conf, result, overwrite_conf, function(err, suc) {
 								if (err) {
-									console.error("Error Writing file ", hardware_conf, err);	
+									console.error("Error Writing file ", hardware_conf, err);
 									resolve(err);
-								} 
+								}
 								console.log(suc + ': wrote ' + hardware_conf + ' file successfully');
 								resolve();
 							});
 						});
 
-						if(radioProfile_template_conf_file) {
+						if (radioProfile_template_conf_file) {
 							var radioConfTemplate = handleBars.compile(JSON.stringify(radioModuleConf));
 							var radioData = createHandlebarsDataForRSMI(result);
 							var radioConf = JSON.parse(radioConfTemplate(radioData));
 
 							write_JSON2file(rsmi_conf_json_file, radioConf, overwrite_conf, function(err, suc) {
 								if (err) {
-									console.error("Error Writing file ", rsmi_conf_json_file, err);	
+									console.error("Error Writing file ", rsmi_conf_json_file, err);
 									resolve(err);
-								} 
+								}
 
 								console.log(suc + ': wrote ' + rsmi_conf_json_file + ' file successfully');
-							});		
-						}	
+							});
+						}
 					}
 					else {
 						console.log("EEPROM is not configured properly.");
@@ -481,17 +516,17 @@ function main() {
 
 							write_JSON2file(relay_conf_json_file, conf, overwrite_conf, function(err, suc) {
 								if (err) {
-									console.error("Error Writing file ", relay_conf_json_file, err);	
+									console.error("Error Writing file ", relay_conf_json_file, err);
 									resolve(err);
-								} 
+								}
 
 								console.log(suc + ': wrote ' + relay_conf_json_file + ' file successfully');
 
 								write_JSON2file(hardware_conf, result, overwrite_conf, function(err, suc) {
 									if (err) {
-										console.error("Error Writing file ", hardware_conf, err);	
+										console.error("Error Writing file ", hardware_conf, err);
 										resolve(err);
-									} 
+									}
 									console.log(suc + ': wrote ' + hardware_conf + ' file successfully');
 									resolve();
 								});
@@ -501,9 +536,6 @@ function main() {
 							console.log("EEPROM is not configured properly.");
 							reject(new Error('EEPROM is not configured properly.'));
 						}
-
-
-
 
 						// res.hw = define_hardware(res);
 						// modify_devjs(res.sixBMAC.string, "ttyUSB0");
@@ -524,18 +556,23 @@ function main() {
 }
 
 program
-  .version('0.0.1')
-  .option('-c, --cloudURL [URL]', 'Specify cloud URL for your relay', 'https://cloud.wigwag.com')
-  .option('-o, --overwrite [true/false]', 'overwrite relay.config.json', 'false')
-  .option('-e, --eepromFile [filepath]', 'For software based relay specify the eeprom json object file path')
-  .option('-t, --templateFile [filepath]', 'Specify the template config file')
-  .option('-r, --relayConfFile [true/false]', 'Specify the path for relay.config.json for Runner')
-  .option('-p, --radioProfiletemplateFile [filepath]', 'Specify the rsmi template config file')
-  .option('-s, --rsmiConfFile [filepath]', 'Specify the rsmi radioProfile.config.json for RSMI')
-  .parse(process.argv);
+	.version('0.0.1')
+	.option('-c, --cloudURL [URL]', 'Specify cloud URL for your relay', 'https://cloud.wigwag.com')
+	.option('-o, --overwrite [true/false]', 'overwrite relay.config.json', 'false')
+	.option('-O, --overwriteSSL [overwrite|dontoverwrite]', 'overwrite the SSL certificates if they exist', 'dontoverwrite')
+	.option('-e, --eepromFile [filepath]', 'For software based relay specify the eeprom json object file path')
+	.option('-t, --templateFile [filepath]', 'Specify the template config file')
+	.option('-r, --relayConfFile [true/false]', 'Specify the path for relay.config.json for Runner')
+	.option('-p, --radioProfiletemplateFile [filepath]', 'Specify the rsmi template config file')
+	.option('-s, --rsmiConfFile [filepath]', 'Specify the rsmi radioProfile.config.json for RSMI')
+	.parse(process.argv);
 
-
-if(program.cloudURL) {
+program.on('--help', function() {
+	console.log(' Examples:');
+	console.log("");
+	console.log("  $ node qrLabelMaker.js -t relay <infile> [<outfile>] (No extension. We will add .ps and .csv");
+});
+if (program.cloudURL) {
 	cloudURL = program.cloudURL;
 	console.log('Using cloud URL- ', cloudURL);
 }
@@ -550,52 +587,62 @@ if (program.templateFile) {
 	console.log('Using templateFile- ', template_conf_file);
 	try {
 		devjsconf = JSON.parse(jsonminify(fs.readFileSync(template_conf_file, 'utf8')));
-	} catch(e) {
+	}
+	catch (e) {
 		console.error('Could not open template file', e);
 		process.exit(1);
 	}
 
-	if(program.relayConfFile) {
+	if (program.relayConfFile) {
 		relay_conf_json_file = program.relayConfFile;
 		console.log('Using relayConfFile- ', relay_conf_json_file);
-	} else {
+	}
+	else {
 		console.error('Please specify the relay.config.json file path');
 		process.exit(1);
 	}
 
-	if(program.radioProfiletemplateFile) {
+	if (program.radioProfiletemplateFile) {
 		radioProfile_template_conf_file = program.radioProfiletemplateFile;
 		console.log('Using radio profile templateFile- ', radioProfile_template_conf_file);
 		try {
 			radioModuleConf = JSON.parse(jsonminify(fs.readFileSync(radioProfile_template_conf_file, 'utf8')));
-		} catch(e) {
+		}
+		catch (e) {
 			console.error('Could not open radio profile template file', e);
 			process.exit(1);
 		}
 
-		if(program.rsmiConfFile) {
+		if (program.rsmiConfFile) {
 			rsmi_conf_json_file = program.rsmiConfFile;
 			console.log('Using rsmiConfFile- ', rsmi_conf_json_file);
-		} else {
+		}
+		else {
 			console.error('Please specify the radioProfile.config.json file path');
 			process.exit(1);
 		}
-	} else {
+	}
+	else {
 		console.error('Please specify radio profile template file');
 		process.exit(1);
 	}
-} else {
+}
+else {
 	console.error('Please specify relay template file');
 	process.exit(1);
 }
 
-if(program.overwrite) {
+if (program.overwrite) {
 	overwrite_conf = program.overwrite == 'true';
 	console.log('Using overwrite- ', overwrite_conf);
 }
+if (program.overwriteSSL) {
+	var POM = program.overwriteSSL;
+	console.log('Using overwriteSSL- ', POM);
+}
 
 main().then(function() {
-	if(!softwareBasedRelay) {
+	if (!softwareBasedRelay) {
 		setupLEDGPIOs().then(function() {
 			enableRTC();
 		});
@@ -603,6 +650,5 @@ main().then(function() {
 }, function(err) {
 	process.exit(1);
 });
-
 
 //reader.readSpecial();

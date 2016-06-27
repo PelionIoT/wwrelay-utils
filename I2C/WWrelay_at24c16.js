@@ -95,6 +95,11 @@ function WWEEPROM() {
 			"memaddr": "71",
 			"len": "25",
 			"jname": "pairingCode"
+		},
+		"ledConfig": {
+			"memaddr": "96",
+			"len": "2",
+			"jname": "ledConfig"
 		}
 	}
 

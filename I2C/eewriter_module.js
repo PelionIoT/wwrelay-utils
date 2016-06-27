@@ -4,6 +4,15 @@
 // ./i2cdump 
 var Promise = require('es6-promise').Promise;
 var WWAT24 = require('./WWrelay_at24c16.js');
+var DiskStorage = require("./diskstore.js");
+var diskprom = new DiskStorage("/dev/mmcblk0p1", "/mnt/.boot/", ".ssl");
+var ssl_client_key = "client.key.pem";
+var ssl_client_cert = "client.cert.pem";
+var ssl_server_key = "server.key.pem";
+var ssl_server_cert = "server.cert.pem";
+var ssl_ca_cert = "ca.cert.pem";
+var ssl_ca_intermediate = "intermediate.cert.pem";
+
 writer = new WWAT24();
 
 function EEprom_Writer(obj) {
@@ -59,7 +68,13 @@ EEprom_Writer.prototype.rrec = function() {
 													cl("complete: relaySecret with [" + self.CI.relaySecret + "]");
 													writer.set("pairingCode", self.CI.pairingCode).then(function(result) {
 														cl("complete: pairingCode with [" + self.CI.pairingCode + "]");
-														resolve("success");
+														if (self.CI.ledConfig == null || self.CI.ledConfig == undefined) {
+															self.CI.ledConfig = "01";
+														}
+														writer.set("ledConfig", self.CI.ledConfig).then(function(result) {
+															cl("complete: ledConfig with [" + self.CI.ledConfig + "]");
+															resolve("success");
+														});
 													});
 												});
 											});
@@ -80,8 +95,22 @@ EEprom_Writer.prototype.write = function() {
 	var self = this;
 	return new Promise(function(resolve, reject) {
 		writer.erase(0).then(function(res) {
-			self.rrec().then(function(res) {
-				resolve(res);
+			console.log("recording to EEPROM and to to disk for ssl");
+			Pcert = new Array();
+			Pcert.push(self.rrec());
+			Pcert.push(diskprom.setFile(ssl_server_cert, self.CI.ssl.server.certificate));
+			Pcert.push(diskprom.setFile(ssl_client_cert, self.CI.ssl.client.certificate));
+			Pcert.push(diskprom.setFile(ssl_server_key, self.CI.ssl.server.key));
+			Pcert.push(diskprom.setFile(ssl_client_key, self.CI.ssl.client.key));
+			Pcert.push(diskprom.setFile(ssl_ca_cert, self.CI.ssl.ca.ca));
+			Pcert.push(diskprom.setFile(ssl_ca_intermediate, self.CI.ssl.ca.intermediate));
+			Promise.all(Pcert).then(function(result) {
+				return diskprom.disconnect();
+			}).then(function(result) {
+				resolve("successfull eeprom writer");
+			}).catch(function(error) {
+				console.log("debug", "EEprom_witer.prototype.write.Pcert errored: " + error);
+				reject("EEprom_witer.prototype.write.Pcert errored:" + error);
 			});
 		});
 	});

@@ -16,6 +16,8 @@
     "handlebars": "4.0.5",
     "i2c": "git://github.com/WigWagCo/node-i2c",
     "jsonminify": "^0.2.3",
+    "linux-mountutils": "^1.0.0",
+    "mkdirp": "^0.5.1",
     "serialport": "^2.0.5"
   }
 }

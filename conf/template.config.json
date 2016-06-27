@@ -117,9 +117,15 @@
 				{
 					"path": "${thisdir}/../wigwag-devices",
 					"config": {
-                                                "cloudURL": "{{cloudurl}}",
-                                                "apiKey": "{{apikey}}",
-                                                "apiSecret": "{{apisecret}}",
+                        "cloudURL": "{{cloudurl}}",
+					    "ssl": {
+							"key": "/wigwag/devicejs-core-modules/Runner/.ssl/client.key.pem",
+							"cert": "/wigwag/devicejs-core-modules/Runner/.ssl/client.cert.pem",
+							"ca": [
+							  "/wigwag/devicejs-core-modules/Runner/.ssl/ca.cert.pem",
+							"/wigwag/devicejs-core-modules/Runner/.ssl/intermediate.cert.pem"
+							]
+					    },
 						"udpSourcePort": 3000,
 						"udpDestinationPort": 3001,
                                                 "platform": "{{wwplatform}}",

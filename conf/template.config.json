@@ -126,6 +126,7 @@
 							"/wigwag/devicejs-core-modules/Runner/.ssl/intermediate.cert.pem"
 							]
 					    },
+                        "apiKey": "{{apikey}}",
 						"udpSourcePort": 3000,
 						"udpDestinationPort": 3001,
                                                 "platform": "{{wwplatform}}",

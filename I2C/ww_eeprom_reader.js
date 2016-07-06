@@ -416,25 +416,21 @@ function enableRTC() {
 }
 
 function writeSecurity() {
-	return new Promise(function(resolve, reject) {
-		var DProm = new Array();
-		DProm.push(diskprom.cpFile(ssl_client_key, sslPathDefault + ssl_client_key, POM));
-		DProm.push(diskprom.cpFile(ssl_client_cert, sslPathDefault + ssl_client_cert, POM));
-		DProm.push(diskprom.cpFile(ssl_server_key, sslPathDefault + ssl_server_key, POM));
-		DProm.push(diskprom.cpFile(ssl_server_cert, sslPathDefault + ssl_server_cert, POM));
-		DProm.push(diskprom.cpFile(ssl_ca_cert, sslPathDefault + ssl_ca_cert, POM));
-		DProm.push(diskprom.cpFile(ssl_ca_int, sslPathDefault + ssl_ca_int, POM));
-		console.log("calling the big DProm");
-		Promise.all(DProm).then(function(result) {
-			diskprom.disconnect();
-			console.log("debug", "get sslclientkey resolved: " + result);
-			console.dir(result);
-			resolve();
-		}).catch(function(error) {
-			diskprom.disconnect();
-			console.log("debug", "get sslclientkey errored: " + error);
-			reject(error);
-		});
+	var DProm = new Array();
+	DProm.push(diskprom.cpFile(ssl_client_key, sslPathDefault + ssl_client_key, POM));
+	DProm.push(diskprom.cpFile(ssl_client_cert, sslPathDefault + ssl_client_cert, POM));
+	DProm.push(diskprom.cpFile(ssl_server_key, sslPathDefault + ssl_server_key, POM));
+	DProm.push(diskprom.cpFile(ssl_server_cert, sslPathDefault + ssl_server_cert, POM));
+	DProm.push(diskprom.cpFile(ssl_ca_cert, sslPathDefault + ssl_ca_cert, POM));
+	DProm.push(diskprom.cpFile(ssl_ca_int, sslPathDefault + ssl_ca_int, POM));
+	console.log("calling the big DProm");
+	Promise.all(DProm).then(function(result) {
+		diskprom.disconnect();
+		console.log("debug", "get sslclientkey resolved: " + result);
+		console.dir(result);
+	}).catch(function(error) {
+		diskprom.disconnect();
+		console.log("debug", "get sslclientkey errored: " + error);
 	});
 }
 
@@ -533,10 +529,10 @@ function main() {
 						hw = define_hardware(result);
 						result.hardware = hw;
 
+						writeSecurity();
 
 						var p = [];
 
-						p.push(writeSecurity());
 						p.push(generateDevicejsConf(result));
 						p.push(generateRelayConf(result, "wwrelay_v"));
 						p.push(generateHardwareConf(result));

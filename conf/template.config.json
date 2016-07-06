@@ -54,6 +54,7 @@
 			],
                 "databaseConfig": {                                                       
                   "port": 9000,
+                  "requireAuthentication": false,
                   "dbFile": "/userdata/etc/devicejs/db",
                   "logger": {
                     "enabled": true
@@ -369,14 +370,6 @@
                                                { "path": "${thisdir}/../../wigwag-core-modules/RuleUI/schemaFormDialogs", "ignores" : ["_public"] }
                                            ]
                                          }
-				},
-				{
-					"path": "${thisdir}/../../wigwag-core-modules/cloud-tunnel",
-					"config": {
-                                            "apiKey": "{{apikey}}",
-                                            "apiSecret": "{{apisecret}}",
-                                            "cloudURL": "{{cloudurl}}"
-					}
 				},
 				{
 					"path": "${thisdir}/../../wigwag-core-modules/moods",

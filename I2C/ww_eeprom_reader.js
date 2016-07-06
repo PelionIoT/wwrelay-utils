@@ -533,20 +533,20 @@ function main() {
 
 						var p = [];
 
-						p.push(generateDevicejsConf(result));
-						p.push(generateRelayConf(result, "wwrelay_v"));
-						p.push(generateHardwareConf(result));
+						p.push(generateDevicejsConf(result)); 
+						p.push(generateRelayConf(result, "wwrelay_v")); 
+						p.push(generateHardwareConf(result)); 
 
-						if(radioProfile_template_conf_file) {
-							p.push(generateRadioProfileConf(result));
-						}
+						if(radioProfile_template_conf_file) { 
+							p.push(generateRadioProfileConf(result)); 
+						} 
 
-						Promise.all(p).then(function(result) {
-							console.log('EEPROM reader successful');
-							resolve();
-						}, function(err) {
-							reject(err);
-						});
+						Promise.all(p).then(function(result) { 
+							console.log('EEPROM reader successful'); 
+							resolve(); 
+						}, function(err) { 
+							reject(err); 
+						}); 
 					}
 					else {
 						console.log("EEPROM is not configured properly.");
@@ -603,10 +603,10 @@ program
 	.option('-r, --relayConfFile [true/false]', 'Specify the path for relay.config.json for Runner')
 	.option('-p, --radioProfiletemplateFile [filepath]', 'Specify the rsmi template config file')
 	.option('-s, --rsmiConfFile [filepath]', 'Specify the rsmi radioProfile.config.json for RSMI')
-	.option('-b, --cloudDdbURL [url]', 'Specify the cloud database url', 'https://devicedb.wigwag.com')
-	.option('-d, --cloudDevicejsURL [url]', 'Specify the cloud devicejs url', 'https://devicejs.wigwag.com')
-	.option('-m, --devicejsConfTemplateFile [filepath]', 'Specify the devicejs config template file')
-	.option('-n, --devicejsConfFile [filepath]', 'Specify the output devicejs configuration file path')
+	.option('-b, --cloudDdbURL [url]', 'Specify the cloud database url', 'https://devicedb.wigwag.com') 
+	.option('-d, --cloudDevicejsURL [url]', 'Specify the cloud devicejs url', 'https://devicejs.wigwag.com') 
+	.option('-m, --devicejsConfTemplateFile [filepath]', 'Specify the devicejs config template file') 
+	.option('-n, --devicejsConfFile [filepath]', 'Specify the output devicejs configuration file path') 
 	.parse(process.argv);
 
 program.on('--help', function() {
@@ -683,24 +683,24 @@ if (program.overwriteSSL) {
 	console.log('Using overwriteSSL- ', POM);
 }
 
-if(program.devicejsConfFile && program.devicejsConfTemplateFile) {
-	console.log('Got to generate devicejs conf file for devicejs2.0');
-	console.log('Using devicejs conf template- ', program.devicejsConfTemplateFile);
+if(program.devicejsConfFile && program.devicejsConfTemplateFile) { 
+	console.log('Got to generate devicejs conf file for devicejs2.0'); 
+	console.log('Using devicejs conf template- ', program.devicejsConfTemplateFile); 
 	console.log('Using devicejs conf output file- ', program.devicejsConfFile);
-	devicejs_conf_file = program.devicejsConfFile;
-	templateDevicejsConf = JSON.parse(jsonminify(fs.readFileSync(program.devicejsConfTemplateFile, 'utf8')));
+	devicejs_conf_file = program.devicejsConfFile; 
+	templateDevicejsConf = JSON.parse(jsonminify(fs.readFileSync(program.devicejsConfTemplateFile, 'utf8'))); 
 
 	if(program.cloudDevicejsURL && program.cloudDdbURL) {
-		console.log('Using cloud devicejs url- ' + program.cloudDevicejsURL + ' , using cloud database url- ' + program.cloudDdbURL);
-		cloudDevicejsURL = program.cloudDevicejsURL;
-		cloudDdbURL = program.cloudDdbURL;
-	} else {
-		console.error('Please specify urls for cloud database and devicejs');
+		console.log('Using cloud devicejs url- ' + program.cloudDevicejsURL + ' , using cloud database url- ' + program.cloudDdbURL); 
+		cloudDevicejsURL = program.cloudDevicejsURL; 
+		cloudDdbURL = program.cloudDdbURL; 
+	} else { 
+		console.error('Please specify urls for cloud database and devicejs'); 
 		process.exit(1);
 	}
 } else {
-	console.warn('Not generating devicejs config file as command line options are not provided');
-}
+	console.warn('Not generating devicejs config file as command line options are not provided'); 
+} 
 
 main().then(function() {
 	if (!softwareBasedRelay) {

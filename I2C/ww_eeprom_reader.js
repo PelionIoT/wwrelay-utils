@@ -32,10 +32,14 @@ var template_conf_file = null;
 var radioProfile_template_conf_file = null;
 var relay_conf_json_file = null;
 var rsmi_conf_json_file = null;
+var devicejs_conf_file = null;
+var templateDevicejsConf = null;
 var sw_eeprom_file = null;
 var devjsconf = null;
 var secConfObj = null;
 var radioModuleConf = null;
+var cloudDevicejsURL = null;
+var cloudDdbURL = null;
 
 var cloudURL = "https://cloud.wigwag.com";
 var overwrite_conf = false;
@@ -153,6 +157,7 @@ function define_hardware(res) {
 
 		case "0.0.9":
 		case "0.1.0":
+		case "0.1.1":
 		default:
 			hw.gpioProfile.NumberOfInputs = 1;
 			hw.gpioProfile.NumberOfOutputs = 11;
@@ -217,6 +222,16 @@ function createHandlebarsDataForRSMI(eeprom) {
 
 	data.hardwareVersion = eeprom.hardwareVersion;
 	data.radioConfig = eeprom.radioConfig;
+
+	return data;
+}
+
+function createHandlebarsDevicejsConf(eeprom) {
+	var data = {};
+
+	data.apikey = eeprom.relayID;
+	data.clouddevicejsurl = cloudDevicejsURL;
+	data.cloudddburl = cloudDdbURL;
 
 	return data;
 }
@@ -401,35 +416,106 @@ function enableRTC() {
 }
 
 function writeSecurity() {
-	var DProm = new Array();
-	DProm.push(diskprom.cpFile(ssl_client_key, sslPathDefault + ssl_client_key, POM));
-	DProm.push(diskprom.cpFile(ssl_client_cert, sslPathDefault + ssl_client_cert, POM));
-	DProm.push(diskprom.cpFile(ssl_server_key, sslPathDefault + ssl_server_key, POM));
-	DProm.push(diskprom.cpFile(ssl_server_cert, sslPathDefault + ssl_server_cert, POM));
-	DProm.push(diskprom.cpFile(ssl_ca_cert, sslPathDefault + ssl_ca_cert, POM));
-	DProm.push(diskprom.cpFile(ssl_ca_int, sslPathDefault + ssl_ca_int, POM));
-	console.log("calling the big DProm");
-	Promise.all(DProm).then(function(result) {
-		diskprom.disconnect();
-		console.log("debug", "get sslclientkey resolved: " + result);
-		console.dir(result);
-	}).catch(function(error) {
-		diskprom.disconnect();
-		console.log("debug", "get sslclientkey errored: " + error);
+	return new Promise(function(resolve, reject) {
+		var DProm = new Array();
+		DProm.push(diskprom.cpFile(ssl_client_key, sslPathDefault + ssl_client_key, POM));
+		DProm.push(diskprom.cpFile(ssl_client_cert, sslPathDefault + ssl_client_cert, POM));
+		DProm.push(diskprom.cpFile(ssl_server_key, sslPathDefault + ssl_server_key, POM));
+		DProm.push(diskprom.cpFile(ssl_server_cert, sslPathDefault + ssl_server_cert, POM));
+		DProm.push(diskprom.cpFile(ssl_ca_cert, sslPathDefault + ssl_ca_cert, POM));
+		DProm.push(diskprom.cpFile(ssl_ca_int, sslPathDefault + ssl_ca_int, POM));
+		console.log("calling the big DProm");
+		Promise.all(DProm).then(function(result) {
+			diskprom.disconnect();
+			console.log("debug", "get sslclientkey resolved: " + result);
+			console.dir(result);
+			resolve();
+		}).catch(function(error) {
+			diskprom.disconnect();
+			console.log("debug", "get sslclientkey errored: " + error);
+			reject(error);
+		});
 	});
 }
+
+function generateDevicejsConf(eeprom) {
+	return new Promise(function(resolve, reject) {
+		if (devicejs_conf_file) {
+			var deviceConfHandlebars = handleBars.compile(JSON.stringify(templateDevicejsConf));
+			var deviceConfData = createHandlebarsDevicejsConf(eeprom);
+			var deviceConf = JSON.parse(deviceConfHandlebars(deviceConfData));
+
+			write_JSON2file(devicejs_conf_file, deviceConf, overwrite_conf, function(err, suc) {
+				if (err) {
+					console.error("Error Writing file ", devicejs_conf_file, err);
+					reject(err);
+				} else {
+					console.log(suc + ': wrote ' + devicejs_conf_file + ' file successfully');
+					resolve();
+				}
+			});
+		} else {
+			reject(new Error('Please specify the devicejs config file path, got- ' + JSON.stringify(devicejs_conf_file)));
+		}
+	});
+}
+
+function generateRelayConf(eeprom, platform) {
+	return new Promise(function(resolve, reject) {
+		//replace the handlebars
+		var template = handleBars.compile(JSON.stringify(devjsconf));
+		var data = createHandlebarsData(eeprom, platform + eeprom.hardwareVersion.toString());
+		var conf = JSON.parse(template(data));
+
+		write_JSON2file(relay_conf_json_file, conf, overwrite_conf, function(err, suc) {
+			if (err) {
+				console.error("Error Writing file ", relay_conf_json_file, err);
+				reject(err);
+			} else {
+				console.log(suc + ': wrote ' + relay_conf_json_file + ' file successfully');
+				resolve();
+			}
+		});
+	});
+}
+
+function generateHardwareConf(eeprom) {
+	return new Promise(function(resolve, reject) {
+		write_JSON2file(hardware_conf, eeprom, overwrite_conf, function(err, suc) {
+			if (err) {
+				console.error("Error Writing file ", hardware_conf, err);
+				reject(err);
+			} else {
+				console.log(suc + ': wrote ' + hardware_conf + ' file successfully');
+				resolve();
+			}
+		});
+	});
+
+}
+
+function generateRadioProfileConf(eeprom) {
+	return new Promise(function(resolve, reject) {
+		var radioConfTemplate = handleBars.compile(JSON.stringify(radioModuleConf));
+		var radioData = createHandlebarsDataForRSMI(eeprom);
+		var radioConf = JSON.parse(radioConfTemplate(radioData));
+
+		write_JSON2file(rsmi_conf_json_file, radioConf, overwrite_conf, function(err, suc) {
+			if (err) {
+				console.error("Error Writing file ", rsmi_conf_json_file, err);
+				reject(err);
+			} else {
+				console.log(suc + ': wrote ' + rsmi_conf_json_file + ' file successfully');
+				resolve();
+			}
+		});
+	});
+
+}
+
 //main fuction, first determines if we are on purpose based hardware (currently only detects WigWag Relays), or software.   It does this by detecting the EEprom type @ a specific location. 
 function main() {
 	return new Promise(function(resolve, reject) {
-		// print process.argv
-		// process.argv.forEach(function (val, index, array) {
-		//   // console.log(index + ': ' + val);
-		//   if(index > 1) {
-		//   	cloudURL = array[2];
-		//   	if(index > 2)
-		//   		overwrite_conf = array[3];	
-		//   }
-		// });
 
 		reader.exists(function(the_eeprom_exists) {
 			if (the_eeprom_exists) {
@@ -437,117 +523,73 @@ function main() {
 				//	if (!exists) {
 				get_all(function(result) {
 					//this checks if the eeprom had valid data.  I may want to add a different check, perhaps a eeprom_version number, so this file never need to change
+					console.log('Read EEPROM- ' + JSON.stringify(result));
+					if(typeof result.BRAND === 'undefined') {
+						reject(new Error('No relay ID found, please re-configure EEPROM'));
+						return;
+					}
 
 					if (result.BRAND == "WW" || result.BRAND == "WD") {
 						hw = define_hardware(result);
 						result.hardware = hw;
-						// flattenobj(result, function(output) {
-						// 	write_string2file(relayconf_dot_sh, output, true, function(err, succ) {
-						// 		if (err) console.log("Error Writing file %s", err);
-						// 	});
-						// });
 
-						writeSecurity();
-						//replace the handlebars
-						var template = handleBars.compile(JSON.stringify(devjsconf));
-						var data = createHandlebarsData(result, "wwrelay_v" + result.hardwareVersion.toString());
-						var conf = JSON.parse(template(data));
 
-						write_JSON2file(relay_conf_json_file, conf, overwrite_conf, function(err, suc) {
-							if (err) {
-								console.error("Error Writing file ", relay_conf_json_file, err);
-								resolve(err);
-							}
+						var p = [];
 
-							console.log(suc + ': wrote ' + relay_conf_json_file + ' file successfully');
+						p.push(writeSecurity());
+						p.push(generateDevicejsConf(result));
+						p.push(generateRelayConf(result, "wwrelay_v"));
+						p.push(generateHardwareConf(result));
 
-							write_JSON2file(hardware_conf, result, overwrite_conf, function(err, suc) {
-								if (err) {
-									console.error("Error Writing file ", hardware_conf, err);
-									resolve(err);
-								}
-								console.log(suc + ': wrote ' + hardware_conf + ' file successfully');
-								resolve();
-							});
-						});
-
-						if (radioProfile_template_conf_file) {
-							var radioConfTemplate = handleBars.compile(JSON.stringify(radioModuleConf));
-							var radioData = createHandlebarsDataForRSMI(result);
-							var radioConf = JSON.parse(radioConfTemplate(radioData));
-
-							write_JSON2file(rsmi_conf_json_file, radioConf, overwrite_conf, function(err, suc) {
-								if (err) {
-									console.error("Error Writing file ", rsmi_conf_json_file, err);
-									resolve(err);
-								}
-
-								console.log(suc + ': wrote ' + rsmi_conf_json_file + ' file successfully');
-							});
+						if(radioProfile_template_conf_file) {
+							p.push(generateRadioProfileConf(result));
 						}
+
+						Promise.all(p).then(function(result) {
+							console.log('EEPROM reader successful');
+							resolve();
+						}, function(err) {
+							reject(err);
+						});
 					}
 					else {
 						console.log("EEPROM is not configured properly.");
 						reject(new Error('EEPROM is not configured properly.'));
+						return;
 					}
 				});
-
-			}
-			else { //eprom doesn't exist... must do other things.  Assume the relay.conf just exists in desired form
+			} else { //eprom doesn't exist... must do other things.  Assume the relay.conf just exists in desired form
 				console.log("Software based Relay found");
 				softwareBasedRelay = true;
 
 				eeprom2relay(sw_eeprom_file, function(err, result) {
-					if (result) {
+					console.log('Read EEPROM- ' + JSON.stringify(result));
+					if(typeof result.BRAND === 'undefined') {
+						reject(new Error('No relay ID found, please re-configure EEPROM'));
+						return;
+					}
 
+					if (result) {
 						if (result.BRAND == "WW" || result.BRAND == "WD") {
 							hw = define_hardware(result);
 							result.hardware = hw;
-							// flattenobj(result, function(output) {
-							// 	write_string2file(relayconf_dot_sh, output, true, function(err, succ) {
-							// 		if (err) console.log("Error Writing file %s", err);
-							// 	});
-							// });
 
-							//replace the handlebars
-							var template = handleBars.compile(JSON.stringify(devjsconf));
-							var data = createHandlebarsData(result, "softrelay");
-							var conf = JSON.parse(template(data));
+							var p = [];
 
-							write_JSON2file(relay_conf_json_file, conf, overwrite_conf, function(err, suc) {
-								if (err) {
-									console.error("Error Writing file ", relay_conf_json_file, err);
-									resolve(err);
-								}
+							p.push(generateRelayConf(result, "softrelay"));
+							p.push(generateHardwareConf(result));
 
-								console.log(suc + ': wrote ' + relay_conf_json_file + ' file successfully');
-
-								write_JSON2file(hardware_conf, result, overwrite_conf, function(err, suc) {
-									if (err) {
-										console.error("Error Writing file ", hardware_conf, err);
-										resolve(err);
-									}
-									console.log(suc + ': wrote ' + hardware_conf + ' file successfully');
-									resolve();
-								});
+							Promise.all(p).then(function(result) {
+								console.log('EEPROM reader successful');
+								resolve();
+							}, function(err) {
+								reject(err);
 							});
 						}
 						else {
 							console.log("EEPROM is not configured properly.");
 							reject(new Error('EEPROM is not configured properly.'));
 						}
-
-						// res.hw = define_hardware(res);
-						// modify_devjs(res.sixBMAC.string, "ttyUSB0");
-						// write_JSON2file(hardware_conf, res, true, function(err, suc) {
-						// 	write_JSON2file(wigwag_conf_json_file, devjsconf, true, function(err, suc) {
-						// 		if (err) {
-						// 			console.log("Error Writing file %s", err);
-						// 			resolve();
-						// 		}
-						// 		resolve();
-						// 	});
-						// });
 					}
 				});
 			}
@@ -565,6 +607,10 @@ program
 	.option('-r, --relayConfFile [true/false]', 'Specify the path for relay.config.json for Runner')
 	.option('-p, --radioProfiletemplateFile [filepath]', 'Specify the rsmi template config file')
 	.option('-s, --rsmiConfFile [filepath]', 'Specify the rsmi radioProfile.config.json for RSMI')
+	.option('-b, --cloudDdbURL [url]', 'Specify the cloud database url', 'https://devicedb.wigwag.com')
+	.option('-d, --cloudDevicejsURL [url]', 'Specify the cloud devicejs url', 'https://devicejs.wigwag.com')
+	.option('-m, --devicejsConfTemplateFile [filepath]', 'Specify the devicejs config template file')
+	.option('-n, --devicejsConfFile [filepath]', 'Specify the output devicejs configuration file path')
 	.parse(process.argv);
 
 program.on('--help', function() {
@@ -641,6 +687,25 @@ if (program.overwriteSSL) {
 	console.log('Using overwriteSSL- ', POM);
 }
 
+if(program.devicejsConfFile && program.devicejsConfTemplateFile) {
+	console.log('Got to generate devicejs conf file for devicejs2.0');
+	console.log('Using devicejs conf template- ', program.devicejsConfTemplateFile);
+	console.log('Using devicejs conf output file- ', program.devicejsConfFile);
+	devicejs_conf_file = program.devicejsConfFile;
+	templateDevicejsConf = JSON.parse(jsonminify(fs.readFileSync(program.devicejsConfTemplateFile, 'utf8')));
+
+	if(program.cloudDevicejsURL && program.cloudDdbURL) {
+		console.log('Using cloud devicejs url- ' + program.cloudDevicejsURL + ' , using cloud database url- ' + program.cloudDdbURL);
+		cloudDevicejsURL = program.cloudDevicejsURL;
+		cloudDdbURL = program.cloudDdbURL;
+	} else {
+		console.error('Please specify urls for cloud database and devicejs');
+		process.exit(1);
+	}
+} else {
+	console.warn('Not generating devicejs config file as command line options are not provided');
+}
+
 main().then(function() {
 	if (!softwareBasedRelay) {
 		setupLEDGPIOs().then(function() {
@@ -648,7 +713,6 @@ main().then(function() {
 		});
 	}
 }, function(err) {
+	console.log('EEPROM reader got error- ' + JSON.stringify(err));
 	process.exit(1);
 });
-
-//reader.readSpecial();

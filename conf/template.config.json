@@ -92,7 +92,9 @@
                             "/wigwag/devicejs-core-modules/Runner/.ssl/intermediate.cert.pem"
                           ]
                       }
-                  }
+                  },
+		  "pullFrequency": 5000,
+		  "merkleMaxHeight": 4
             }              
 
 		},
@@ -126,7 +128,7 @@
 							"/wigwag/devicejs-core-modules/Runner/.ssl/intermediate.cert.pem"
 							]
 					    },
-                        "apiKey": "{{apikey}}",
+           				        "apiKey": "{{apikey}}",
 						"udpSourcePort": 3000,
 						"udpDestinationPort": 3001,
                                                 "platform": "{{wwplatform}}",

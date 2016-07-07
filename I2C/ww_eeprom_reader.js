@@ -213,6 +213,7 @@ function createHandlebarsData(eeprom, platform) {
 	data.sixbmac = eeprom.sixBMAC.string;
 	data.ethernetmac = eeprom.ethernetMAC.string;
 	data.wwplatform = platform;
+	data.cloudddburl = cloudDdbURL;
 
 	return data;
 }

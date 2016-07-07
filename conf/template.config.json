@@ -68,7 +68,9 @@
                       "maxOpenFiles": 1000,
                       "blockRestartInterval": 16
                   },
-                  "peers": [ ],
+                  "peers": [ 
+            		"{{cloudddburl}}"
+            	  ],
                   "logger": {
                       "enabled": true
                   },

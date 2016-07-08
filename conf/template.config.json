@@ -271,8 +271,8 @@
 						},
 						"port": 443,
                                                 "ssl": {
-                                                    "key": "/wigwag/devicejs-core-modules/Runner/.ssl/server.key.pem",
-                                                    "cert": "/wigwag/devicejs-core-modules/Runner/.ssl/server.cert.pem",
+                                                    "key": "/wigwag/devicejs-core-modules/Runner/.ssl/client.key.pem",
+                                                    "cert": "/wigwag/devicejs-core-modules/Runner/.ssl/client.cert.pem",
                                                     "ca": [ 
                                                            "/wigwag/devicejs-core-modules/Runner/.ssl/ca.cert.pem",
                                                            "/wigwag/devicejs-core-modules/Runner/.ssl/intermediate.cert.pem"
@@ -397,7 +397,7 @@
 				{
 					"path": "${thisdir}/../../wigwag-core-modules/RuleEngine",
 					"config": {
-					    "cloudAddress": "http://localhost:8585",
+					    "cloudAddress": "{{cloudurl}}",
 					    "relayID": "{{apikey}}",
 					    "ssl": {
 				   	         "key": "/wigwag/devicejs-core-modules/Runner/.ssl/client.key.pem",

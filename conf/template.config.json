@@ -272,12 +272,14 @@
 						"port": 443,
                                                 "ssl": {
                                                     "key": "${thisdir}/../AppServer/Certs/server.key",
-                                                    "certificate": "${thisdir}/../AppServer/Certs/server.crt",
-                                                    "certificateAuthority": "${thisdir}/../AppServer/Certs/ca.crt",
-													"cert": "${thisdir}/../AppServer/Certs/server.crt",
-                                                    "ca": [ "${thisdir}/../AppServer/Certs/ca.crt" ]
-                                                }
-					}
+                                                    "cert": "${thisdir}/../AppServer/Certs/server.crt",
+                                                    "ca": [ 
+                                                           "${thisdir}/../AppServer/Certs/ca.crt",
+                                                           "${thisdir}/../AppServer/Certs/intermediate.crt"
+                                                     ]
+                                                },
+						"relayID":"{{apikey}}"
+                                        }
 				},
 				{
 					"path": "${thisdir}/../APIProxy",

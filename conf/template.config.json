@@ -35,8 +35,8 @@
                             "timeout" : 5000
                         },
 			"modules": {},
-			"user": "devicejs",
-			"group": "devicejs",
+//			"user": "devicejs",
+//			"group": "devicejs",
 			"deviceJSCore": {
 				"root": "/wigwag/devicejs-ng",
 				"opts": []

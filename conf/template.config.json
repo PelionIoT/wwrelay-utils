@@ -43,6 +43,7 @@
 			}
 		},
 		"db": {
+			"enable": false,
                         "restart" : {
                             "limit" : 10,
                             "timeout" : 5000
@@ -171,38 +172,6 @@
 				}
                         ]
                 },
-        "core-comm2": {
-			"limits": {
-				"limit_group": ""
-                                // cgroup limits here - TBD
-			},
-			"node_args": [
-                            "--max-executable-size=96",
-                            "--max-old-space-size=128",
-                            "--max-semi-space-size=1"
-			],
-                        "restart": {          // not required, but options are:
-                            "timeout" : 5000,  // the timeout between restarts will still take affect
-                            "limit" : 10
-                        },
-			"env": {
-				"NODE_PATH": "${NODE_PATH}:${thisdir}/../node_modules:/wigwag/devicejs-core-modules/IPStack/node_modules"
-			},
-                        "modules": [                                           
-				{
-					"path": "${thisdir}/../zigbeeHA",
-					"config": {
-						"siodev": "{{zigbeehatty}}",
-					    "devType": 0,
-					    "newNwk": false,
-					    "channelMask": 2048,
-					    "baudRate": 115200,
-					    "log_level": 1,
-					    "platform": "{{wwplatform}}"
-					}
-				}
-                        ]
-                },
 		"core-devices": {
 			"limits": {
 				"limit_group": ""
@@ -239,6 +208,18 @@
 							"stopBits": 1
 						},
 						"platform": "{{wwplatform}}"
+					}
+				},                                           
+				{
+					"path": "${thisdir}/../zigbeeHA",
+					"config": {
+						"siodev": "{{zigbeehatty}}",
+					    "devType": 0,
+					    "newNwk": false,
+					    "channelMask": 2048,
+					    "baudRate": 115200,
+					    "log_level": 1,
+					    "platform": "{{wwplatform}}"
 					}
 				}
 			]

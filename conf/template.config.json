@@ -263,6 +263,14 @@
                                         }
 				},
 				{
+					"path": "${thisdir}/../Insteon",
+					"config": {
+						"insteon": {
+                                                   "baudrate": 19200
+                                                }
+					}
+				},
+				{
 					"path": "${thisdir}/../APIProxy",
 					"config": {
 						"cloudAPISecret": "{{apisecret}}",

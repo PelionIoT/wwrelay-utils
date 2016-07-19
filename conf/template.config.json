@@ -263,6 +263,22 @@
                                         }
 				},
 				{
+					"path": "${thisdir}/../../wigwag-core-modules/RelayStatsSender",
+					"config": {
+                                            "cloudAddress": "{{cloudurl}}",
+                                            "relayID": "{{apikey}}",
+                                            "ssl": {
+                                                "key": "/wigwag/devicejs-core-modules/Runner/.ssl/client.key.pem",
+                                                "cert": "/wigwag/devicejs-core-modules/Runner/.ssl/client.cert.pem",
+                                                "ca": [
+                                                    "/wigwag/devicejs-core-modules/Runner/.ssl/ca.cert.pem",
+                                                    "/wigwag/devicejs-core-modules/Runner/.ssl/intermediate.cert.pem"
+                                                ]
+                                            }
+
+					}
+				},
+				{
 					"path": "${thisdir}/../Insteon",
 					"config": {
 						"insteon": {

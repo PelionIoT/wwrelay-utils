@@ -1,58 +1,58 @@
 {
-	"logger": {
-		"type": "global",
-		"sinkaddress": "/tmp/grease.socket",
-		"config": "${thisdir}/relay_logger.conf.json"
-	},
-	"container_templates": {
-		"example_container": {
-			"capabilities": {
-				"NET_BIND_SERVICE": "permitted"
-			},
-			"cgroup_limits": {},
-			"chroot_prefix": "/tmp/devjs_container"
-		}
-	},
-	"deviceJSConfig": "/wigwag/etc/devicejs/devicejs.conf",
-	"defaults": {
-		"default_user": "*",  // means whoever runs it
-		"default_group": "*"  // means whatever group runs it
-	},
-	"process_groups": {
-		"core": {
-			"limits": {
-				"cgroup_limits": {},
-				"capabilties": {}
-			},
-			"node_args": [
+        "logger": {
+                "type": "global",
+                "sinkaddress": "/tmp/grease.socket",
+                "config": "${thisdir}/relay_logger.conf.json"
+        },
+        "container_templates": {
+                "example_container": {
+                        "capabilities": {
+                                "NET_BIND_SERVICE": "permitted"
+                        },
+                        "cgroup_limits": {},
+                        "chroot_prefix": "/tmp/devjs_container"
+                }
+        },
+        "deviceJSConfig": "/wigwag/etc/devicejs/devicejs.conf",
+        "defaults": {
+                "default_user": "*",  // means whoever runs it
+                "default_group": "*"  // means whatever group runs it
+        },
+        "process_groups": {
+                "core": {
+                        "limits": {
+                                "cgroup_limits": {},
+                                "capabilties": {}
+                        },
+                        "node_args": [
                 "--max-executable-size=96",
                 "--max-old-space-size=128",
                 "--max-semi-space-size=1",
                 "--nouse-idle-notification"
-			],
+                        ],
                         "restart" : {
                             "limit" : 10,
                             "timeout" : 5000
                         },
-			"modules": {},
-//			"user": "devicejs",
-//			"group": "devicejs",
-			"deviceJSCore": {
-				"root": "/wigwag/devicejs-ng",
-				"opts": []
-			}
-		},
-		"db": {
-			"enable": false,
+                        "modules": {},
+//                        "user": "devicejs",
+//                        "group": "devicejs",
+                        "deviceJSCore": {
+                                "root": "/wigwag/devicejs-ng",
+                                "opts": []
+                        }
+                },
+                "db": {
+                        "enable": false,
                         "restart" : {
                             "limit" : 10,
                             "timeout" : 5000
                         },
-			"node_args": [
+                        "node_args": [
                             "--max-executable-size=96",
                             "--max-old-space-size=128",
                             "--max-semi-space-size=1"
-			],
+                        ],
                 "databaseConfig": {                                                       
                   "port": 9000,
                   "requireAuthentication": false,
@@ -70,8 +70,8 @@
                       "blockRestartInterval": 16
                   },
                   "peers": [ 
-            		"{{cloudddburl}}"
-            	  ],
+                            "{{cloudddburl}}"
+                      ],
                   "logger": {
                       "enabled": true
                   },
@@ -97,174 +97,114 @@
                           ]
                       }
                   },
-		  "pullFrequency": 5000,
-		  "merkleMaxHeight": 4
+                  "pullFrequency": 5000,
+                  "merkleMaxHeight": 4
             }              
 
-		},
-        "core-comm": {
-			"limits": {
-				"limit_group": ""
-                                // cgroup limits here - TBD
-			},
-			"node_args": [
-                            "--max-executable-size=96",
-                            "--max-old-space-size=128",
-                            "--max-semi-space-size=1"
-			],
-                        "restart": {          // not required, but options are:
-                            "timeout" : 5000,  // the timeout between restarts will still take affect
-                            "force_restart" : [ 1, "days" ] // this array are parameters to moment.duration()
-                        },
-			"env": {
-				"NODE_PATH": "${NODE_PATH}:${thisdir}/../node_modules:/wigwag/devicejs-core-modules/IPStack/node_modules"
-			},
-                        "modules": [                                           
-				{
-					"path": "${thisdir}/../wigwag-devices",
-					"config": {
-                        "cloudURL": "{{cloudurl}}",
-					    "ssl": {
-							"key": "/wigwag/devicejs-core-modules/Runner/.ssl/client.key.pem",
-							"cert": "/wigwag/devicejs-core-modules/Runner/.ssl/client.cert.pem",
-							"ca": [
-							  "/wigwag/devicejs-core-modules/Runner/.ssl/ca.cert.pem",
-							"/wigwag/devicejs-core-modules/Runner/.ssl/intermediate.cert.pem"
-							]
-					    },
-           				        "apiKey": "{{apikey}}",
-						"udpSourcePort": 3000,
-						"udpDestinationPort": 3001,
-                                                "platform": "{{wwplatform}}",
-						"sixlbr": {
-							"ifname": "Witap0",
-							"wsnNet": "bbbb::100",
-							"sixlbr": {
-								"tundev": "Witap0",
-								"use_raw_ethernet": false,
-								"log_level": [
-									"error", "routing"
-								],
-                                                                "platform": "{{wwplatform}}",
-                                                                "siodev": "{{sixlbrtty}}",
-								"siodev_secondary": "ttyUSB1",
-								"sixBMAC": "{{sixbmac}}",
-								"baudrate": 115200,
-								"slip_delay": 0,
-								"ww_encryption": true,
-								"firmware_path_mc1322": "/home/yashgoyal/workspace/devicejs/core/",
-								"firmware_file_prefix": "slip-radio_econotag",
-								"reset_GPIO_path_firmware_mc1322": "/sys/class/gpio/gpio105/value",
-								"erase_GPIO_path_firmware_mc1322": "/sys/class/gpio/gpio103/value",
-								"reset_GPIO_path_firmware_cc2530": "{{sixlbrreset}}",
-								"relay_version": 7,
-								"nvm_data": {
-									"channel": 20,
-									"rpl_dio_intdoubl": 1,
-									"rpl_dio_intmin": 12,
-									"rpl_default_lifetime": 4,
-									"rpl_lifetime_unit": 100,
-									"rpl_version_id": 247
-								}
-							}
-						}
-					}
-				}
-                        ]
                 },
-		"core-devices": {
-			"limits": {
-				"limit_group": ""
+        "all-modules": {
+                        "limits": {
+                                "limit_group": ""
                                 // cgroup limits here - TBD
-			},
-			"node_args": [
+                        },
+                        "node_args": [
                             "--max-executable-size=96",
                             "--max-old-space-size=128",
                             "--max-semi-space-size=1"
-			],
+                        ],
                         "restart": {          // not required, but options are:
                             "timeout" : 5000,  // the timeout between restarts will still take affect
                             "limit" : 10
                         },
-			"env": {
-				"NODE_PATH": "${NODE_PATH}:${thisdir}/../node_modules:/wigwag/devicejs-core-modules/IPStack/node_modules"
-			},
-			"modules": [
-				{
-					"path": "${thisdir}/../core-lighting",
-					"config": {}
-				},
-				{
-					"path": "${thisdir}/../core-interfaces",
-					"config": {}
-				},
-				{
-					"path": "${thisdir}/../ww-zwave",
-					"config": {
-						"serialInterfaceOptions": {
-							"siodev": "{{zwavetty}}",
-							"baudrate": 115200,
-							"dataBits": 8,
-							"stopBits": 1
-						},
-						"platform": "{{wwplatform}}"
-					}
-				},                                           
-				{
-					"path": "${thisdir}/../zigbeeHA",
-					"config": {
-						"siodev": "{{zigbeehatty}}",
-					    "devType": 0,
-					    "newNwk": false,
-					    "channelMask": 2048,
-					    "baudRate": 115200,
-					    "log_level": 1,
-					    "platform": "{{wwplatform}}"
-					}
-				}
-			]
-		},
-		"core-servers": {
-			"limits": {
-				"limit_group": ""
-			},
-			"node_args": [
-                            "--max-executable-size=96",
-                            "--max-old-space-size=128",
-                            "--max-semi-space-size=1"
-			],
-                        "restart" : {
-                            "limit" : 10,
-                            "timeout" : 5000
+                        "env": {
+                                "NODE_PATH": "${NODE_PATH}:${thisdir}/../node_modules:/wigwag/devicejs-core-modules/IPStack/node_modules"
                         },
-			"env": {
-				"NODE_PATH": "${NODE_PATH}:${thisdir}/../node_modules:/wigwag/devicejs-core-modules/IPStack/node_modules"
-			},
-			"modules": [
-				{
-					"path": "${thisdir}/../AppServer",
-					"config": {
-						"authentication": {
-							"enabled": true,
-							"cloudAPISecret": "{{apisecret}}",
-							"redirectURL": "/wigwag-ui/s/login/",
-							 "cloudRedirectURL": "{{cloudurl}}/s/login"
-						},
-						"port": 443,
-                                                "ssl": {
-                                                    "key": "/wigwag/devicejs-core-modules/Runner/.ssl/client.key.pem",
-                                                    "cert": "/wigwag/devicejs-core-modules/Runner/.ssl/client.cert.pem",
-                                                    "ca": [ 
-                                                           "/wigwag/devicejs-core-modules/Runner/.ssl/ca.cert.pem",
-                                                           "/wigwag/devicejs-core-modules/Runner/.ssl/intermediate.cert.pem"
-                                                     ]
-                                                },
-						"relayID":"{{apikey}}"
+                        "modules": [                                           
+                                {
+                                        "path": "${thisdir}/../wigwag-devices",
+                                        "config": {
+                        "cloudURL": "{{cloudurl}}",
+                                                 "ssl": {
+                                                        "key": "/wigwag/devicejs-core-modules/Runner/.ssl/client.key.pem",
+                                                        "cert": "/wigwag/devicejs-core-modules/Runner/.ssl/client.cert.pem",
+                                                        "ca": [
+                                                          "/wigwag/devicejs-core-modules/Runner/.ssl/ca.cert.pem",
+                                                          "/wigwag/devicejs-core-modules/Runner/.ssl/intermediate.cert.pem"
+                                                        ]
+                                            },
+                                                 "apiKey": "{{apikey}}",
+                                                "udpSourcePort": 3000,
+                                                "udpDestinationPort": 3001,
+                                                "platform": "{{wwplatform}}",
+                                                "sixlbr": {
+                                                        "ifname": "Witap0",
+                                                        "wsnNet": "bbbb::100",
+                                                        "sixlbr": {
+                                                                "tundev": "Witap0",
+                                                                "use_raw_ethernet": false,
+                                                                "log_level": [
+                                                                        "error", "routing"
+                                                                ],
+                                                                "platform": "{{wwplatform}}",
+                                                                "siodev": "{{sixlbrtty}}",
+                                                                "siodev_secondary": "ttyUSB1",
+                                                                "sixBMAC": "{{sixbmac}}",
+                                                                "baudrate": 115200,
+                                                                "slip_delay": 0,
+                                                                "ww_encryption": true,
+                                                                "firmware_path_mc1322": "/home/yashgoyal/workspace/devicejs/core/",
+                                                                "firmware_file_prefix": "slip-radio_econotag",
+                                                                "reset_GPIO_path_firmware_mc1322": "/sys/class/gpio/gpio105/value",
+                                                                "erase_GPIO_path_firmware_mc1322": "/sys/class/gpio/gpio103/value",
+                                                                "reset_GPIO_path_firmware_cc2530": "{{sixlbrreset}}",
+                                                                "relay_version": 7,
+                                                                "nvm_data": {
+                                                                        "channel": 20,
+                                                                        "rpl_dio_intdoubl": 1,
+                                                                        "rpl_dio_intmin": 12,
+                                                                        "rpl_default_lifetime": 4,
+                                                                        "rpl_lifetime_unit": 100,
+                                                                        "rpl_version_id": 247
+                                                                }
+                                                        }
+                                                }
                                         }
-				},
-				{
-					"path": "${thisdir}/../../wigwag-core-modules/RelayStatsSender",
-					"config": {
+                                },
+                                {
+                                        "path": "${thisdir}/../core-lighting",
+                                        "config": {}
+                                },
+                                {
+                                        "path": "${thisdir}/../core-interfaces",
+                                        "config": {}
+                                },
+                                {
+                                        "path": "${thisdir}/../ww-zwave",
+                                        "config": {
+                                                "serialInterfaceOptions": {
+                                                        "siodev": "{{zwavetty}}",
+                                                        "baudrate": 115200,
+                                                        "dataBits": 8,
+                                                        "stopBits": 1
+                                                },
+                                                "platform": "{{wwplatform}}"
+                                        }
+                                },                                           
+                                {
+                                        "path": "${thisdir}/../zigbeeHA",
+                                        "config": {
+                                                "siodev": "{{zigbeehatty}}",
+                                            "devType": 0,
+                                            "newNwk": false,
+                                            "channelMask": 2048,
+                                            "baudRate": 115200,
+                                            "log_level": 1,
+                                            "platform": "{{wwplatform}}"
+                                        }
+                                },
+                                {
+                                        "path": "${thisdir}/../../wigwag-core-modules/RelayStatsSender",
+                                        "config": {
                                             "cloudAddress": "{{cloudurl}}",
                                             "relayID": "{{apikey}}",
                                             "ssl": {
@@ -276,91 +216,93 @@
                                                 ]
                                             }
 
-					}
-				},
-				{
-					"path": "${thisdir}/../Insteon",
-					"config": {
-						"insteon": {
+                                        }
+                                },
+                                {
+                                        "path": "${thisdir}/../AppServer",
+                                        "config": {
+                                                "authentication": {
+                                                        "enabled": true,
+                                                        "cloudAPISecret": "{{apisecret}}",
+                                                        "redirectURL": "/wigwag-ui/s/login/",
+                                                         "cloudRedirectURL": "{{cloudurl}}/s/login"
+                                                },
+                                                "port": 443,
+                                                "ssl": {
+                                                    "key": "/wigwag/devicejs-core-modules/Runner/.ssl/client.key.pem",
+                                                    "cert": "/wigwag/devicejs-core-modules/Runner/.ssl/client.cert.pem",
+                                                    "ca": [ 
+                                                           "/wigwag/devicejs-core-modules/Runner/.ssl/ca.cert.pem",
+                                                           "/wigwag/devicejs-core-modules/Runner/.ssl/intermediate.cert.pem"
+                                                     ]
+                                                },
+                                                "relayID":"{{apikey}}"
+                                        }
+                                },
+                                {
+                                        "path": "${thisdir}/../Insteon",
+                                        "config": {
+                                                "insteon": {
                                                    "baudrate": 19200
                                                 }
-					}
-				},
-				{
-					"path": "${thisdir}/../APIProxy",
-					"config": {
-						"cloudAPISecret": "{{apisecret}}",
-						"apiKey": "hello",
-						"apiSecret": "asdfdsfa"
-					}
-				},
-				{
-					"path": "${thisdir}/../IPStack",
-					"config": {
-						"wan": [
-							"eth0",
-							"eth1",
-							"wlan0"
-						],
-						"dhcp": "on",
-						"static": {
-							"ipaddress": "10.10.20.31",
-							"mask": "255.255.255.0",
-							"gateway": "10.10.20.1"
-						},
-						"ethernetMAC": "{{ethernetmac}}"
-					}
-				},
-				{
-					"path": "${thisdir}/../../wigwag-core-modules/MDNS",
-					"config": {
-						"id":"{{apikey}}",
-						"waitForIPStack": true,
-						"port": 443 
-					}
-				},
-				{
-					"path": "${thisdir}/../../wigwag-core-modules/LEDController",
-					"config": {
-						"ledBrightness": 5
-					}
-				}
-			]
-		},
-		"wigwag-servers": {
-			"limits": {
-				"limit_group": ""
-			},
-			"node_args": [
-                "--max-executable-size=96",
-                "--max-old-space-size=128",
-                "--max-semi-space-size=1"
-			],
-                        "restart" : {
-                            "limit" : 10,
-                            "timeout" : 5000
-                        },
-			"env": {
-				"NODE_PATH": "${NODE_PATH}:${thisdir}/../node_modules"
-			},
-			"modules": [
-				{
-					"path": "${thisdir}/../../wigwag-core-modules/WigWagMobileUI",
-					"config": {}
-				},
-				{
-					"path": "${thisdir}/../../wigwag-core-modules/wigwag-ui",
-					"config": {
-						"cloudAPISecret": "{{apisecret}}"
-					}
-				},
-				{
-					"path": "${thisdir}/../../wigwag-core-modules/WWRelayWebUI",
-					"config": {}
-				},
-				{
-					"path": "${thisdir}/../../wigwag-core-modules/RuleUI",
-					"config": {
+                                        }
+                                },
+                                {
+                                        "path": "${thisdir}/../APIProxy",
+                                        "config": {
+                                                "cloudAPISecret": "{{apisecret}}",
+                                                "apiKey": "hello",
+                                                "apiSecret": "asdfdsfa"
+                                        }
+                                },
+                                {
+                                        "path": "${thisdir}/../IPStack",
+                                        "config": {
+                                                "wan": [
+                                                        "eth0",
+                                                        "eth1",
+                                                        "wlan0"
+                                                ],
+                                                "dhcp": "on",
+                                                "static": {
+                                                        "ipaddress": "10.10.20.31",
+                                                        "mask": "255.255.255.0",
+                                                        "gateway": "10.10.20.1"
+                                                },
+                                                "ethernetMAC": "{{ethernetmac}}"
+                                        }
+                                },
+                                {
+                                        "path": "${thisdir}/../../wigwag-core-modules/MDNS",
+                                        "config": {
+                                                "id":"{{apikey}}",
+                                                "waitForIPStack": true,
+                                                "port": 443 
+                                        }
+                                },
+                                {
+                                        "path": "${thisdir}/../../wigwag-core-modules/LEDController",
+                                        "config": {
+                                                "ledBrightness": 5
+                                        }
+                                },
+                                {
+                                        "path": "${thisdir}/../../wigwag-core-modules/WigWagMobileUI",
+                                        "config": {}
+                                },
+                                {
+                                        "path": "${thisdir}/../../wigwag-core-modules/wigwag-ui",
+                                        "config": {
+                                                "cloudAPISecret": "{{apisecret}}"
+                                        }
+                                },
+                                {
+                                        "path": "${thisdir}/../../wigwag-core-modules/WWRelayWebUI",
+                                        "config": {}
+                                },
+                                {
+                                        "path": "${thisdir}/../../wigwag-core-modules/RuleUI",
+                                        "config": {
                                            "debug_mode":true,
                                            "debug_level" : 3, // goes up to 3, default 1
                                            "RULE_NODE_TYPES_DIRECTORY": [
@@ -370,52 +312,52 @@
                                                { "path": "${thisdir}/../../wigwag-core-modules/RuleUI/schemaFormDialogs", "ignores" : ["_public"] }
                                            ]
                                          }
-				},
-				{
-					"path": "${thisdir}/../../wigwag-core-modules/moods",
-					"config": {
+                                },
+                                {
+                                        "path": "${thisdir}/../../wigwag-core-modules/moods",
+                                        "config": {
                                             "jwtSecret": "IXPySxxr0f5X2CIqdB45eK",
                                             "apiKey": "{{apikey}}",
                                             "apiSecret": "{{apisecret}}"
 
-					}
-				}
-			]
-		},
-		"user": {
-			"limits": {
-				"limit_group": ""
-			},
-			"node_args": [
+                                        }
+                                }
+                        ]
+                },
+                "user": {
+                        "limits": {
+                                "limit_group": ""
+                        },
+                        "node_args": [
                             "--max-executable-size=96",
                             "--max-old-space-size=128",
                             "--max-semi-space-size=1"
-			],
+                        ],
                         "restart" : {
                             "limit" : 10,
                             "timeout" : 5000
                         },
-			"env": {
-				"NODE_PATH": "${NODE_PATH}:${thisdir}/../node_modules"
-			},
-			"modules": [
-				{
-					"path": "${thisdir}/../../wigwag-core-modules/RuleEngine",
-					"config": {
-					    "cloudAddress": "{{cloudurl}}",
-					    "relayID": "{{apikey}}",
-					    "ssl": {
-				   	         "key": "/wigwag/devicejs-core-modules/Runner/.ssl/client.key.pem",
-				 	        "cert": "/wigwag/devicejs-core-modules/Runner/.ssl/client.cert.pem",
-						        "ca": [
-						            "/wigwag/devicejs-core-modules/Runner/.ssl/ca.cert.pem",
-						            "/wigwag/devicejs-core-modules/Runner/.ssl/intermediate.cert.pem"
-						        ]
-					    }
+                        "env": {
+                                "NODE_PATH": "${NODE_PATH}:${thisdir}/../node_modules"
+                        },
+                        "modules": [
+                                {
+                                        "path": "${thisdir}/../../wigwag-core-modules/RuleEngine",
+                                        "config": {
+                                            "cloudAddress": "{{cloudurl}}",
+                                            "relayID": "{{apikey}}",
+                                            "ssl": {
+                                                    "key": "/wigwag/devicejs-core-modules/Runner/.ssl/client.key.pem",
+                                                 "cert": "/wigwag/devicejs-core-modules/Runner/.ssl/client.cert.pem",
+                                                        "ca": [
+                                                            "/wigwag/devicejs-core-modules/Runner/.ssl/ca.cert.pem",
+                                                            "/wigwag/devicejs-core-modules/Runner/.ssl/intermediate.cert.pem"
+                                                        ]
+                                            }
 
                                         }
-				}
-			]
-		}
-	}
+                                }
+                        ]
+                }
+        }
 }

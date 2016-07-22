@@ -10,6 +10,12 @@
   "license": "ISC",
   "dependencies": {
     "express": "~4.0.0",
-    "socket.io": "~1.1.0"
+    "socket.io": "~1.1.0",
+    "rimraf": "*",
+    "request": "*",
+    "tarball-extract": "*",
+    "jsonminify": "*",
+    "body-parser": "*",
+    "lockfile": "*"
   }
 }

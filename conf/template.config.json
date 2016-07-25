@@ -214,7 +214,8 @@
                                                     "/wigwag/devicejs-core-modules/Runner/.ssl/ca.cert.pem",
                                                     "/wigwag/devicejs-core-modules/Runner/.ssl/intermediate.cert.pem"
                                                 ]
-                                            }
+                                            },
+					    "versionsFile": "/wigwag/etc/versions.json"
 
                                         }
                                 },

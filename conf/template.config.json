@@ -98,7 +98,7 @@
                       }
                   },
                   "pullFrequency": 5000,
-                  "merkleMaxHeight": 4
+                  "merkleMaxHeight": 19
             }              
 
                 },

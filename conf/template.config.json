@@ -32,7 +32,7 @@
                         ],
                         "restart" : {
                             "limit" : 10,
-                            "timeout" : 5000
+                            "timeout" : 90000
                         },
                         "modules": {},
 //                        "user": "devicejs",
@@ -46,7 +46,7 @@
                         "enable": false,
                         "restart" : {
                             "limit" : 10,
-                            "timeout" : 5000
+                            "timeout" : 90000
                         },
                         "node_args": [
                             "--max-executable-size=96",
@@ -113,7 +113,7 @@
                             "--max-semi-space-size=1"
                         ],
                         "restart": {          // not required, but options are:
-                            "timeout" : 5000,  // the timeout between restarts will still take affect
+                            "timeout" : 90000,  // the timeout between restarts will still take affect
                             "limit" : 10
                         },
                         "env": {
@@ -336,7 +336,7 @@
                         ],
                         "restart" : {
                             "limit" : 10,
-                            "timeout" : 5000
+                            "timeout" : 90000
                         },
                         "env": {
                                 "NODE_PATH": "${NODE_PATH}:${thisdir}/../node_modules"

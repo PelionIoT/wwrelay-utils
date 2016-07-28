@@ -123,7 +123,7 @@
                                 {
                                         "path": "${thisdir}/../wigwag-devices",
                                         "config": {
-                        "cloudURL": "{{cloudurl}}",
+                                                 "cloudURL": "{{cloudurl}}",
                                                  "ssl": {
                                                         "key": "/wigwag/devicejs-core-modules/Runner/.ssl/client.key.pem",
                                                         "cert": "/wigwag/devicejs-core-modules/Runner/.ssl/client.cert.pem",
@@ -215,29 +215,8 @@
                                                     "/wigwag/devicejs-core-modules/Runner/.ssl/intermediate.cert.pem"
                                                 ]
                                             },
-					    "versionsFile": "/wigwag/etc/versions.json"
+                                            "versionsFile": "/wigwag/etc/versions.json"
 
-                                        }
-                                },
-                                {
-                                        "path": "${thisdir}/../AppServer",
-                                        "config": {
-                                                "authentication": {
-                                                        "enabled": true,
-                                                        "cloudAPISecret": "{{apisecret}}",
-                                                        "redirectURL": "/wigwag-ui/s/login/",
-                                                         "cloudRedirectURL": "{{cloudurl}}/s/login"
-                                                },
-                                                "port": 443,
-                                                "ssl": {
-                                                    "key": "/wigwag/devicejs-core-modules/Runner/.ssl/client.key.pem",
-                                                    "cert": "/wigwag/devicejs-core-modules/Runner/.ssl/client.cert.pem",
-                                                    "ca": [ 
-                                                           "/wigwag/devicejs-core-modules/Runner/.ssl/ca.cert.pem",
-                                                           "/wigwag/devicejs-core-modules/Runner/.ssl/intermediate.cert.pem"
-                                                     ]
-                                                },
-                                                "relayID":"{{apikey}}"
                                         }
                                 },
                                 {
@@ -246,14 +225,6 @@
                                                 "insteon": {
                                                    "baudrate": 19200
                                                 }
-                                        }
-                                },
-                                {
-                                        "path": "${thisdir}/../APIProxy",
-                                        "config": {
-                                                "cloudAPISecret": "{{apisecret}}",
-                                                "apiKey": "hello",
-                                                "apiSecret": "asdfdsfa"
                                         }
                                 },
                                 {
@@ -285,6 +256,70 @@
                                         "path": "${thisdir}/../../wigwag-core-modules/LEDController",
                                         "config": {
                                                 "ledBrightness": 5
+                                        }
+                                }
+                        ]
+                },
+                "user": {
+                        "limits": {
+                                "limit_group": ""
+                        },
+                        "node_args": [
+                            "--max-executable-size=96",
+                            "--max-old-space-size=128",
+                            "--max-semi-space-size=1"
+                        ],
+                        "restart" : {
+                            "limit" : 10,
+                            "timeout" : 90000
+                        },
+                        "env": {
+                                "NODE_PATH": "${NODE_PATH}:${thisdir}/../node_modules"
+                        },
+                        "modules": [
+                                {
+                                        "path": "${thisdir}/../../wigwag-core-modules/RuleEngine",
+                                        "config": {
+                                            "cloudAddress": "{{cloudurl}}",
+                                            "relayID": "{{apikey}}",
+                                            "ssl": {
+                                                    "key": "/wigwag/devicejs-core-modules/Runner/.ssl/client.key.pem",
+                                                 "cert": "/wigwag/devicejs-core-modules/Runner/.ssl/client.cert.pem",
+                                                        "ca": [
+                                                            "/wigwag/devicejs-core-modules/Runner/.ssl/ca.cert.pem",
+                                                            "/wigwag/devicejs-core-modules/Runner/.ssl/intermediate.cert.pem"
+                                                        ]
+                                            }
+
+                                        }
+                                },
+                                {
+                                        "path": "${thisdir}/../AppServer",
+                                        "config": {
+                                                "authentication": {
+                                                        "enabled": true,
+                                                        "cloudAPISecret": "{{apisecret}}",
+                                                        "redirectURL": "/wigwag-ui/s/login/",
+                                                         "cloudRedirectURL": "{{cloudurl}}/s/login"
+                                                },
+                                                "port": 443,
+                                                "ssl": {
+                                                    "key": "/wigwag/devicejs-core-modules/Runner/.ssl/client.key.pem",
+                                                    "cert": "/wigwag/devicejs-core-modules/Runner/.ssl/client.cert.pem",
+                                                    "ca": [ 
+                                                           "/wigwag/devicejs-core-modules/Runner/.ssl/ca.cert.pem",
+                                                           "/wigwag/devicejs-core-modules/Runner/.ssl/intermediate.cert.pem"
+                                                     ]
+                                                },
+                                                "relayID":"{{apikey}}"
+                                        }
+                                },
+                                {
+                                        "path": "${thisdir}/../APIProxy",
+                                        "config": {
+                                                "cloudAPISecret": "{{apisecret}}",
+                                                "apiKey": "hello",
+                                                "apiSecret": "asdfdsfa"
                                         }
                                 },
                                 {
@@ -322,42 +357,7 @@
                                             "apiSecret": "{{apisecret}}"
 
                                         }
-                                }
-                        ]
-                },
-                "user": {
-                        "limits": {
-                                "limit_group": ""
-                        },
-                        "node_args": [
-                            "--max-executable-size=96",
-                            "--max-old-space-size=128",
-                            "--max-semi-space-size=1"
-                        ],
-                        "restart" : {
-                            "limit" : 10,
-                            "timeout" : 90000
-                        },
-                        "env": {
-                                "NODE_PATH": "${NODE_PATH}:${thisdir}/../node_modules"
-                        },
-                        "modules": [
-                                {
-                                        "path": "${thisdir}/../../wigwag-core-modules/RuleEngine",
-                                        "config": {
-                                            "cloudAddress": "{{cloudurl}}",
-                                            "relayID": "{{apikey}}",
-                                            "ssl": {
-                                                    "key": "/wigwag/devicejs-core-modules/Runner/.ssl/client.key.pem",
-                                                 "cert": "/wigwag/devicejs-core-modules/Runner/.ssl/client.cert.pem",
-                                                        "ca": [
-                                                            "/wigwag/devicejs-core-modules/Runner/.ssl/ca.cert.pem",
-                                                            "/wigwag/devicejs-core-modules/Runner/.ssl/intermediate.cert.pem"
-                                                        ]
-                                            }
-
-                                        }
-                                }
+                               }
                         ]
                 }
         }

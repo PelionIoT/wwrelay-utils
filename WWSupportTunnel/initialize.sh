@@ -23,7 +23,7 @@ if [ ! -e /home/root/.ssh ] ; then
 fi
 
 if [ ! -e /home/root/.ssh/known_hosts ] ; then
-    mkdir -p /home/root/.ssh/known_hosts
+    touch  /home/root/.ssh/known_hosts
 fi
 
 

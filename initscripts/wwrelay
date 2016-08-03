@@ -21,6 +21,12 @@ WWRELAY_LOG="${WIGWAGROOT}/log/wwrelay.log"
 GPIO_LOG="${WIGWAGROOT}/log/gpio.log"
 DBDIR="/userdata/etc/devicejs/db"
 
+function checkForUpgrade() {
+  if [ -e /userdata/postUpgrade.sh ] ; then
+      /userdata/postUpgrade.sh 
+  fi
+}
+
 function prepDB() {                          
   if [ ! -e ${DBDIR} ]; then
      mkdir -p ${DBDIR}
@@ -53,6 +59,7 @@ case "$1" in
     start)
         /wigwag/wwrelay-utils/GPIO/led.sh 10 0 10
 	echo "Starting WigWag Relay"
+        checkForUpgrade
         prepDB
         genCerts
         if [ -x $WWRELAY_LOG ] ; then

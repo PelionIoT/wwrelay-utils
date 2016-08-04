@@ -13,6 +13,8 @@ var program = require('commander');
 program
 	.version('0.0.1')
 	.option('-e, --erase', 'Erase the eeprom')
+	.option('-s --skipeeprom', 'skip the eeprom portion')
+	.option('-S --skipSSL', 'skip the ssl portion')
 	.parse(process.argv);
 
 program.on('--help', function() {
@@ -43,9 +45,19 @@ function process_prog() {
 function install_eeprom(ee) {
 	return new Promise(function(resolve, reject) {
 		console.log('debug', "In install EEPROM Function");
-		console.log('debug', ee);
+		//console.log('debug', ee);
+		aPray2 = new Array();
 		var writer = new EEwriter(ee);
-		writer.write().then(function(suc) {
+
+		if (!program.skipeeprom) {
+			console.log("didnnt skip eeprom");
+			aPray2.push(writer.writeEMMC());
+		}
+		if (!program.skipSSL) {
+			console.log("didnnt skip ssl");
+			aPray2.push(writer.writeSSL());
+		}
+		Promise.all(aPray2).then(function(suc) {
 			console.log("ie: " + suc);
 			resolve(suc);
 		}, function(err) {

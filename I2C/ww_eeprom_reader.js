@@ -599,7 +599,7 @@ program
 	.version('0.0.1')
 	.option('-c, --cloudURL [URL]', 'Specify cloud URL for your relay', 'https://cloud.wigwag.com')
 	.option('-o, --overwrite [true/false]', 'overwrite relay.config.json', 'false')
-	.option('-O, --overwriteSSL [overwrite|dontoverwrite]', 'overwrite the SSL certificates if they exist', 'overwrite')
+	.option('-O, --overwriteSSL [overwrite|dontoverwrite]', 'overwrite the SSL certificates if they exist', 'overwrite') 
 	.option('-e, --eepromFile [filepath]', 'For software based relay specify the eeprom json object file path')
 	.option('-t, --templateFile [filepath]', 'Specify the template config file')
 	.option('-r, --relayConfFile [true/false]', 'Specify the path for relay.config.json for Runner')

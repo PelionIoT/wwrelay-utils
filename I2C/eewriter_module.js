@@ -112,6 +112,7 @@ EEprom_Writer.prototype.writeSSL = function() {
 	var self = this;
 	return new Promise(function(resolve, reject) {
 		console.log("Writing to SSL diskprom");
+		console.log(JSON.stringify(self.CI));
 		Pcert = new Array();
 		Pcert.push(diskprom.setFile(ssl_server_cert, self.CI.ssl.server.certificate));
 		Pcert.push(diskprom.setFile(ssl_client_cert, self.CI.ssl.client.certificate));
@@ -128,6 +129,32 @@ EEprom_Writer.prototype.writeSSL = function() {
 			reject("EEprom_witer.prototype.writeSSL.Pcert errored:" + error);
 		});
 
+	});
+}
+
+EEprom_Writer.prototype.writeBoth = function() {
+	var self = this;
+	return new Promise(function(resolve, reject) {
+		writer.erase(0).then(function(res) {
+			console.log("recording to EEPROM and to to disk for ssl");
+			Pcert = new Array();
+			Pcert.push(self.rrec());
+			Pcert.push(diskprom.setFile(ssl_server_cert, self.CI.ssl.server.certificate));
+			Pcert.push(diskprom.setFile(ssl_client_cert, self.CI.ssl.client.certificate));
+			Pcert.push(diskprom.setFile(ssl_server_key, self.CI.ssl.server.key));
+			Pcert.push(diskprom.setFile(ssl_client_key, self.CI.ssl.client.key));
+			Pcert.push(diskprom.setFile(ssl_ca_cert, self.CI.ssl.ca.ca));
+			Pcert.push(diskprom.setFile(ssl_ca_intermediate, self.CI.ssl.ca.intermediate));
+			Promise.all(Pcert).then(function(result) {
+				console.log("promiseAll done on mass write");
+				return diskprom.disconnect();
+			}).then(function(result) {
+				resolve("successfull eeprom writer");
+			}).catch(function(error) {
+				console.log("debug", "EEprom_witer.prototype.write.Pcert errored: " + error);
+				reject("EEprom_witer.prototype.write.Pcert errored:" + error);
+			});
+		});
 	});
 }
 

@@ -24,6 +24,7 @@ DBDIR="/userdata/etc/devicejs/db"
 function checkForUpgrade() {
   if [ -e /userdata/postUpgrade.sh ] ; then
       /userdata/postUpgrade.sh 
+      /bin/rm /userdata/postUpgrade.sh
   fi
 }
 

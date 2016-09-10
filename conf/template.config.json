@@ -31,7 +31,7 @@
                 "--nouse-idle-notification"
                         ],
                         "restart" : {
-                            "limit" : 10,
+                            "limit" : 5000,
                             "timeout" : 90000
                         },
                         "modules": {},
@@ -45,7 +45,7 @@
                 "db": {
                         "enable": false,
                         "restart" : {
-                            "limit" : 10,
+                            "limit" : 5000,
                             "timeout" : 90000
                         },
                         "node_args": [
@@ -114,7 +114,7 @@
                         ],
                         "restart": {          // not required, but options are:
                             "timeout" : 90000,  // the timeout between restarts will still take affect
-                            "limit" : 10
+                            "limit" : 5000
                         },
                         "env": {
                                 "NODE_PATH": "${NODE_PATH}:${thisdir}/../node_modules:/wigwag/devicejs-core-modules/IPStack/node_modules"
@@ -270,7 +270,7 @@
                             "--max-semi-space-size=1"
                         ],
                         "restart" : {
-                            "limit" : 10,
+                            "limit" : 5000,
                             "timeout" : 90000
                         },
                         "env": {

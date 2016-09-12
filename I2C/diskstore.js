@@ -12,17 +12,21 @@ function diskstorage(dev, mp, storepoint) {
 	this.mount;
 	var self = this;
 	self._checkMount().then(function(result) {
+		console.log("mount status " + result);
 		self.mountPoint = result.mountpoint;
 		self.previouslymounted = true;
 		self.mount = result;
 		mkdirp.sync(self.mountPoint + "/" + self.sp);
 	}).catch(function(error) {
+		console.log("were not mounted " + error);
 		self.previouslymounted = false;
 		self._mount().then(function(result) {
+			console.log("we tried to mount and did it: " + result);
 			self.previouslymounted = false;
 			self.mount = result;
 			mkdirp.sync(self.mountPoint + "/" + self.sp);
 		}).catch(function(error) {
+			console.log("Disksore couldn't do the prper mounting " + error);
 			self.previouslymounted = false;
 			self.mount = null;
 		});
@@ -65,7 +69,7 @@ diskstorage.prototype._mount = function() {
 }
 
 diskstorage.prototype._umount = function() {
-	//	console.trace("umount called... this is bad");
+	console.trace("umount called... this is bad");
 	var self = this;
 	return new Promise(function(resolve, reject) {
 		var ret = mountutil.isMounted(self.dev, true);
@@ -108,14 +112,17 @@ diskstorage.prototype._writeStore = function(path, data) {
 	var self = this;
 	options = "utf8";
 	return new Promise(function(resolve, reject) {
-		fs.writeFile(path, data, options, function(error, data) {
-			if (error) {
-				reject(error);
-			}
-			else {
-				resolve(data);
-			}
-		});
+		fs.writeFileSync(path, data, options);
+		resolve();
+	});
+}
+
+diskstorage.prototype._eraseStore = function(path) {
+	var self = this;
+	return new Promise(function(resolve, reject) {
+		console.log("unlinking " + path);
+		fs.unlinkSync(path);
+		resolve();
 	});
 }
 
@@ -150,6 +157,11 @@ diskstorage.prototype.cpFile = function(relativePath, path, overwrite) {
 		});
 
 	});
+}
+
+diskstorage.prototype.destroyFile = function(relativePath) {
+	var self = this;
+	return this._eraseStore(self.mountPoint + "/" + self.sp + "/" + relativePath);
 }
 
 diskstorage.prototype.setFile = function(relativePath, data) {

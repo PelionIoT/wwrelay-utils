@@ -40,6 +40,8 @@ EEprom_Writer.prototype.rrec = function() {
 		self.CI.REP1 = self.CI.relayID.substring(0, 2);
 		self.CI.REP2 = self.CI.relayID.substring(2, 4);
 		self.CI.REP3 = self.CI.relayID.substring(4, 10);
+		self.CI.ethernetMAC_og = self.CI.ethernetMAC;
+		self.CI.sixBMAC_og = self.CI.sixBMAC;
 		self.CI.ethernetMAC = decRay2str(self.CI.ethernetMAC);
 		self.CI.sixBMAC = decRay2str(self.CI.sixBMAC);
 		writer.set("BRAND", self.CI.REP1).then(function(result) {
@@ -132,39 +134,73 @@ EEprom_Writer.prototype.writeSSL = function() {
 	});
 }
 
+EEprom_Writer.prototype.destroySSL = function() {
+	var self = this;
+	return new Promise(function(resolve, reject) {
+		console.log("Destroying  SSL diskprom");
+		//console.log(JSON.stringify(self.CI));
+		Pcert = new Array();
+		Pcert.push(diskprom.destroyFile(ssl_server_cert));
+		Pcert.push(diskprom.destroyFile(ssl_client_cert));
+		Pcert.push(diskprom.destroyFile(ssl_server_key));
+		Pcert.push(diskprom.destroyFile(ssl_client_key));
+		Pcert.push(diskprom.destroyFile(ssl_ca_cert));
+		Pcert.push(diskprom.destroyFile(ssl_ca_intermediate));
+		Promise.all(Pcert).then(function(result) {
+			resolve("successfull diskprom destroyer");
+		}).catch(function(error) {
+			console.log("debug", "EEprom_witer.prototype.destroySSL.Pcert errored: " + error);
+			reject("EEprom_witer.prototype.writeSSL.Pcert errored:" + error);
+		});
+
+	});
+}
+
 EEprom_Writer.prototype.writeBoth = function() {
 	var self = this;
 	return new Promise(function(resolve, reject) {
-		writer.erase(0).then(function(res) {
-			console.log("recording to EEPROM and to to disk for ssl");
-			Pcert = new Array();
-			Pcert.push(self.rrec());
-			Pcert.push(diskprom.setFile(ssl_server_cert, self.CI.ssl.server.certificate));
-			Pcert.push(diskprom.setFile(ssl_client_cert, self.CI.ssl.client.certificate));
-			Pcert.push(diskprom.setFile(ssl_server_key, self.CI.ssl.server.key));
-			Pcert.push(diskprom.setFile(ssl_client_key, self.CI.ssl.client.key));
-			Pcert.push(diskprom.setFile(ssl_ca_cert, self.CI.ssl.ca.ca));
-			Pcert.push(diskprom.setFile(ssl_ca_intermediate, self.CI.ssl.ca.intermediate));
-			Promise.all(Pcert).then(function(result) {
-				console.log("promiseAll done on mass write");
-				return diskprom.disconnect();
-			}).then(function(result) {
-				resolve("successfull eeprom writer");
-			}).catch(function(error) {
-				console.log("debug", "EEprom_witer.prototype.write.Pcert errored: " + error);
-				reject("EEprom_witer.prototype.write.Pcert errored:" + error);
-			});
+		console.log("recording to EEPROM and to to disk for ssl");
+		Pcert = new Array();
+		Pcert.push(self.rrec());
+		Pcert.push(diskprom.setFile(ssl_server_cert, self.CI.ssl.server.certificate));
+		Pcert.push(diskprom.setFile(ssl_client_cert, self.CI.ssl.client.certificate));
+		Pcert.push(diskprom.setFile(ssl_server_key, self.CI.ssl.server.key));
+		Pcert.push(diskprom.setFile(ssl_client_key, self.CI.ssl.client.key));
+		Pcert.push(diskprom.setFile(ssl_ca_cert, self.CI.ssl.ca.ca));
+		Pcert.push(diskprom.setFile(ssl_ca_intermediate, self.CI.ssl.ca.intermediate));
+		Promise.all(Pcert).then(function(result) {
+			resolve("successfull eeprom writer");
+		}).catch(function(error) {
+			console.log("debug", "EEprom_witer.prototype.write.Pcert errored: " + error);
+			reject("EEprom_witer.prototype.write.Pcert errored:" + error);
 		});
 	});
 }
 
 EEprom_Writer.prototype.erase = function() {
 	var self = this;
-	return new Promise(function(resolve, reject) {
-		writer.erase(0).then(function(res) {
-			resolve(res);
-		});
-	});
+	console.log("calling the rease");
+	Perase = new Array();
+	Perase.push(self.destroySSL());
+	Perase.push(writer.erase(0));
+	return Promise.all(Perase);
+}
+EEprom_Writer.prototype.eraseSSL = function() {
+	var self = this;
+	console.log("calling the rease");
+	Perase = new Array();
+	Perase.push(self.destroySSL());
+	//Perase.push(writer.erase(0));
+	return Promise.all(Perase);
+}
+
+EEprom_Writer.prototype.eraseEEPROM = function() {
+	var self = this;
+	console.log("calling the rease");
+	Perase = new Array();
+	//Perase.push(self.destroySSL());
+	Perase.push(writer.erase(0));
+	return Promise.all(Perase);
 }
 
 module.exports = EEprom_Writer;

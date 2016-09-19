@@ -19,6 +19,7 @@
                 "default_group": "*"  // means whatever group runs it
         },
         "LEDController": {
+            "startWithRunner": true,
             "config": {
                     "ledBrightness": 5,
                     "ledColorProfile": "{{ledconfig}}"

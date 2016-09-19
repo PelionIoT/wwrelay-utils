@@ -214,6 +214,12 @@ function createHandlebarsData(eeprom, platform) {
 	data.ethernetmac = eeprom.ethernetMAC.string;
 	data.wwplatform = platform;
 	data.cloudddburl = cloudDdbURL;
+	if(typeof eeprom.ledConfig !== 'undefined' && 
+		((eeprom.ledConfig == '01') || (eeprom.ledConfig == '00') || 
+			(eeprom.ledConfig == '--') || (eeprom.ledConfig == 'xx') ) )
+		data.ledconfig = 'RGB';
+	else
+		data.ledconfig = 'RBG';
 
 	return data;
 }

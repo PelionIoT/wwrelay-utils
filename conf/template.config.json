@@ -255,7 +255,8 @@
                                 {
                                         "path": "${thisdir}/../../wigwag-core-modules/LEDController",
                                         "config": {
-                                                "ledBrightness": 5
+                                                "ledBrightness": 5,
+                                                "ledColorProfile": "{{ledconfig}}"
                                         }
                                 }
                         ]

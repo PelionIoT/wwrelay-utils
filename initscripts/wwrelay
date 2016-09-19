@@ -82,7 +82,7 @@ case "$1" in
           echo "EEPROM written properly, relay.config.json successfully generated"                               
         else                                                                                  
           echo "EEPROM not written properly, relay.config.json is not generated."                      
-          /wigwag/wwrelay-utils/GPIO/led.sh 0 10 0                                      
+          /wigwag/wwrelay-utils/GPIO/led.sh 10 10 0                                      
         fi 
 	;;	
     stop)

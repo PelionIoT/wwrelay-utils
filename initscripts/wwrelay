@@ -20,6 +20,9 @@ GPIO_DIR="${WIGWAGROOT}/wwrelay-utils/GPIO"
 WWRELAY_LOG="${WIGWAGROOT}/log/wwrelay.log"
 GPIO_LOG="${WIGWAGROOT}/log/gpio.log"
 DBDIR="/userdata/etc/devicejs/db"
+CLOUD_URL="https://cloud1.wigwag.com"
+DEVICEDB_URL="https://devicedb1.wigwag.com"
+DEVICEJS_URL="https://devicejs1.wigwag.com"
 
 function checkForUpgrade() {
   if [ -e /userdata/postUpgrade.sh ] ; then
@@ -72,10 +75,10 @@ case "$1" in
         fi
 
         cd ${WIGWAGROOT}/wwrelay-utils/I2C
-        /usr/bin/node ./ww_eeprom_reader.js -c https://cloud.wigwag.com -o true -t ${WIGWAGROOT}/devicejs-core-modules/Runner/template.config.json \
+        /usr/bin/node ./ww_eeprom_reader.js -c $CLOUD_URL -o true -t ${WIGWAGROOT}/devicejs-core-modules/Runner/template.config.json \
         -r ${WIGWAGROOT}/devicejs-core-modules/Runner/relay.config.json -p ${WIGWAGROOT}/devicejs-core-modules/rsmi/radioProfile.template.json \
         -s ${WIGWAGROOT}/devicejs-core-modules/rsmi/radioProfile.config.json -m ${WIGWAGROOT}/devicejs-core-modules/Runner/template.devicejs.conf \
-        -n ${WIGWAGROOT}/etc/devicejs/devicejs.conf -b https://devicedb.wigwag.com -d https://devicejs.wigwag.com > $WWRELAY_LOG 2>&1
+        -n ${WIGWAGROOT}/etc/devicejs/devicejs.conf -b $DEVICEDB_URL -d $DEVICEJS_URL > $WWRELAY_LOG 2>&1
 
         OUT=$?                                                                                
         if [ $OUT -eq 0 ]; then                                                                                                                                                           

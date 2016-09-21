@@ -9,9 +9,10 @@ SDATA=/sys/class/gpio/gpio37/value
 #SCLK=/sys/class/gpio/gpio12_pb6/value
 #SDATA=/sys/class/gpio/gpio11_pb5/value	
 
+RGB=01
+RBG=02
 
 re='^[0-9]+$'
-
 
 function dec2hex() {
   out=$(echo "obase=16;ibase=10; $1" | bc)
@@ -24,11 +25,70 @@ function dec2bin() {
 }
 
 
+#LED config grab functions
+function grabOne(){
+    a=$(i2cget -y 1 0x50 $1 b) 
+    echo $a
+}
+function hex2dec() {
+    printf "%d\n" $1
+}
+function hex2ascii() {
+    a=$(echo "$1" | sed s/0/\\\\/1)
+    echo -en "$a"
+    #echo $b
+}
+#output can be "ascii decimal hex hex-stripped"
+#$1 range start
+#$2 range end
+#$3 output: [ascii decimal hex hex-striped]
+#$4 delimeter: append to the front of the return value
+function grabRange() {
+    start=$1
+    end=$2
+    output=$3
+    delimeter=$4
+    RET=""
+    for ((i=$start; i<=$end; i=i+1)); do
+        h=$(printf "%#x\n" $i)
+        hex=$(grabOne $h)
+        if [[ $output == "decimal" ]]; then
+            var=$(hex2dec $hex)
+        elif [[ $output == "ascii" ]]; then
+            var=$(hex2ascii $hex)
+        elif [[ $output == "hex-stripped" ]]; then
+            var=`expr "$hex" : '^0x\([0-9a-zA-Z]*\)'`        
+        else
+            var=$hex
+        fi
+        if [[ $RET == "" ]]; then
+             RET="$var"
+        else
+            RET+=$delimeter"$var"
+        fi
+    done
+    echo $RET
+}
+
+
 color() {
-	red=$1
-	blue=$3
-	green=$2
-#	echo "red: $red green $green blue $blue"
+	LEDCONFIG=$(grabRange 96 97 "ascii" "")
+	echo "Read EEPROM, Got LEDConfig " $LEDCONFIG
+	if [[ $LEDCONFIG == $RGB ]]; then 
+		red=$1
+		green=$2
+		blue=$3
+	elif [[ $LEDCONFIG == $RBG ]]; then
+		red=$1
+		blue=$2
+		green=$3
+	else
+		red=$1
+		green=$2
+		blue=$3
+	fi
+
+	echo "red: $red green $green blue $blue"
 	for i in `seq 0 31`; do
 		echo 1 > $SCLK
 		echo 0 > $SCLK

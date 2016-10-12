@@ -208,6 +208,7 @@
                                             "channelMask": 2048,
                                             "baudRate": 115200,
                                             "log_level": 1,
+                                            "networkRefreshDuration": 30000,
                                             "platform": "{{wwplatform}}"
                                         }
                                 },

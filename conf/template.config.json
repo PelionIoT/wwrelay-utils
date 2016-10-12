@@ -209,6 +209,8 @@
                                             "baudRate": 115200,
                                             "log_level": 1,
                                             "networkRefreshDuration": 30000,
+                                            "panIdSelection": "random",
+                                            "panId": 65535,
                                             "platform": "{{wwplatform}}"
                                         }
                                 },

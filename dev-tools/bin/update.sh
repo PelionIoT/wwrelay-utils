@@ -8,7 +8,7 @@ manifesturl="https://code.wigwag.com/ugs/manifest.dat"
 upgrd="upgrade"
 buildurl=""
 wipeuser=0
-wipefactory=0
+wipeeeprom=0
 declare -A DESCRIPTION
 declare -A DATE
 declare -A IMGTYPE
@@ -33,6 +33,7 @@ readmanifest(){
 	if [[ "$(isURL "$src")" -eq 1 ]]; then
 		#curl -o /tmp/.mft -k "$src"
 		readarray -t bigR /tmp/<<<"$(curl -s -k "$src" | tac )"	
+		log "debug" "done reading"
 	elif [[ $(fileExists "$1") -eq 1 ]]; then
 		readarray -t bigR <<<"$(tail -r "$src")"
 	else
@@ -45,7 +46,13 @@ readmanifest(){
 		log error "the url manifest does not exist at $src or is missing the tag MANIFESTVERSION4STABLETHISTEXTMUSTBEPRESENT"
 		exit 1
 	fi
+	log "debug" "entering the lines"
+	temp=0;
+	echo -n "Crunching."
 	for line in "${bigR[@]}"; do  
+	temp=$((temp+1))
+	log "debug" "at temp $temp"
+	echo -n "."
 	#echo -e "theline\t --> $line "
 		IFS="|" read -r -a lineR <<< "$line"
 		#shellcheck disable=SC2086
@@ -56,29 +63,39 @@ readmanifest(){
 		#echo "${lineR[2]}"
 		message="$(stripWhiteSpace "both" "${lineR[2]}")"
 		#echo "'$build' '$tag' '$message'"
+		# build="${lineR[0]}"
+		# tag="${lineR[1]}"
+		# message="${lineR[2]}"
 		case "$tag" in
 			"DESCRIPTION") 
 				#shellcheck disable=SC2034
-				DESCRIPTION["$build"]="$message";  ;;
+				#DESCRIPTION["$build"]="$message";
+				;;
 			"DATE") 
 				#shellcheck disable=SC2034
-				DATE["$build"]="$message"; ;;
+				#DATE["$build"]="$message";
+				;;
 			"IMGTYPE") 
 				#shellcheck disable=SC2034
-				IMGTYPE["$build"]="$message"; ;;
+				#IMGTYPE["$build"]="$message";
+				;;
 			"RELEASETYPE") 
 				#shellcheck disable=SC2034
-				RELEASETYPE["$build"]="$message"; ;;
+				#RELEASETYPE["$build"]="$message"; 
+				;;
 			"FACTORYURL") 
 				#shellcheck disable=SC2034
-				FACTORYURL["$build"]="$message"; ;;
+				FACTORYURL["$build"]="$message";
+				;;
 			"UPGRADEURL") 
 				#shellcheck disable=SC2034
-				UPGRADEURL["$build"]="$message"; ;;
+				UPGRADEURL["$build"]="$message"; 
+				;;
 		esac
 		case "$message" in
 			"RELEASED") RELEASEDB+=("$build"); ;;
 			"DEVELOPER") DEVB+=("$build"); ;;
+
 
 		esac
 	done
@@ -177,18 +194,18 @@ interactive(){
 		clearpadding
 		UIwarning
 		echo "${YELLOW}You have chosen to destroy your factory keys that enable the relay to work with the cloud."
-		echo "${CYAN}Confirm that this is your desire by typing: \"DESTROYKEYS\" in the next line:"
+		echo "${CYAN}Confirm that this is your desire by typing: \"ERASETHEEEPROMANDSSLKEYS\" in the next line:"
 		echo -n "${NORM}"
 		read -r response
-		if [[ "$response" = "DESTROYKEYS" ]]; then
-			wipefactory=1
-			callstring="$callstring -f DESTROYKEYS"
+		if [[ "$response" = "ERASETHEEEPROMANDSSLKEYS" ]]; then
+			wipeeeprom=1
+			callstring="$callstring -f ERASETHEEEPROMANDSSLKEYS"
 		fi
 	fi
 	echo -n "${NORM}"
 	clearpadding
 	callstring="$callstring $mybuild"
-	log "info" "Your useage this time: $callstring"
+	log "info" "Your useage this time: ${CYAN}$callstring${NORM}"
 	main
 }
 
@@ -227,11 +244,11 @@ main(){
 declare -A hp=(
 	[description]="Updates a relay with a different firmware version (up and down)"
 	[useage]="-options <[buildNo|buildURL]>"
-	[ff]="erase eeprom and ssl keys, must enter it this way: -f <DESTROYKEYS>"
+	[ee]="erase eeprom and ssl keys, must enter it this way: -f <ERASETHEEEPROMANDSSLKEYS>"
 	[h]="help"
 	[i]="interactive (will ignore all other flags)"
 	[mm]="url to manifest.dat -m <url>, defaults to: https://code.wigwag.com/ugs/"
-	[r]="refactory, write to the factory partition instead of the upgrade "
+	[r]="refactory, write to the factory partition instead of the upgrade"
 	[w]="wipe user"
 	[e1]="\t${BOLD}${UND}Update a Relay factory partition to Build 1.1.1 ${NORM}\n\t\t$0 -u factory  1.1.1 ${NORM}\n"
 	[e2]="\t${BOLD}${UND}Start interactive mode ${NORM}\n\t\t$0 -i ${NORM}\n"
@@ -244,7 +261,7 @@ argprocessor(){
 	switch_conditions=$(COMMON_MENU_SWITCH_GRAB)
 	while getopts "$switch_conditions" flag; do
 		case $flag in
-			f)	wipefactory=1; ;;
+			e)	wipeeeprom=1; ;;
 			h) 	COMMON_MENU_HELP; ;;
 			i) 	interactive; exit;;
 			m)	manifesturl=$OPTARG; ;;

@@ -2,8 +2,9 @@
 #---------------Configuration-------------#
 . ccommon.sh nofunc
 LogToTerm=1
-loglevel=info;
+loglevel=debug;
 
+manifestLocalhost="https://10.10.102.57:8080/builds/manifest.dat"
 manifesturl="https://code.wigwag.com/ugs/manifest.dat"
 upgrd="upgrade"
 buildurl=""
@@ -15,16 +16,24 @@ declare -A IMGTYPE
 declare -A RELEASETYPE
 declare -A FACTORYURL
 declare -A UPGRADEURL
+declare -A LFACTORYURL
+declare -A LUPGRADEURL
 RELEASEDB=()
 DEVB=()
+ALLDB=()
 thisRelease="1.0.20"
 # upgradeDIR="/tmp/upgrades"
 # rm -rf $upgradeDIR
 # mkdir -p $upgradeDIR
 upgradeDIR="/upgrades"
 
-
-
+localhostAvailable(){
+	if [[ $(isURLUp "$manifestLocalhost") -eq 1 ]]; then
+		echo 1
+	else
+		echo 0
+	fi
+}
 
 readmanifest(){
 	src="$1"
@@ -56,16 +65,16 @@ readmanifest(){
 	#echo -e "theline\t --> $line "
 		IFS="|" read -r -a lineR <<< "$line"
 		#shellcheck disable=SC2086
-		build="$(stripWhiteSpace "both" "${lineR[0]}")"
+	#	build="$(stripWhiteSpace "both" "${lineR[0]}")"
 		#shellcheck disable=SC2086
-		tag="$(stripWhiteSpace "both" "${lineR[1]}")"
+	#	tag="$(stripWhiteSpace "both" "${lineR[1]}")"
 		#shellcheck disable=SC2086
 		#echo "${lineR[2]}"
-		message="$(stripWhiteSpace "both" "${lineR[2]}")"
+	#	message="$(stripWhiteSpace "both" "${lineR[2]}")"
 		#echo "'$build' '$tag' '$message'"
-		# build="${lineR[0]}"
-		# tag="${lineR[1]}"
-		# message="${lineR[2]}"
+		build="${lineR[0]}"
+		tag="${lineR[1]}"
+		message="${lineR[2]}"
 		case "$tag" in
 			"DESCRIPTION") 
 				#shellcheck disable=SC2034
@@ -91,12 +100,24 @@ readmanifest(){
 				#shellcheck disable=SC2034
 				UPGRADEURL["$build"]="$message"; 
 				;;
+			"LFACTORYURL") 
+				#shellcheck disable=SC2034
+				LFACTORYURL["$build"]="$message";
+				;;
+			"LUPGRADEURL") 
+				#shellcheck disable=SC2034
+				LUPGRADEURL["$build"]="$message"; 
+				;;
 		esac
 		case "$message" in
-			"RELEASED") RELEASEDB+=("$build"); ;;
-			"DEVELOPER") DEVB+=("$build"); ;;
-
-
+			"RELEASED")
+				RELEASEDB+=("$build");
+				ALLDB+=("$build");
+				;;
+			"DEVELOPER")
+				DEVB+=("$build");
+				ALLDB+=("$build");
+				;;
 		esac
 	done
 }
@@ -128,32 +149,59 @@ interactive(){
 	readmanifest "$manifesturl"
 	
 
-	#	Grab the manifest URL
-	clearpadding
-	RELEASEDRepo="Released Build"
-	devRepo="Developer Build"
-	Repos=("$devRepo" "$RELEASEDRepo")
-	PS3="${YELLOW}Upgrade to the latest: ";
-	echo -n "${NORM}"
-	select UpgradeTo in "${Repos[@]}";
-	      do break;
-	done
+	
 
 	#	List the builds
-	thisRelease=$(grep -ne 'version' /wigwag/etc/versions.json | xargs | awk -F ' ' '{print $6}')
-	thisRelease=${thisRelease%%,*}
 	clearpadding
-	PS3="${YELLOW}Change your current ${CYAN}$thisRelease${YELLOW} to: ";
-	echo -n "${NORM}"
-	if [[ $UpgradeTo = "$RELEASEDRepo" ]]; then
-	    select mybuild in "${RELEASEDB[@]}";
-	      do break;
-	    done
-	elif [[ $UpgradeTo = "$devRepo" ]]; then
-	    select mybuild in "${DEVB[@]}";
-	      do break;
-	    done
+	currentV=$(grep -ne 'version' /wigwag/etc/versions.json 2> /dev/null | xargs | awk -F ' ' '{print $6}')
+	userV=$(grep -ne 'version' /mnt/.overlay/user/slash/wigwag/etc/versions.json 2> /dev/null | xargs | awk -F ' ' '{print $6}')
+	upgradeV=$(grep -ne 'version' /mnt/.overlay/upgrade/wigwag/etc/versions.json 2> /dev/null | xargs | awk -F ' ' '{print $6}')
+	factoryV=$(grep -ne 'version' /mnt/.overlay/factory/wigwag/etc/versions.json 2> /dev/null | xargs | awk -F ' ' '{print $6}')
+	currentV=${currentV%%,*}
+	userV=${userV%%,*}
+	upgradeV=${upgradeV%%,*}
+	factoryV=${factoryV%%,*}
+	if [[ "$userV" = "" ]]; then
+		userV="N/A"
 	fi
+	if [[ "$upgradeV" = "" ]]; then
+		upgradeV="N/A"
+	fi
+	if [[ "$factoryV" = "" ]]; then
+		factoryV="N/A"
+	fi
+	echo "${NORM}"
+	echo -e "Your User Partition reports version:\t${CYAN}$userV${NORM}"
+	echo -e "Your Upgrade Partition reports version:\t${CYAN}$upgradeV${NORM}"
+	echo -e "Your Factory Partition reports version:\t${CYAN}$factoryV${NORM}\n"
+	PS3="${YELLOW}Change your current running version ${CYAN}$currentV${YELLOW} to: ";
+	echo -n "${NORM}"
+	select mybuild in "${ALLDB[@]}";
+	   do break;
+	done
+
+
+
+
+# #	Grab the manifest URL
+# 	clearpadding
+# 	RELEASEDRepo="Released Build"
+# 	devRepo="Developer Build"
+# 	Repos=("$devRepo" "$RELEASEDRepo")
+# 	PS3="${YELLOW}Upgrade to the latest: ";
+# 	echo -n "${NORM}"
+# 	select UpgradeTo in "${Repos[@]}";
+# 	      do break;
+# 	done
+# if [[ $UpgradeTo = "$RELEASEDRepo" ]]; then
+# 	    select mybuild in "${RELEASEDB[@]}";
+# 	      do break;
+# 	    done
+# 	elif [[ $UpgradeTo = "$devRepo" ]]; then
+# 	    select mybuild in "${DEVB[@]}";
+# 	      do break;
+# 	    done
+# 	fi
 
 
 	#decide what to replace
@@ -216,9 +264,18 @@ main(){
 		downloadfile="$buildurl";
 	else
 		if [[ "$upgrd" = "factory" ]]; then
-			downloadfile="${FACTORYURL[$mybuild]}"
+			if [[ "$(localhostAvailable)" -eq 1 ]]; then
+				downloadfile="${LFACTORYURL[$mybuild]}"
+			else
+				downloadfile="${FACTORYURL[$mybuild]}"
+			fi
 		else
-			downloadfile="${UPGRADEURL[$mybuild]}"
+			if [[ "$(localhostAvailable)" -eq 1 ]]; then
+				downloadfile="${LUPGRADEURL[$mybuild]}"
+			else
+				downloadfile="${UPGRADEURL[$mybuild]}"
+			fi
+			
 		fi
 	fi
 		log "info" "downloading ${CYAN}$downloadfile${NORM} for installation"
@@ -232,11 +289,11 @@ main(){
 		else
 			rm wipeuserupgrade.sh
 		fi
-		echo  "#!/bin/bash" > postUpgrade.sh
+		#echo  "#!/bin/bash" > postUpgrade.sh
 		#shellcheck disable=SC2129
-		echo  "replace=\$(grep -ne 'version' /wigwag/etc/versions.json | xargs | awk -F ' ' '{print \$6}')" >>	 postUpgrade.sh
-		echo  "replace=\${replace%%,*}" >> postUpgrade.sh
-		echo  "sed -i \"s/\$replace/$mybuild/\" /wigwag/etc/versions.json" >> postUpgrade.sh
+		# echo  "replace=\$(grep -ne 'version' /wigwag/etc/versions.json | xargs | awk -F ' ' '{print \$6}')" >>	 postUpgrade.sh
+		# echo  "replace=\${replace%%,*}" >> postUpgrade.sh
+		# echo  "sed -i \"s/\$replace/$mybuild/\" /wigwag/etc/versions.json" >> postUpgrade.sh
 		echo  "your build will be installed after a reboot.  To abort, delete /upgrades/ contents."	
 }
 
@@ -248,7 +305,7 @@ declare -A hp=(
 	[h]="help"
 	[i]="interactive (will ignore all other flags)"
 	[mm]="url to manifest.dat -m <url>, defaults to: https://code.wigwag.com/ugs/"
-	[r]="refactory, write to the factory partition instead of the upgrade"
+	[f]="refactory, write to the factory partition instead of the upgrade"
 	[w]="wipe user"
 	[e1]="\t${BOLD}${UND}Update a Relay factory partition to Build 1.1.1 ${NORM}\n\t\t$0 -u factory  1.1.1 ${NORM}\n"
 	[e2]="\t${BOLD}${UND}Start interactive mode ${NORM}\n\t\t$0 -i ${NORM}\n"
@@ -265,7 +322,7 @@ argprocessor(){
 			h) 	COMMON_MENU_HELP; ;;
 			i) 	interactive; exit;;
 			m)	manifesturl=$OPTARG; ;;
-			r)	upgrd="factory"; ;;
+			f)	upgrd="factory"; ;;
 			w)	wipeuser=1; ;;
 			\?) echo -e \\n"Option -${BOLD}$OPTARG${NORM} not allowed.";COMMON_MENU_HELP;exit; ;;
 		esac

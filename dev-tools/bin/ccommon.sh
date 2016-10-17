@@ -133,6 +133,24 @@ else
 fi
 } #end_isURL\n
 
+
+#/	Desc:	determines if a url is currently being served by a server
+#/	$1:		url
+#/	$2:		name1
+#/	$3:		name1
+#/	Out:	1 or 0 echo
+#/	Expl:	up=$(isURLUp "http:/google.com")
+isURLUp(){
+	url="$1"
+	curl -k --output /dev/null --silent --fail -r 0-0 "$url"
+	outtest=$?
+	if [[ "$outtest" -eq 0 ]]; then
+	  echo 1
+	else
+	  echo 0
+	fi
+} #end_isURLUp
+
 #/	Desc:	prints a warning banner
 #/	Out:	text to the screen
 #/	Expl:	UIwarning

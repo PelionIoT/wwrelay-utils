@@ -134,6 +134,85 @@ fi
 } #end_isURL\n
 
 
+#/	Desc:	erases the page called
+#/	$1:		page [0x50,0x51,0x52...]
+#/	$2:		
+#/	$3:		
+#/	Out:	none
+#/	Expl:	erasePage 0x50
+erasePage(){
+	for i in {0..255}; do 
+		i2cset -y 1 0x50 $i 0x00 b; 
+	done
+} #end_erasePage
+
+#/	Description: Tests an array of files for existance
+#/	1 - array referenced by name
+#/	Output:0
+#/	Example: filesExist array[@]
+filesExist(){
+	local array="$1[@]"
+	countExisting=0;
+	for element in "${!array}"; do
+		#echo "analyzing element $element"
+		if [[ $(fileExists "$element") -eq 1 ]]; then
+			countExisting=$((countExisting+1))
+		fi
+	done
+	if [[ "$countExisting" -eq 0 ]]; then
+		echo 0
+	else 
+		echo 1
+	fi
+} #end_filesExist
+
+
+#/	Desc:	removes the sslkeys from the storage point
+#/	Out:	just login
+#/	Expl:	uninstallCloudKeys
+uninstallCloudKeys(){
+sslmp=/mnt/.boot
+storage=/mnt/.boot/.ssl
+ssl_client_key="client.key.pem";
+ssl_client_cert="client.cert.pem";
+ssl_server_key="server.key.pem";
+ssl_server_cert="server.cert.pem";
+ssl_ca_cert="ca.cert.pem";
+ssl_ca_intermediate="intermediate.cert.pem";
+
+umount /dev/mmcblk0p1 >> /dev/null 2>&1
+sync
+umount /mnt/.boot/ >> /dev/null 2>&1
+sync
+mkdir -p /mnt/.boot/ 2> /dev/null
+mount /dev/mmcblk0p1 /mnt/.boot >> /dev/null 2>&1
+sync
+outputtest=$(mount 2>/dev/null)
+#log "info" "$outputtest"
+# lightLog "bash cmd: mountOrError /dev/mmcblk0p1 $sslmp"
+# output=$(mountOrError /dev/mmcblk0p1 $sslmp)
+# lightLog "we got from the mount '$output'"
+# sync
+mkdir -p $storage/
+sync
+touch $storage/$ssl_ca_intermediate
+sync
+sleep 1
+rm -rf "$storage/"
+mkdir "$storage/"
+sync
+sync
+sync
+#touch "$storage/$ssl_ca_intermediate"
+theyAreAlive=("$storage/$ssl_client_key" "$storage/$ssl_client_cert" "$storage/$ssl_server_cert" "$storage/$ssl_server_key" "$storage/$ssl_ca_intermediate" "$storage/$ssl_ca_cert");
+dotheyexist=$(filesExist theyAreAlive[@])
+if [[ "$dotheyexist" = 1 ]]; then
+	log "info" "ssl files not removed properly...try again"
+else
+	log "info" "ssl keys are removed"
+fi
+} #end_uninstallCloudKeys
+
 #/	Desc:	determines if a url is currently being served by a server
 #/	$1:		url
 #/	$2:		name1
@@ -237,6 +316,7 @@ fileExists(){
 		echo 0
 	fi
 } #end_fileExists\n
+
 
 #/	Desc:	Gathers all the keys from the menu system and builds a proper string for getopts	
 #/	Out:	echo - switch_conditions

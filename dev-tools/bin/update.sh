@@ -9,7 +9,7 @@ manifesturl="https://code.wigwag.com/ugs/manifest.dat"
 upgrd="upgrade"
 buildurl=""
 wipeuser=0
-wipeeeprom=0
+wipeeeprom=""
 declare -A DESCRIPTION
 declare -A DATE
 declare -A IMGTYPE
@@ -120,7 +120,7 @@ readmanifest(){
 				;;
 		esac
 	done
-	echo "\n"
+	echo -e "\n"
 }
 
 printRayTest(){
@@ -129,6 +129,8 @@ printRayTest(){
 	printAssociativeArray IMGTYPE
 	printAssociativeArray RELEASETYPE
 }
+
+
 
 interactive(){
 	callstring="$0"
@@ -214,7 +216,7 @@ interactive(){
 	      do break;
 	done
 	if [[ "$upgrd" = "factory" ]]; then
-		callstring="$callstring -r"
+		callstring="$callstring -f"
 	fi
 
 
@@ -247,11 +249,32 @@ interactive(){
 		echo -n "${NORM}"
 		read -r response
 		if [[ "$response" = "ERASETHEEEPROMANDSSLKEYS" ]]; then
-			wipeeeprom=1
-			callstring="$callstring -f ERASETHEEEPROMANDSSLKEYS"
+			wipeeeprom="ERASETHEEEPROMANDSSLKEYS"
+			callstring="$callstring -e ERASETHEEEPROMANDSSLKEYS"
+		else 
+			log "error" "Exiting now, incorrect wipe eeprom response provided: '$response'"
+			exit
 		fi
 	fi
 	echo -n "${NORM}"
+
+
+	#decide to reboot
+	clearpadding
+	PS3="${YELLOW}Reboot on completion?: ";
+	echo -n "${NORM}"
+	select yn in "Yes" "No"; do
+		break;
+	done
+	if [[ "$yn" = "Yes" ]]; then
+		rebootit=1
+		callstring="$callstring -r"
+	fi
+
+
+
+
+
 	clearpadding
 	callstring="$callstring $mybuild"
 	log "info" "Your useage this time: ${CYAN}$callstring${NORM}"
@@ -259,7 +282,13 @@ interactive(){
 }
 
 main(){
-	log "debug" "entered main with $upgradeDIR and $buildurl"
+	log "debug" "entered main with $upgradeDIR and $wipeeeprom <-- wipe eeprom"
+	if [[ "$wipeeeprom" != "" && "$wipeeeprom" = "ERASETHEEEPROMANDSSLKEYS" ]]; then
+		erasePage
+		uninstallCloudKeys
+	elif [[ "$wipeeeprom" != "" ]]; then
+			log "error" "Exiting now, incorrect wipe eeprom response provided: '$wipeeeprom'"
+	fi
 	cd "$upgradeDIR" ||  exit
 	if [[ "$buildurl" != "" ]]; then
 		downloadfile="$buildurl";
@@ -296,17 +325,32 @@ main(){
 		# echo  "replace=\${replace%%,*}" >> postUpgrade.sh
 		# echo  "sed -i \"s/\$replace/$mybuild/\" /wigwag/etc/versions.json" >> postUpgrade.sh
 		echo  "your build will be installed after a reboot.  To abort, delete /upgrades/ contents."	
+		if [[ "$rebootit" -eq 1 ]]; then
+			echo -en "rebooting in 5..."
+			sleep 1
+			echo -en "4..."
+			sleep 1
+			echo -en "3..."
+			sleep 1
+			echo -en "2..."
+			sleep 1
+			echo -en "1..."
+			sleep 1
+			echo -en "reboot!\n"
+			init 6
+		fi
 }
 
 
 declare -A hp=(
 	[description]="Updates a relay with a different firmware version (up and down)"
 	[useage]="-options <[buildNo|buildURL]>"
-	[ee]="erase eeprom and ssl keys, must enter it this way: -f <ERASETHEEEPROMANDSSLKEYS>"
+	[ee]="erase eeprom and ssl keys, must enter it this way: -e <ERASETHEEEPROMANDSSLKEYS>"
 	[h]="help"
 	[i]="interactive (will ignore all other flags)"
 	[mm]="url to manifest.dat -m <url>, defaults to: https://code.wigwag.com/ugs/"
 	[f]="refactory, write to the factory partition instead of the upgrade"
+	[r]="reboot after install is complete"
 	[w]="wipe user"
 	[e1]="\t${BOLD}${UND}Update a Relay factory partition to Build 1.1.1 ${NORM}\n\t\t$0 -u factory  1.1.1 ${NORM}\n"
 	[e2]="\t${BOLD}${UND}Start interactive mode ${NORM}\n\t\t$0 -i ${NORM}\n"
@@ -319,11 +363,12 @@ argprocessor(){
 	switch_conditions=$(COMMON_MENU_SWITCH_GRAB)
 	while getopts "$switch_conditions" flag; do
 		case $flag in
-			e)	wipeeeprom=1; ;;
+			e)	wipeeeprom=$OPTARG; ;;
+			f)	upgrd="factory"; ;;
 			h) 	COMMON_MENU_HELP; ;;
 			i) 	interactive; exit;;
 			m)	manifesturl=$OPTARG; ;;
-			f)	upgrd="factory"; ;;
+			r)	rebootit=1; ;;
 			w)	wipeuser=1; ;;
 			\?) echo -e \\n"Option -${BOLD}$OPTARG${NORM} not allowed.";COMMON_MENU_HELP;exit; ;;
 		esac

@@ -2,7 +2,7 @@
 #---------------Configuration-------------#
 . ccommon.sh nofunc
 LogToTerm=1
-loglevel=debug;
+loglevel=info;
 
 manifestLocalhost="https://10.10.102.57:8080/builds/manifest.dat"
 manifesturl="https://code.wigwag.com/ugs/manifest.dat"
@@ -120,6 +120,7 @@ readmanifest(){
 				;;
 		esac
 	done
+	echo "\n"
 }
 
 printRayTest(){

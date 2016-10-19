@@ -25,7 +25,7 @@ version(){
 		factoryV="  ^  "
 	fi
 	echo "${NORM}"
-	echo -e "Build Version Info"
+	echo -e "Build Version Information"
 	echo -e "- Overlay Partition:\t${CYAN}$currentV${NORM}"
 	echo -e "- User Partition:\t${CYAN}$userV${NORM}"
 	echo -e "- Upgrade Partition:\t${CYAN}$upgradeV${NORM}"

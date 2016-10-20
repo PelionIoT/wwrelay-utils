@@ -63,15 +63,16 @@ function flattenobj(obj, callback) {
 	callback(str);
 }
 
-function read(ray, str, callback) {
+function read(ray, obj, callback) {
 	var key = ray.shift();
-	//console.log("read(%s %s) and the key: %s", key, str, key);
 	reader.get(key).then(function(res) {
-		var ray2 = ray;
-		var str2 = str;
 		if (res) {
 			//this will convert the storred hex to integers array
 			if (key == "ethernetMAC" || key == "sixBMAC") {
+				obj[key] = {
+					"string": "",
+					"array": []
+				}
 				newray = [];
 				var newstr = "";
 				var tempi = 0;
@@ -82,25 +83,20 @@ function read(ray, str, callback) {
 					newray.push(tempi);
 					newstr += temps;
 				};
-				str2 += "\"" + key + "\": { \"string\":";
+				obj[key].string = newstr;
+				obj[key].array = newray;
+			} else {
+				obj[key] = res.toString('ascii');
+			}
 
-				str2 += "\"" + newstr + "\",";
-				str2 += "\"" + "array\":";
-				str2 += "[" + newray + "]}";
-			}
-			else {
-				str2 += "\"" + key + "\":";
-				str2 += "\"" + res + "\"";
-			}
-			if (ray2.length > 0) {
-				str2 += ",";
-				read(ray2, str2, callback);
-			}
-			else {
-				str2 += "}";
-				callback(str2);
+			if (ray.length > 0) {
+				read(ray, obj, callback);
+			} else {
+				callback(obj, null);
 			}
 		}
+	}, function(err) {
+		callback(null, err);
 	});
 }
 
@@ -250,23 +246,28 @@ function modify_devjs(MAC, TTY) {
 }
 
 function get_all(callback) {
-	str = "{";
+	var obj = {};
 	first = true;
 	var temp = [];
 	for (var attr in reader.Layout) {
 		temp.push(attr);
 	}
 	var res;
-	read(temp, str, function(done) {
-		try {
-			var res = JSON.parse(done);
-		}
-		catch (e) {
+	read(temp, obj, function(done, err) {
+		if(!!err) {
+			console.error('Reading eeprom failed with error- ', err);
 			callback(JSON.parse('{"eeprom":"not configured properly"}'));
+			return;
 		}
-		res.relayID = res.BRAND + res.DEVICE + res.UUID;
-		res.cloudURL = cloudURL;
-		callback(res);
+		if(!!done) {
+			var res = done;
+			res.relayID = res.BRAND + res.DEVICE + res.UUID;
+			res.cloudURL = cloudURL;
+			callback(res);
+		} else {
+			callback(JSON.parse('{"eeprom":"not configured properly"}'));
+			return;
+		}
 	});
 }
 

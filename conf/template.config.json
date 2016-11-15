@@ -205,7 +205,7 @@
                                             "siodev": "{{zigbeehatty}}",
                                             "devType": 0,
                                             "newNwk": false,
-                                            "channelMask": 2048,
+                                            "channelMask": 11,
                                             "baudRate": 115200,
                                             "log_level": 1,
                                             "networkRefreshDuration": 30000,

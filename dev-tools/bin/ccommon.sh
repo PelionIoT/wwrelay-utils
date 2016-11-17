@@ -134,6 +134,43 @@ fi
 } #end_isURL\n
 
 
+#---------------------------------------------------------------------------------------------------------------------------
+# utils Math
+#---------------------------------------------------------------------------------------------------------------------------
+
+#/	Desc:	Takes an integer and oupts hex
+#/	$1:		decimal
+#/	$2:		name1
+#/	$3:		name1
+#/	Out:	hex string
+#/	Expl:	out=$(dec2hex 33)
+dec2hex() {
+	echo "obase=16;ibase=10; $1" | bc
+} #end_dec2hex
+
+#/	Desc:	Takes an hex and oupts integer
+#/	$1:		hex
+#/	Out:	dec string
+#/	Expl:	out=$(hex2dec 0x22)
+hex2dec() {
+	printf "%d\n" $1
+} #end_hex2dec
+
+#/	Desc:	converts hex 2 ascii
+#/	$1:		hex
+#/	Out:	ascii
+#/	Expl:	$out=(hex2ascii "0x20")
+hex2ascii() {
+	a=$(echo "$1" | sed s/0/\\\\/1)
+	echo -en "$a"
+	#echo $b
+} #end_hex2ascii
+
+
+#-----------------------------------------------------------------------------------------------------------------------
+#  utils eeprom
+#-----------------------------------------------------------------------------------------------------------------------
+
 #/	Desc:	erases the page called
 #/	$1:		page [0x50,0x51,0x52...]
 #/	$2:		
@@ -142,9 +179,101 @@ fi
 #/	Expl:	erasePage 0x50
 erasePage(){
 	for i in {0..255}; do 
-		i2cset -y 1 0x50 $i 0x00 b; 
+		i2cset -y 1 0x50 $i 0xff b; 
 	done
 } #end_erasePage
+
+
+#/	Desc:	grabs one character from the Eerpom
+#/	$1:		postion
+#/	$2:		
+#/	$3:		
+#/	Out:	outputs the character in native format
+#/	Expl:	hex=(grabOne 2)
+grabOne(){
+	a=$(i2cget -y 1 0x50 $1 b) 
+	echo $a
+} #end_grabOne
+
+
+#/	Desc:	pulls a range from the eeprom
+#/	$1:		start (using position, e.g. 2=2nd character in eeprom)
+#/	$2:		end (using position)
+#/	Out:	output [ascii|decimal|hex|hex-stripped]
+#/	Expl:	SN=$(grabRange 0 9 "ascii" "")
+grabRange() {
+	start=$1
+	end=$2
+	output=$3
+	delimeter=$4
+	RET=""
+	for ((i=$start; i<=$end; i=i+1)); do
+		h=$(printf "%#x\n" $i)
+		hex=$(grabOne $h)
+		if [[ $output == "decimal" ]]; then
+			var=$(hex2dec $hex)
+		elif [[ $output == "ascii" ]]; then
+			var=$(hex2ascii $hex)
+		elif [[ $output == "hex-stripped" ]]; then
+			var=`expr "$hex" : '^0x\([0-9a-zA-Z]*\)'`		
+		else
+			var=$hex
+		fi
+		if [[ $RET == "" ]]; then
+			RET="$var"
+		else
+			RET+=$delimeter"$var"
+		fi
+	done
+	echo $RET
+} #end_grabRange
+
+#/	Desc:	reads the eeprom and then can take action with the varribles from the EEPROM
+#/	$1:		action logitpapertrail:logs to papertrail, print:prints,none:just grabs the varribles for use in your script
+#/	$2:		name1
+#/	$3:		name1
+#/	Out:	print,varribles, or paprertail
+#/	Expl:	logEEPROM "none"
+function logEEPROM(){
+	action="$1"
+	actionType="$2"
+	if [[ "$action" == "" ]]; then
+		action="logitPapertrail"
+	fi
+	SN=$(grabRange 0 9 "ascii" "")
+	HWV=$(grabRange 10 14 "ascii" "")
+	FWV=$(grabRange 15 19 "ascii" "")
+	RC=$(grabRange 20 21 "ascii" "")
+	YEAR=$(grabRange 22 22 "ascii" "")
+	MONTH=$(grabRange 23 23 "ascii" "")
+	BATCH=$(grabRange 24 24 "ascii" "")
+	ETHERNETMAC=$(grabRange 25 30 "hex-stripped" ":")
+	ETHERNETMACd=$(grabRange 25 30 "decimal" ",")
+	SIXBMAC=$(grabRange 31 38 "hex-stripped" ":")
+	SIXBMACd=$(grabRange 31 38 "decimal" ",")
+	RELAYSECRET=$(grabRange 39 70 "ascii" "")
+	PAIRINGCODE=$(grabRange 71 95 "ascii" "")
+	LEDCONFIG=$(grabRange 96 97 "ascii" "")
+	# logitp "EEPROM_Serial: $SN"
+ # 	logitp "EEPROM_hardwareVersion: $HWV"
+	# logitp "EEPROM_firmwareVersion: $FWV"
+	# logitp "EEPROM_radioConfig $RC"
+	# logitp "EEPROM_year $YEAR"
+	# logitp "EEPROM_month $MONTH"
+	# logitp "EEPROM_batch $BATCH"
+	# logitp "EEPROM_ethernetMAC $ETHERNETMAC"
+	# logitp "EEPROM_sixBMAC $SIXBMAC"
+	# logitp "EEPROM_relaySecret $RELAYSECRET"
+	# logitp "EEPROM_pairingCode $PAIRINGCODE"
+	# logitp "EEPROM_ledConfig $LEDCONFIG"
+	if [[ "$action" = "print" ]]; then
+		echo "print here"
+	elif [[ "$action" = "logitPapertrail" ]]; then
+		logitp "{\"batch\":\"$BATCH\",\"month\":\"$MONTH\",\"year\":\"$YEAR\",\"radioConfig\":\"$RC\",\"hardwareVersion\":\"$HWV\",\"firmwareVersion\":\"$FWV\",\"realyID\":\"$SN\",\"ethernetMAC\":[$ETHERNETMACd],\"sixBMAC\":[$SIXBMACd],\"relaySecret\":\"$RELAYSECRET\",\"pairingCode\":\"$PAIRINGCODE\",\"ledConfig\":\"$LEDCONFIG\"}"
+	fi
+} #end_logEEPROM
+
+
 
 #/	Description: Tests an array of files for existance
 #/	1 - array referenced by name
@@ -269,6 +398,23 @@ sContains(){
 	 	echo 0
 	 fi
 } #end_sContains\n
+
+#/	Desc:	runs sed on a file changing out the line
+#/	$1:		file to run sed on
+#/	$2:		name1
+#/	$3:		name1
+#/	Out:	xxx
+#/	Expl:	xxx
+#SedGeneric file "\"s/\\\"oRSSI_THRESHOLD.*/\\\"oRSSI_THRESHOLD\\\": $RSMI,/g\""
+SedGeneric(){
+	changeFile=$1
+	changeSed="$2"
+		sedline="sed -i $changeSed $changeFile"
+	#echo $sedline
+	eval "$sedline"
+	sync
+} #end_SedGeneric
+
 
 #/	Desc:	strips trailing and or front white space tabs and spaces
 #/	$1:		side to strip from [left|right|both]

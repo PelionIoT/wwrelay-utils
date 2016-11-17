@@ -3,12 +3,18 @@
 . ccommon.sh nofunc
 LogToTerm=1
 loglevel=info;
-
+thistarball="https://code.wigwag.com/ugs/ud.tar.gz"
 manifestLocalhost="https://10.10.102.57:8080/builds/manifest.dat"
 manifesturl="https://code.wigwag.com/ugs/manifest.dat"
 upgrd="upgrade"
 buildurl=""
 wipeuser=0
+wipedb=0
+FUF=0;
+FUU=0;
+WU=0;
+WF=0;
+UU=1;
 wipeeeprom=""
 declare -A DESCRIPTION
 declare -A DATE
@@ -131,28 +137,56 @@ printRayTest(){
 }
 
 
+upgradethis(){
+	pushd . >> /dev/null
+	cd /wigwag/wwrelay-utils/dev-tools/bin/
+	curl -o ud.tar.gz -k "$thistarball"
+	tar -xf ud.tar.gz
+	rm -rf ud.tar.gz
+	popd >> /dev/null
+
+
+}
 
 interactive(){
-	callstring="$0"
+	callstring="upgrade "
 	buildurl="";
 
 	#	Grab the manifest URL
+	# clearpadding
+	# PS3="${YELLOW}Use default mainfest ${CYAN}$manifesturl${YELLOW}: "
+	# echo -n "${NORM}"
+	# select yn in "Yes" "No"; do
+	# 	break;
+	# done
+	# if [[ "$yn" = "No" ]]; then
+	# 	echo "prefered manifesturl url: "
+	# 	read -r manifesturl
+	# 	callstring="$callstring -m $manifesturl"
+	# fi
+	
+	# readmanifest "$manifesturl"
+	
+if [[ $advanced -eq 1 ]]; then
+	#decide what to replace
+	manifestChoices=("https://code.wigwag.com/ugs/manifest.dat" "Other")
 	clearpadding
-	PS3="${YELLOW}Use default mainfest ${CYAN}$manifesturl${YELLOW}: "
+	PS3="${YELLOW}Manifset choice: ";
 	echo -n "${NORM}"
-	select yn in "Yes" "No"; do
-		break;
+	select manifsetd in "${manifestChoices[@]}"; do
+	      break;
 	done
-	if [[ "$yn" = "No" ]]; then
+	echo -n "${NORM}"
+	if [[ "$manifsetd" != "${manifestChoices[0]}" ]]; then
 		echo "prefered manifesturl url: "
 		read -r manifesturl
 		callstring="$callstring -m $manifesturl"
 	fi
-	
-	readmanifest "$manifesturl"
-	
 
-	
+fi
+	readmanifest "$manifesturl"
+
+
 
 	#	List the builds
 	clearpadding
@@ -212,45 +246,62 @@ interactive(){
 	clearpadding
 	PS3="${YELLOW}Upgrade partition: ";
 	echo -n "${NORM}"
-	select upgrd in "${partitionDecision[@]}";
-	      do break;
+	select upgrd in "${partitionDecision[@]}"; do
+	      break;
 	done
 	if [[ "$upgrd" = "factory" ]]; then
+		wupgradepart=1;
 		callstring="$callstring -f"
 	fi
 
 
 
 	#decide to wipe the user or not
+	testray=("Keep" "Erase");
 	clearpadding
-	PS3="${YELLOW}Preserve all user settings (No = Nuke the db and user parition): ";
+	PS3="${YELLOW}User Partition: ";
 	echo -n "${NORM}"
-	select yn in "Yes" "No"; do
+	select userChoice in "${testray[@]}"; do
 		break;
 	done
-	if [[ "$yn" = "No" ]]; then
+	if [[ "$userChoice" = "${testray[1]}" ]]; then
 		wipeuser=1
 		callstring="$callstring -w"
 	fi
 
-
-	#decide to clear the factory settings
+	#decide to wipe the userdb
+	testray=("Keep" "Erase");
+	PS3="${YELLOW}User Database: ";
 	clearpadding
-	PS3="${YELLOW}Preserve the factory EEPROM memory, Pairing Code, and SSL keys: "
 	echo -n "${NORM}"
-	select yn in "Yes" "No"; do
+	select userChoice in "${testray[@]}"; do
 		break;
 	done
-	if [[ "$yn" = "No" ]]; then
+	if [[ "$userChoice" = "${testray[1]}" ]]; then
+		wipedb=1
+		callstring="$callstring -d"
+	fi
+
+
+
+	#decide to clear the factory settings
+	testray=("Keep" "Erase");
+	clearpadding
+	PS3="${YELLOW}Factory EEPROM and WigWag Cloud SSL access keys: "
+	echo -n "${NORM}"
+	select userChoice in "${testray[@]}"; do
+		break;
+	done
+	if [[ "$userChoice" = "${testray[1]}" ]]; then
 		clearpadding
 		UIwarning
-		echo "${YELLOW}You have chosen to destroy your factory keys that enable the relay to work with the cloud."
-		echo "${CYAN}Confirm that this is your desire by typing: \"ERASETHEEEPROMANDSSLKEYS\" in the next line:"
+		echo "${YELLOW}You have chosen to destroy your ability to connect to the WigWag cloud services."
+		echo "${CYAN}Confirm that this is your desire by typing: \"ERASEIT\" in the next line:"
 		echo -n "${NORM}"
 		read -r response
-		if [[ "$response" = "ERASETHEEEPROMANDSSLKEYS" ]]; then
-			wipeeeprom="ERASETHEEEPROMANDSSLKEYS"
-			callstring="$callstring -e ERASETHEEEPROMANDSSLKEYS"
+		if [[ "$response" = "ERASEIT" ]]; then
+			wipeeeprom="ERASEIT"
+			callstring="$callstring -e ERASEIT"
 		else 
 			log "error" "Exiting now, incorrect wipe eeprom response provided: '$response'"
 			exit
@@ -258,6 +309,54 @@ interactive(){
 	fi
 	echo -n "${NORM}"
 
+
+
+	if [[ $advanced -eq 1 ]]; then
+		clearpadding
+		PS3="${YELLOW}Factory Partition update forced: "
+		echo -n "${NORM}"
+		select yn in "No Force" "Force"; do
+			break;
+		done
+		if [[ "$yn" = "Force" ]]; then
+			FUF=1
+			callstring="$callstring -F"
+		fi
+
+		clearpadding
+		PS3="${YELLOW}Upgrade Partition update forced: "
+		echo -n "${NORM}"
+		select yn in "No Force" "Force"; do
+			break;
+		done
+		if [[ "$yn" = "Force" ]]; then
+			FUU=1
+			callstring="$callstring -U"
+		fi
+
+		clearpadding
+		PS3="${YELLOW}Wipe the factory partition: "
+		echo -n "${NORM}"
+		select yn in "No wipe" "wipe"; do
+			break;
+		done
+		if [[ "$yn" = "wipe" ]]; then
+			WF=1
+			callstring="$callstring -g"
+		fi
+
+		clearpadding
+		PS3="${YELLOW}Wipe the upgrade partition: "
+		echo -n "${NORM}"
+		select yn in "No wipe" "wipe"; do
+			break;
+		done
+		if [[ "$yn" = "wipe" ]]; then
+			WU=1
+			callstring="$callstring -v"
+		fi
+
+	fi
 
 	#decide to reboot
 	clearpadding
@@ -270,6 +369,7 @@ interactive(){
 		rebootit=1
 		callstring="$callstring -r"
 	fi
+	echo -n "${NORM}"
 
 
 
@@ -277,23 +377,27 @@ interactive(){
 
 	clearpadding
 	callstring="$callstring $mybuild"
-	log "info" "Your useage this time: ${CYAN}$callstring${NORM}"
+	log "info" "Commandline Command: ${CYAN}$callstring${NORM}"
 	main
 }
 
 main(){
 	log "debug" "entered main with $upgradeDIR and $wipeeeprom <-- wipe eeprom"
-	if [[ "$wipeeeprom" != "" && "$wipeeeprom" = "ERASETHEEEPROMANDSSLKEYS" ]]; then
+	if [[ "$wipeeeprom" != "" && "$wipeeeprom" = "ERASEIT" ]]; then
 		erasePage
+		log "info" "erased eeprom"
 		uninstallCloudKeys
 	elif [[ "$wipeeeprom" != "" ]]; then
 			log "error" "Exiting now, incorrect wipe eeprom response provided: '$wipeeeprom'"
+			COMMON_MENU_HELP
 	fi
-	cd "$upgradeDIR" ||  exit
+	cd "$upgradeDIR"
 	if [[ "$buildurl" != "" ]]; then
 		downloadfile="$buildurl";
 	else
 		if [[ "$upgrd" = "factory" ]]; then
+			UU=0;
+			WU=1;
 			if [[ "$(localhostAvailable)" -eq 1 ]]; then
 				downloadfile="${LFACTORYURL[$mybuild]}"
 			else
@@ -308,17 +412,37 @@ main(){
 			
 		fi
 	fi
-		log "info" "downloading ${CYAN}$downloadfile${NORM} for installation"
+		log "info" "downloading: ${CYAN}$downloadfile${NORM} for installation"
 		curl -o f.tar.gz -k "$downloadfile"
+		log "info" "${YELLOW}unzipping the upgrade.  30 sec... ${NORM}"
 		tar -xzf f.tar.gz
 		rm -rf f.tar.gz
 		rm -rf install.sh
 		rm -rf post-install.sh
-		if [[ $wipeuser -eq 1 ]]; then
-			mv wipeuserupgrade.sh upgrade.sh
-		else
-			rm wipeuserupgrade.sh
-		fi
+
+
+		SedGeneric upgrade.sh \"0,/WIPETHEUSER_PARTITION.*/s//WIPETHEUSER_PARTITION=$wipeuser/\"
+		SedGeneric upgrade.sh \"0,/WIPETHEUSERDB.*/s//WIPETHEUSERDB=$wipedb/\"
+		SedGeneric upgrade.sh \"0,/WIPETHEUPGRADE.*/s//WIPETHEUPGRADE=$WU/\"
+		SedGeneric upgrade.sh \"0,/UPGRADETHEUPGRADE.*/s//UPGRADETHEUPGRADE=$UU/\"
+		SedGeneric upgrade.sh \"0,/UPGRADETHEFACTORY.*/s//UPGRADETHEFACTORY=1/\"
+		SedGeneric upgrade.sh \"0,/FORCEUPGRADETHEFACTORY.*/s//FORCEUPGRADETHEFACTORY=$FUF/\"
+		SedGeneric upgrade.sh \"0,/FORCEUPGRADETHEUPGRADE.*/s//FORCEUPGRADETHEUPGRADE=$FUU/\"
+		SedGeneric upgrade.sh \"0,/WIPETHEFACTORY.*/s//WIPETHEFACTORY=$WF/\"
+
+		log "info" "configuration results"
+		grep --color -m1 "UPGRADETHEFACTORY" upgrade.sh
+		grep --color -m1 "FORCEUPGRADETHEFACTORY" upgrade.sh
+		grep --color -m1 "WIPETHEFACTORY" upgrade.sh
+
+		grep --color -m1 "UPGRADETHEUPGRADE" upgrade.sh
+		grep --color -m1 "FORCEUPGRADETHEUPGRADE" upgrade.sh
+		grep --color -m1 "WIPETHEUPGRADE" upgrade.sh
+
+		grep --color -m1 "WIPETHEUSER_PARTITION" upgrade.sh
+		grep --color -m1 "WIPETHEUSERDB" upgrade.sh
+
+
 		#echo  "#!/bin/bash" > postUpgrade.sh
 		#shellcheck disable=SC2129
 		# echo  "replace=\$(grep -ne 'version' /wigwag/etc/versions.json | xargs | awk -F ' ' '{print \$6}')" >>	 postUpgrade.sh
@@ -342,16 +466,24 @@ main(){
 }
 
 
+
 declare -A hp=(
 	[description]="Updates a relay with a different firmware version (up and down)"
 	[useage]="-options <[buildNo|buildURL]>"
-	[ee]="erase eeprom and ssl keys, must enter it this way: -e <ERASETHEEEPROMANDSSLKEYS>"
+	[a]="advanced interactive mode"
+	[d]="Erase User database.  Independant from -w"
+	[ee]="erase eeprom and ssl keys, must enter it this way: -e <ERASEIT>"
+	[f]="(re)factory. Write this build to the factory partition.  Upgrade will automatically be wiped."
+	[F]="force upgrade the factory"
+	[g]="wipe the factory"
 	[h]="help"
 	[i]="interactive (will ignore all other flags)"
 	[mm]="url to manifest.dat -m <url>, defaults to: https://code.wigwag.com/ugs/"
-	[f]="refactory, write to the factory partition instead of the upgrade"
 	[r]="reboot after install is complete"
-	[w]="wipe user"
+	[u]="fetch the latest version of this program and update it"
+	[U]="force upgrade the upgrade"
+	[v]="wipe the upgrade"
+	[w]="erase User paritition.  Independant from -e"
 	[e1]="\t${BOLD}${UND}Update a Relay factory partition to Build 1.1.1 ${NORM}\n\t\t$0 -u factory  1.1.1 ${NORM}\n"
 	[e2]="\t${BOLD}${UND}Start interactive mode ${NORM}\n\t\t$0 -i ${NORM}\n"
 	[e3]="\t${BOLD}${UND}Update an Upgrade patitition to Build 1.0.23 and wipe user ${NORM}\n\t\t$0 -w 1.0.23 ${NORM}\n"
@@ -363,12 +495,19 @@ argprocessor(){
 	switch_conditions=$(COMMON_MENU_SWITCH_GRAB)
 	while getopts "$switch_conditions" flag; do
 		case $flag in
+			a)  advanced=1; interactive; exit; ;;
+			d)  wipedb=1; ;;
 			e)	wipeeeprom=$OPTARG; ;;
-			f)	upgrd="factory"; ;;
+			f)	upgrd="factory"; wupgradepart=1; ;;
+			F)  FUF=1; ;;
+			g)  WF=1; ;;
 			h) 	COMMON_MENU_HELP; ;;
 			i) 	interactive; exit;;
 			m)	manifesturl=$OPTARG; ;;
 			r)	rebootit=1; ;;
+			u)	upgradethis; exit;;
+			U)  FUU=1; ;;
+			v)  WU=1; ;;
 			w)	wipeuser=1; ;;
 			\?) echo -e \\n"Option -${BOLD}$OPTARG${NORM} not allowed.";COMMON_MENU_HELP;exit; ;;
 		esac

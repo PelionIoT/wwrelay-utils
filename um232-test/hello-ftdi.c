@@ -5,7 +5,7 @@
 #include <stdio.h>
 #include <ftdi.h>
 
-#define LED1 0x20  /* CTS (brown wire on FTDI cable) */
+#define LED1 0x54  /* D2, D4, D6 (0101 0100) */
 // idVendor           0x0403 Future Technology Devices International, Ltd
 //  idProduct          0x6014 FT232H Single HS USB-UART/FIFO IC
 
@@ -25,12 +25,15 @@ int main()
 
     /* Enable bitbang mode with a single output line */
     ftdi_enable_bitbang(&ftdic, LED1);
-//    ftdi_enable_bitbang(&ftdic, LED2);
-//    ftdi_enable_bitbang(&ftdic, LED3);
 
     /* Endless loop: invert LED state, write output, pause 1 second */
     for(;;) {
-        c ^= LED1;
+        c = 0xFF;
+        printf("Writing bit %d\n", c);
+        ftdi_write_data(&ftdic, &c, 1);
+        sleep(1);
+        c = 0xFF;
+        printf("Writing bit %d\n", c);
         ftdi_write_data(&ftdic, &c, 1);
         sleep(1);
     }

@@ -28,7 +28,7 @@ int main()
 
     /* Endless loop: invert LED state, write output, pause 1 second */
     for(;;) {
-        c = 0xFF;
+        c = 0x00;
         printf("Writing bit %d\n", c);
         ftdi_write_data(&ftdic, &c, 1);
         sleep(1);

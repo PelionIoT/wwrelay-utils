@@ -27,6 +27,7 @@ var ssl_server_key = "server.key.pem";
 var ssl_server_cert = "server.cert.pem";
 var ssl_ca_cert = "ca.cert.pem";
 var ssl_ca_int = "intermediate.cert.pem";
+var ssl_ca_chain = "ca-chain.cert.pem";
 
 var template_conf_file = null;
 var radioProfile_template_conf_file = null;
@@ -442,22 +443,43 @@ function enableRTC() {
 }
 
 function writeSecurity() {
-	var DProm = new Array();
-	DProm.push(diskprom.cpFile(ssl_client_key, sslPathDefault + ssl_client_key, POM));
-	DProm.push(diskprom.cpFile(ssl_client_cert, sslPathDefault + ssl_client_cert, POM));
-	DProm.push(diskprom.cpFile(ssl_server_key, sslPathDefault + ssl_server_key, POM));
-	DProm.push(diskprom.cpFile(ssl_server_cert, sslPathDefault + ssl_server_cert, POM));
-	DProm.push(diskprom.cpFile(ssl_ca_cert, sslPathDefault + ssl_ca_cert, POM));
-	DProm.push(diskprom.cpFile(ssl_ca_int, sslPathDefault + ssl_ca_int, POM));
-	console.log("calling the big DProm");
-	Promise.all(DProm).then(function(result) {
-		diskprom.disconnect();
-		console.log("debug", "get sslclientkey resolved: " + result);
-		console.dir(result);
-	}).catch(function(error) {
-		diskprom.disconnect();
-		console.log("debug", "get sslclientkey errored: " + error);
-	});
+	return new Promise(function(resolve, reject) {
+		var DProm = new Array();
+		DProm.push(diskprom.cpFile(ssl_client_key, sslPathDefault + ssl_client_key, POM));
+		DProm.push(diskprom.cpFile(ssl_client_cert, sslPathDefault + ssl_client_cert, POM));
+		DProm.push(diskprom.cpFile(ssl_server_key, sslPathDefault + ssl_server_key, POM));
+		DProm.push(diskprom.cpFile(ssl_server_cert, sslPathDefault + ssl_server_cert, POM));
+		DProm.push(diskprom.cpFile(ssl_ca_cert, sslPathDefault + ssl_ca_cert, POM));
+		DProm.push(diskprom.cpFile(ssl_ca_int, sslPathDefault + ssl_ca_int, POM));
+		console.log("calling the big DProm");
+		Promise.all(DProm).then(function(result) {
+			diskprom.disconnect();
+			console.log("debug", "get sslclientkey resolved: " + result);
+			console.dir(result);
+			var caCert = JSON.parse(jsonminify(fs.readFileSync(sslPathDefault + ssl_ca_cert, 'utf8')));
+			var caInt = JSON.parse(jsonminify(fs.readFileSync(sslPathDefault + ssl_ca_int, 'utf8')));
+			fs.appendFile(sslPathDefault + ssl_ca_chain, JSON.stringify(caCert, null, 4), function(err) {
+                if(err) {
+                	console.error('Writing ca cert to chain file failed ', err);
+                    reject(err);
+                } else {
+                	fs.appendFile(sslPathDefault + ssl_ca_chain, JSON.stringify(caInt, null, 4), function(err) {
+		                if(err) {
+                			console.error('Writing ca intermediate cert to chain file failed ', err);
+		                    reject(err);
+		                } else {
+		                	console.log('successfully wrote ca chain file');
+		                    resolve();
+		                }
+		            });
+                }
+            });
+		}).catch(function(error) {
+			diskprom.disconnect();
+			console.log("debug", "get sslclientkey errored: " + error);
+			reject(error);
+		});
+	})
 }
 
 function generateDevicejsConf(eeprom) {
@@ -576,10 +598,9 @@ function main() {
 						hw = define_hardware(result);
 						result.hardware = hw;
 
-						writeSecurity();
-
 						var p = [];
 
+						p.push(writeSecurity());
 						p.push(generateDevicedbConf(result)); 
 						p.push(generateDevicejsConf(result)); 
 						p.push(generateRelayConf(result, "wwrelay_v")); 

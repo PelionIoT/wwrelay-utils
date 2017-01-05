@@ -58,9 +58,7 @@
                     },
                     "execPath":"/usr/bin/devicedb",
                     "configFile": "/wigwag/etc/devicejs/devicedb.yaml"
-                }              
-
-            },
+                },
         "all-modules": {
                         "limits": {
                                 "limit_group": ""

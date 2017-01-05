@@ -23,6 +23,7 @@ DBDIR="/userdata/etc/devicejs/db"
 CLOUD_URL="https://cloud1.wigwag.com"
 DEVICEDB_URL="https://devicedb1.wigwag.com"
 DEVICEJS_URL="https://devicejs1.wigwag.com"
+DATABASE_PORT="9000"
 
 function checkForUpgrade() {
   if [ -e /userdata/postUpgrade.sh ] ; then
@@ -78,7 +79,7 @@ case "$1" in
         /usr/bin/node ./ww_eeprom_reader.js -c $CLOUD_URL -o true -t ${WIGWAGROOT}/devicejs-core-modules/Runner/template.config.json \
         -r ${WIGWAGROOT}/devicejs-core-modules/Runner/relay.config.json -p ${WIGWAGROOT}/devicejs-core-modules/rsmi/radioProfile.template.json \
         -s ${WIGWAGROOT}/devicejs-core-modules/rsmi/radioProfile.config.json -m ${WIGWAGROOT}/devicejs-core-modules/Runner/template.devicejs.conf \
-        -n ${WIGWAGROOT}/etc/devicejs/devicejs.conf -b $DEVICEDB_URL -d $DEVICEJS_URL > $WWRELAY_LOG 2>&1
+        -n ${WIGWAGROOT}/etc/devicejs/devicejs.conf -g -h -i $DATABASE_PORT -b $DEVICEDB_URL -d $DEVICEJS_URL > $WWRELAY_LOG 2>&1
 
         OUT=$?                                                                                
         if [ $OUT -eq 0 ]; then                                                                                                                                                           

@@ -33,13 +33,16 @@ var radioProfile_template_conf_file = null;
 var relay_conf_json_file = null;
 var rsmi_conf_json_file = null;
 var devicejs_conf_file = null;
+var devicedb_conf_file = null;
 var templateDevicejsConf = null;
+var templateDevicedbConf = null;
 var sw_eeprom_file = null;
 var devjsconf = null;
 var secConfObj = null;
 var radioModuleConf = null;
 var cloudDevicejsURL = null;
 var cloudDdbURL = null;
+var databasePort = null;
 
 var cloudURL = "https://cloud.wigwag.com";
 var overwrite_conf = false;
@@ -210,6 +213,7 @@ function createHandlebarsData(eeprom, platform) {
 	data.ethernetmac = eeprom.ethernetMAC.string;
 	data.wwplatform = platform;
 	data.cloudddburl = cloudDdbURL;
+	data.databasePort = databasePort;
 	if(typeof eeprom.ledConfig !== 'undefined' && 
 		((eeprom.ledConfig == '01') || (eeprom.ledConfig == '00') || 
 			(eeprom.ledConfig == '--') || (eeprom.ledConfig == 'xx') ) )
@@ -232,10 +236,23 @@ function createHandlebarsDataForRSMI(eeprom) {
 function createHandlebarsDevicejsConf(eeprom) {
 	var data = {};
 
-	data.apikey = eeprom.relayID;
+	// data.apikey = eeprom.relayID;
 	data.clouddevicejsurl = cloudDevicejsURL;
-	data.cloudeventurl = eeprom.cloudURL;
+	data.databasePort = databasePort;
+	// data.cloudeventurl = eeprom.cloudURL;
+	// data.cloudddburl = cloudDdbURL;
+
+	return data;
+}
+
+function createHandlebarsDevicedbConf(eeprom) {
+	var data = {};
+
+	// data.apikey = eeprom.relayID;
+	// data.clouddevicejsurl = cloudDevicejsURL;
+	// data.cloudeventurl = eeprom.cloudURL;
 	data.cloudddburl = cloudDdbURL;
+	data.databasePort = databasePort;
 
 	return data;
 }
@@ -465,6 +482,27 @@ function generateDevicejsConf(eeprom) {
 	});
 }
 
+function generateDevicedbConf(eeprom) {
+	return new Promise(function(resolve, reject) {
+		if (devicedb_conf_file) {
+			var deviceConfHandlebars = handleBars.compile(JSON.stringify(templateDevicedbConf));
+			var deviceConfData = createHandlebarsDevicedbConf(eeprom);
+			var deviceConf = JSON.parse(deviceConfHandlebars(deviceConfData));
+
+			write_JSON2file(devicedb_conf_file, deviceConf, overwrite_conf, function(err, suc) {
+				if (err) {
+					console.error("Error Writing file ", devicedb_conf_file, err);
+					reject(err);
+				} else {
+					console.log(suc + ': wrote ' + devicedb_conf_file + ' file successfully');
+					resolve();
+				}
+			});
+		} else {
+			reject(new Error('Please specify the devicedb config file path, got- ' + JSON.stringify(devicedb_conf_file)));
+		}
+	});
+}
 function generateRelayConf(eeprom, platform) {
 	return new Promise(function(resolve, reject) {
 		//replace the handlebars
@@ -542,6 +580,7 @@ function main() {
 
 						var p = [];
 
+						p.push(generateDevicedbConf(result)); 
 						p.push(generateDevicejsConf(result)); 
 						p.push(generateRelayConf(result, "wwrelay_v")); 
 						p.push(generateHardwareConf(result)); 
@@ -613,9 +652,12 @@ program
 	.option('-p, --radioProfiletemplateFile [filepath]', 'Specify the rsmi template config file')
 	.option('-s, --rsmiConfFile [filepath]', 'Specify the rsmi radioProfile.config.json for RSMI')
 	.option('-b, --cloudDdbURL [url]', 'Specify the cloud database url', 'https://devicedb.wigwag.com') 
+	.option('-i, --databasePort [port]', 'Specify the database local port', '9000') 
 	.option('-d, --cloudDevicejsURL [url]', 'Specify the cloud devicejs url', 'https://devicejs.wigwag.com') 
 	.option('-m, --devicejsConfTemplateFile [filepath]', 'Specify the devicejs config template file') 
 	.option('-n, --devicejsConfFile [filepath]', 'Specify the output devicejs configuration file path') 
+	.option('-g, --devicedbConfTemplateFile [filepath]', 'Specify the devicedb config template file') 
+	.option('-h, --devicedbConfFile [filepath]', 'Specify the output devicedb configuration file path') 
 	.parse(process.argv);
 
 program.on('--help', function() {
@@ -709,7 +751,24 @@ if(program.devicejsConfFile && program.devicejsConfTemplateFile) {
 	}
 } else {
 	console.warn('Not generating devicejs config file as command line options are not provided'); 
-} 
+}
+
+if(program.devicedbConfFile && program.devicedbConfTemplateFile) {
+	console.log('Got to generate devicedb conf file for ddb go'); 
+	console.log('Using devicedb conf template- ', program.devicedbConfTemplateFile); 
+	console.log('Using devicedb conf output file- ', program.devicedbConfFile);
+	devicedb_conf_file = program.devicedbConfFile; 
+	templateDevicedbConf = JSON.parse(jsonminify(fs.readFileSync(program.devicedbConfTemplateFile, 'utf8'))); 
+} else {
+	console.warn('Not generating deviced config file as command line options are not provided'); 
+}
+
+if(program.databasePort) {
+	console.log('Got database port ', program.databasePort);
+	databasePort = program.databasePort;
+} else {
+	console.warn('Database port is not specified');
+}
 
 main().then(function() {
 	if (!softwareBasedRelay) {

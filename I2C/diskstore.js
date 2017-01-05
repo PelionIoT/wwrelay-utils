@@ -139,13 +139,12 @@ diskstorage.prototype.cpFile = function(relativePath, path, overwrite) {
 			fs.exists(path, function(exists) {
 				if (exists && overwrite == "overwrite" || (!exists)) {
 					console.log("caling to write: " + path);
-					return self._writeStore(path, result.toString());
+					self._writeStore(path, result.toString()).then(function() {
+						resolve();
+					})
 				}
 				else {
-
-					return new Promise(function(resolve, reject) {
-						resolve(result);
-					});
+					resolve(result);
 				}
 
 			}).then(function(result) {

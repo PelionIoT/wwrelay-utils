@@ -455,15 +455,15 @@ function writeSecurity() {
 		Promise.all(DProm).then(function(result) {
 			diskprom.disconnect();
 			console.log("debug", "get sslclientkey resolved: " + result);
-			console.dir(result);
-			var caCert = JSON.parse(jsonminify(fs.readFileSync(sslPathDefault + ssl_ca_cert, 'utf8')));
-			var caInt = JSON.parse(jsonminify(fs.readFileSync(sslPathDefault + ssl_ca_int, 'utf8')));
-			fs.appendFile(sslPathDefault + ssl_ca_chain, JSON.stringify(caCert, null, 4), function(err) {
+
+			var caCert = fs.readFileSync(sslPathDefault + ssl_ca_cert, 'utf8');
+			var caInt = fs.readFileSync(sslPathDefault + ssl_ca_int, 'utf8');
+			fs.writeFile(sslPathDefault + ssl_ca_chain, caCert, function(err) {
                 if(err) {
                 	console.error('Writing ca cert to chain file failed ', err);
                     reject(err);
                 } else {
-                	fs.appendFile(sslPathDefault + ssl_ca_chain, JSON.stringify(caInt, null, 4), function(err) {
+                	fs.appendFile(sslPathDefault + ssl_ca_chain, caInt, function(err) {
 		                if(err) {
                 			console.error('Writing ca intermediate cert to chain file failed ', err);
 		                    reject(err);
@@ -507,11 +507,11 @@ function generateDevicejsConf(eeprom) {
 function generateDevicedbConf(eeprom) {
 	return new Promise(function(resolve, reject) {
 		if (devicedb_conf_file) {
-			var deviceConfHandlebars = handleBars.compile(JSON.stringify(templateDevicedbConf));
+			var deviceConfHandlebars = handleBars.compile(templateDevicedbConf);
 			var deviceConfData = createHandlebarsDevicedbConf(eeprom);
-			var deviceConf = JSON.parse(deviceConfHandlebars(deviceConfData));
+			var deviceConf = deviceConfHandlebars(deviceConfData);
 
-			write_JSON2file(devicedb_conf_file, deviceConf, overwrite_conf, function(err, suc) {
+			write_string2file(devicedb_conf_file, deviceConf, overwrite_conf, function(err, suc) {
 				if (err) {
 					console.error("Error Writing file ", devicedb_conf_file, err);
 					reject(err);
@@ -597,6 +597,7 @@ function main() {
 					if (result.BRAND == "WW" || result.BRAND == "WD") {
 						hw = define_hardware(result);
 						result.hardware = hw;
+
 
 						var p = [];
 
@@ -779,7 +780,7 @@ if(program.devicedbConfFile && program.devicedbConfTemplateFile) {
 	console.log('Using devicedb conf template- ', program.devicedbConfTemplateFile); 
 	console.log('Using devicedb conf output file- ', program.devicedbConfFile);
 	devicedb_conf_file = program.devicedbConfFile; 
-	templateDevicedbConf = JSON.parse(jsonminify(fs.readFileSync(program.devicedbConfTemplateFile, 'utf8'))); 
+	templateDevicedbConf = fs.readFileSync(program.devicedbConfTemplateFile, 'utf8'); 
 } else {
 	console.warn('Not generating deviced config file as command line options are not provided'); 
 }

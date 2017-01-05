@@ -52,65 +52,15 @@
                         }
                 },
                 "db": {
-                        "enable": false,
-                        "restart" : {
-                            "limit" : 5000,
-                            "timeout" : 90000
-                        },
-                        "node_args": [
-                            "--max-executable-size=96",
-                            "--max-old-space-size=128",
-                            "--max-semi-space-size=1"
-                        ],
-                "databaseConfig": {                                                       
-                  "port": 9000,
-                  "requireAuthentication": false,
-                  "dbFile": "/userdata/etc/devicejs/db",
-                  "logger": {
-                    "enabled": true
-                  },
-                  // based on the devicedb-distributed defaults:
-                  "leveldown": {
-                      "compression": true,
-                      "cacheSize": 8388608,
-                      "writeBufferSize": 4194304,
-                      "blockSize": 4096,
-                      "maxOpenFiles": 1000,
-                      "blockRestartInterval": 16
-                  },
-                  "peers": [ 
-                            "{{cloudddburl}}"
-                      ],
-                  "logger": {
-                      "enabled": true
-                  },
-                  "debugging": false,
-                  "pullFrequency": 200,
-                  "pullMaxUpdates": 0,
-                  // NOTE: these should be the same certs also used in the devicejs.conf file. The format is the same.
-                  "https": {
-                      "server": {
-                          "key": "/wigwag/devicejs-core-modules/Runner/.ssl/server.key.pem",    // NOTE: use absolute paths for clarity
-                          "cert": "/wigwag/devicejs-core-modules/Runner/.ssl/server.cert.pem",
-                          "ca": [
-                              "/wigwag/devicejs-core-modules/Runner/.ssl/ca.cert.pem",
-                              "/wigwag/devicejs-core-modules/Runner/.ssl/intermediate.cert.pem"
-                          ]
-                      },
-                      "client": {
-                          "key": "/wigwag/devicejs-core-modules/Runner/.ssl/client.key.pem",
-                          "cert": "/wigwag/devicejs-core-modules/Runner/.ssl/client.cert.pem",
-                          "ca": [
-                              "/wigwag/devicejs-core-modules/Runner/.ssl/ca.cert.pem",
-                            "/wigwag/devicejs-core-modules/Runner/.ssl/intermediate.cert.pem"
-                          ]
-                      }
-                  },
-                  "pullFrequency": 5000,
-                  "merkleMaxHeight": 19
-            }              
+                    "restart": {
+                        "limit": 5000,
+                        "timeout": 2000
+                    },
+                    "execPath":"/usr/bin/devicedb",
+                    "configFile": "/wigwag/etc/devicejs/devicedb.yaml"
+                }              
 
-                },
+            },
         "all-modules": {
                         "limits": {
                                 "limit_group": ""

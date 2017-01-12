@@ -49,7 +49,7 @@
                         "deviceJSCore": {
                                 "root": "/wigwag/devicejs-ng",
                                 "opts": [],
-                                "execWaitTimeMS": 1000  // I need this to wait this long for now
+                                "execWaitTimeMS": 15000  // I need this to wait this long for now
                         }
                 },
                 "db": {

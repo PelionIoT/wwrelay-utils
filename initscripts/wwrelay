@@ -20,9 +20,9 @@ GPIO_DIR="${WIGWAGROOT}/wwrelay-utils/GPIO"
 WWRELAY_LOG="${WIGWAGROOT}/log/wwrelay.log"
 GPIO_LOG="${WIGWAGROOT}/log/gpio.log"
 DBDIR="/userdata/etc/devicejs/db"
-CLOUD_URL="https://cloud1.wigwag.com"
-DEVICEDB_URL="https://devicedb1.wigwag.com"
-DEVICEJS_URL="https://devicejs1.wigwag.com"
+CLOUD_URL="https://fsg-cloud.wigwag.io"
+DEVICEDB_URL="https://fsg-devicedb.wigwag.io"
+DEVICEJS_URL="https://fsg-devicejs.wigwag.io"
 DATABASE_PORT="9000"
 
 function checkForUpgrade() {

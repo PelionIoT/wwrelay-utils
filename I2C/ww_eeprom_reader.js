@@ -252,7 +252,7 @@ function createHandlebarsDevicedbConf(eeprom) {
 	// data.apikey = eeprom.relayID;
 	// data.clouddevicejsurl = cloudDevicejsURL;
 	// data.cloudeventurl = eeprom.cloudURL;
-	data.cloudddburl = cloudDdbURL;
+	data.cloudddburl = cloudDdbURL.slice('https://'.length);
 	data.databasePort = databasePort;
 
 	return data;

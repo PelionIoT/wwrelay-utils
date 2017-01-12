@@ -48,7 +48,8 @@
 //                        "group": "devicejs",
                         "deviceJSCore": {
                                 "root": "/wigwag/devicejs-ng",
-                                "opts": []
+                                "opts": [],
+                                "execWaitTimeMS": 1000  // I need this to wait this long for now
                         }
                 },
                 "db": {
@@ -165,6 +166,18 @@
                                             },
                                             "versionsFile": "/wigwag/etc/versions.json"
 
+                                        }
+                                },
+                                {
+                                        "path": "${thisdir}/../ww-zwave",
+                                        "config": {
+                                                "serialInterfaceOptions": {
+                                                        "siodev": "{{zwavetty}}",
+                                                        "baudrate": 115200,
+                                                        "dataBits": 8,
+                                                        "stopBits": 1
+                                                },
+                                                "platform": "{{wwplatform}}"
                                         }
                                 },
                                 {

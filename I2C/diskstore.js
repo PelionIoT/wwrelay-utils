@@ -8,29 +8,31 @@ function diskstorage(dev, mp, storepoint) {
 	this.sp = storepoint;
 	this.dev = dev;
 	this.mountPoint = mp;
-	this.previouslymounted;
+	this.previouslymounted = true;
 	this.mount;
 	var self = this;
-	self._checkMount().then(function(result) {
-		console.log("mount status " + result);
-		self.mountPoint = result.mountpoint;
-		self.previouslymounted = true;
-		self.mount = result;
-		mkdirp.sync(self.mountPoint + "/" + self.sp);
-	}).catch(function(error) {
-		console.log("were not mounted " + error);
-		self.previouslymounted = false;
-		self._mount().then(function(result) {
-			console.log("we tried to mount and did it: " + result);
-			self.previouslymounted = false;
+	if(typeof this.dev !== 'undefined' && this.dev.length != 0) {
+		self._checkMount().then(function(result) {
+			console.log("mount status ", result);
+			self.mountPoint = result.mountpoint;
+			self.previouslymounted = true;
 			self.mount = result;
 			mkdirp.sync(self.mountPoint + "/" + self.sp);
 		}).catch(function(error) {
-			console.log("Disksore couldn't do the prper mounting " + error);
+			console.log("were not mounted " + error);
 			self.previouslymounted = false;
-			self.mount = null;
+			self._mount().then(function(result) {
+				console.log("we tried to mount and did it: " + result);
+				self.previouslymounted = false;
+				self.mount = result;
+				mkdirp.sync(self.mountPoint + "/" + self.sp);
+			}).catch(function(error) {
+				console.log("Disksore couldn't do the prper mounting " + error);
+				self.previouslymounted = false;
+				self.mount = null;
+			});
 		});
-	});
+	}
 }
 
 diskstorage.prototype._checkMount = function() {

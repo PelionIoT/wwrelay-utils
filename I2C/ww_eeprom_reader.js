@@ -28,6 +28,13 @@ var ssl_ca_cert = "ca.cert.pem";
 var ssl_ca_int = "intermediate.cert.pem";
 var ssl_ca_chain = "ca-chain.cert.pem";
 
+var certsMountPoint = "/mnt/.boot/";
+var certsSourcePoint = ".ssl";
+var certsMemoryBlock = "/dev/mmcblk0p1";
+var certsOutputDirectory = sslPathDefault;
+var localDatabaseDirectory = "/userdata/etc/devicejs/db";
+var relayFirmwareVersionFile = "/wigwag/etc/versions.json";
+
 var template_conf_file = null;
 var radioProfile_template_conf_file = null;
 var relay_conf_json_file = null;
@@ -215,6 +222,10 @@ function createHandlebarsData(eeprom, platform) {
 	data.wwplatform = platform;
 	data.cloudddburl = cloudDdbURL;
 	data.databasePort = databasePort;
+	data.sslCertsPath = sslPathDefault;
+	data.relayFirmwareVersionFile = relayFirmwareVersionFile;
+	data.devicejsConfFile = devicejs_conf_file;
+	data.devicedbConfFile = devicedb_conf_file;
 	if(typeof eeprom.ledConfig !== 'undefined' &&
 		((eeprom.ledConfig == '01') || (eeprom.ledConfig == '00') ||
 			(eeprom.ledConfig == '--') || (eeprom.ledConfig == 'xx') ) )
@@ -237,11 +248,9 @@ function createHandlebarsDataForRSMI(eeprom) {
 function createHandlebarsDevicejsConf(eeprom) {
 	var data = {};
 
-	// data.apikey = eeprom.relayID;
 	data.clouddevicejsurl = cloudDevicejsURL;
 	data.databasePort = databasePort;
-	// data.cloudeventurl = eeprom.cloudURL;
-	// data.cloudddburl = cloudDdbURL;
+	data.sslCertsPath = sslPathDefault;
 
 	return data;
 }
@@ -249,11 +258,10 @@ function createHandlebarsDevicejsConf(eeprom) {
 function createHandlebarsDevicedbConf(eeprom) {
 	var data = {};
 
-	// data.apikey = eeprom.relayID;
-	// data.clouddevicejsurl = cloudDevicejsURL;
-	// data.cloudeventurl = eeprom.cloudURL;
 	data.cloudddburl = cloudDdbURL.slice('https://'.length);
 	data.databasePort = databasePort;
+	data.sslCertsPath = sslPathDefault;
+	data.localDatabaseDirectory = localDatabaseDirectory;
 
 	return data;
 }
@@ -290,7 +298,7 @@ function get_all(callback) {
 }
 
 function write_JSON2file(myfile, json, overwrite, cb) {
-	console.log("writing: %s:%s", myfile, json);
+	console.log("writing: %s", myfile);
 	fs.exists(myfile, function(exists) {
 		if (exists && overwrite || (!exists)) {
 			fs.writeFile(myfile, JSON.stringify(json, null, '\t') + "\n", 'utf8', function(err) {
@@ -333,14 +341,14 @@ function MACarray2string(mray) {
 		temps = mray[i].toString(16);
 		if (temps.length == 1) finalstring += "0";
 		finalstring += temps;
-	};
+	}
 	return finalstring;
 }
 
 function eeprom2relay(uuid_eeprom, callback) {
-	var R = new Object();
-	var ethernetMAC = new Object();
-	var sixBMAC = new Object();
+	var R = {};
+	var ethernetMAC = {};
+	var sixBMAC = {};
 	var CI = require(uuid_eeprom);
 
 	R.BRAND = CI.relayID.substring(0, 2);
@@ -362,6 +370,7 @@ function eeprom2relay(uuid_eeprom, callback) {
 	R.pairingCode = CI.pairingCode;
 	R.relayID = CI.relayID;
 	R.cloudURL = cloudURL;
+	R.ssl = CI.ssl;
 	callback(null, R);
 }
 
@@ -444,7 +453,7 @@ function enableRTC() {
 
 function writeSecurity() {
 	return new Promise(function(resolve, reject) {
-		diskprom = new DiskStorage("/dev/mmcblk0p1", "/mnt/.boot/", ".ssl");
+		diskprom = new DiskStorage(certsMemoryBlock, certsMountPoint, certsSourcePoint);
 		mkdirp.sync(sslPathDefault);
 		var DProm = [];
 		DProm.push(diskprom.cpFile(ssl_client_key, sslPathDefault + ssl_client_key, POM));
@@ -481,7 +490,36 @@ function writeSecurity() {
 			console.log("debug", "get sslclientkey errored: " + error);
 			reject(error);
 		});
-	})
+	});
+}
+
+function generateSSL(ssl) {
+	var self = this;
+	return new Promise(function(resolve, reject) {
+		console.log("Writing to SSL diskprom ");
+		mkdirp.sync(sslPathDefault);
+		try {
+			fs.writeFileSync(sslPathDefault + '/' + ssl_server_cert, ssl.server.certificate, "utf8");
+			fs.writeFileSync(sslPathDefault + '/' + ssl_client_cert, ssl.client.certificate, "utf8");
+			fs.writeFileSync(sslPathDefault + '/' + ssl_server_key, ssl.server.key, "utf8");
+			fs.writeFileSync(sslPathDefault + '/' + ssl_client_key, ssl.client.key, "utf8");
+			fs.writeFileSync(sslPathDefault + '/' + ssl_ca_cert, ssl.ca.ca, "utf8");
+			fs.writeFileSync(sslPathDefault + '/' + ssl_ca_int, ssl.ca.intermediate, "utf8");
+			fs.writeFileSync(sslPathDefault + '/' + ssl_ca_chain, ssl.ca.ca, 'utf8');
+			fs.appendFile(sslPathDefault + '/' + ssl_ca_chain, ssl.ca.intermediate, function(err) {
+                if(err) {
+        			console.error('Writing ca intermediate cert to chain file failed ', err);
+                    reject(err);
+                } else {
+                	console.log('Successfully wrote all the certs');
+                    resolve();
+                }
+            });
+		} catch(e) {
+			console.error('Generating certs failed ', e);
+			reject('Generating certs faile ' + e);
+		}
+	});
 }
 
 function generateDevicejsConf(eeprom) {
@@ -586,11 +624,11 @@ function main() {
 
 		reader.exists(function(the_eeprom_exists) {
 			if (the_eeprom_exists) {
-				console.log("Hardware based Relay found.");
+				console.log("*** Hardware based Relay found ***");
 				//	if (!exists) {
 				get_all(function(result) {
 					//this checks if the eeprom had valid data.  I may want to add a different check, perhaps a eeprom_version number, so this file never need to change
-					console.log('Read EEPROM- ' + JSON.stringify(result));
+					// console.log('Read EEPROM- ' + JSON.stringify(result));
 					if(typeof result.BRAND === 'undefined') {
 						reject(new Error('No relay ID found, please re-configure EEPROM'));
 						return;
@@ -627,11 +665,11 @@ function main() {
 					}
 				});
 			} else { //eprom doesn't exist... must do other things.  Assume the relay.conf just exists in desired form
-				console.log("Software based Relay found");
+				console.log("*** Software based Relay found ***");
 				softwareBasedRelay = true;
 
 				eeprom2relay(sw_eeprom_file, function(err, result) {
-					console.log('Read EEPROM- ' + JSON.stringify(result));
+					// console.log('Read EEPROM- ' + JSON.stringify(result));
 					if(typeof result.BRAND === 'undefined') {
 						reject(new Error('No relay ID found, please re-configure EEPROM'));
 						return;
@@ -641,14 +679,17 @@ function main() {
 						if (result.BRAND == "WW" || result.BRAND == "WD") {
 							hw = define_hardware(result);
 							result.hardware = hw;
-
 							var p = [];
 
-							p.push(writeSecurity());
+							p.push(generateSSL(result.ssl));
 							p.push(generateDevicedbConf(result));
 							p.push(generateDevicejsConf(result));
 							p.push(generateRelayConf(result, "softrelay"));
 							p.push(generateHardwareConf(result));
+
+							if(radioProfile_template_conf_file) {
+								p.push(generateRadioProfileConf(result));
+							}
 
 							Promise.all(p).then(function(result) {
 								console.log('EEPROM reader successful');
@@ -698,6 +739,14 @@ if(program.config) {
 		program.eepromFile = relaySetupFile.eepromFile;
 		program.overwriteSSL = (relaySetupFile.overwriteSSL || false) ? 'overwrite' : 'dontoverwrite';
 		program.overwrite = relaySetupFile.overwriteConfig || false;
+		program.certsMemoryBlock = relaySetupFile.certsMemoryBlock;
+		program.certsMountPoint = relaySetupFile.certsMountPoint;
+		program.certsSourcePoint = relaySetupFile.certsSourcePoint;
+		program.certsOutputDirectory = relaySetupFile.certsOutputDirectory;
+		program.localDatabaseDirectory = relaySetupFile.localDatabaseDirectory || "/userdata/etc/devicejs/db";
+		program.relayFirmwareVersionFile = relaySetupFile.relayFirmwareVersionFile || "/wigwag/etc/versions.json";
+
+		console.log('Using program options ' + JSON.stringify(program));
 	} catch(e) {
 		console.error('Unable to read relay_eeprom setup file ', e);
 		process.exit(1);
@@ -809,6 +858,43 @@ if(program.databasePort) {
 	console.warn('Database port is not specified');
 }
 
+if(typeof program.certsMountPoint !== 'undefined') {
+	certsMountPoint = program.certsMountPoint;
+} else {
+	console.warn('Certs mount point is not defined using ', certsMountPoint);
+}
+
+if(typeof program.certsMemoryBlock !== 'undefined') {
+	certsMemoryBlock = program.certsMemoryBlock;
+} else {
+	console.warn('Certs memory block is not defined using ', certsMemoryBlock);
+}
+
+if(typeof program.certsSourcePoint !== 'undefined') {
+	certsSourcePoint = program.certsSourcePoint;
+} else {
+	console.warn('Certs source point is not defined using ', certsSourcePoint);
+}
+
+if(typeof program.certsOutputDirectory !== 'undefined') {
+	certsOutputDirectory = program.certsOutputDirectory;
+	sslPathDefault = certsOutputDirectory;
+} else {
+	console.warn('Certs output point is not defined using ', certsOutputDirectory);
+}
+
+if(typeof program.localDatabaseDirectory !== 'undefined') {
+	localDatabaseDirectory = program.localDatabaseDirectory;
+} else {
+	console.warn('Using default local database directory ', localDatabaseDirectory);
+}
+
+if(typeof program.relayFirmwareVersionFile !== 'undefined') {
+	relayFirmwareVersionFile = program.relayFirmwareVersionFile;
+} else {
+	console.warn('Using default relay firmware version file ', relayFirmwareVersionFile);
+}
+
 main().then(function() {
 	if (!softwareBasedRelay) {
 		setupLEDGPIOs().then(function() {
@@ -816,6 +902,6 @@ main().then(function() {
 		});
 	}
 }, function(err) {
-	console.log('EEPROM reader got error- ' + JSON.stringify(err));
+	console.log('EEPROM reader got error- ', err);
 	process.exit(1);
 });

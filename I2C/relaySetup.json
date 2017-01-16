@@ -13,5 +13,11 @@
     "devicedbLocalPort": 9000,                                                                      //Local port on which database will run
     "overwriteConfig": true,                                                                        //Rewrite the config files
     "overwriteSSL": true,                                                                           //Rewrite ssl certs to boot partition
-    "eepromFile": ""                                                                               //To generate soft relay specify EEPROM/HardwareConfig file
+    "eepromFile": "",                                                                               //To generate soft relay specify EEPROM/HardwareConfig file
+    "certsMountPoint": "/mnt/.boot/",                                                               //Mount partition where ssl certs will be saved
+    "certsSourcePoint": ".ssl",                                                                     //Source point on mount partition
+    "certsMemoryBlock": "/dev/mmcblk0p1",                                                           //Memory block to mount
+    "certsOutputDirectory": "/wigwag/devicejs-core-modules/Runner/.ssl",                            //Output directory where all the certs will be saved
+    "localDatabaseDirectory": "/userdata/etc/devicejs/db",                                          //Directory where local database will be stored
+    "relayFirmwareVersionFile": "/wigwag/etc/versions.json"                                         //Version file path which describes the software version running on the relay
 }

@@ -1,23 +1,64 @@
 {
-    "cloudURL": "https://cloud1.wigwag.com",                                                                //Specify the cloud URL path from which this relay is generated
-    "devicejsCloudURL": "https://devicejs1.wigwag.com",                                                     //Specify the devicejs cloud URL path
-    "devicedbCloudURL": "https://devicedb1.wigwag.com",                                                     //Specify the devicedb cloud URL path
-    "relayTemplateFilePath": "./testConfigFiles/template.config.json",                                      //Template file with handlebars for relay.config.json
-    "relayConfigFilePath": "./outputConfigFiles/relay.config.json",                                         //Config file used by Runner
-    "rsmiTemplateFilePath": "./testConfigFiles/radioProfile.template.json",                                 //Template file with handlebars to setup radio profile of this relay
-    "rsmiConfigFilePath": "./outputConfigFiles/radioProfile.config.json",                                   //RSMI config file used by Radio Status Monitoring Interface
-    "devicejsTemplateFilePath": "./testConfigFiles/template.devicejs.conf",                                 //Template file with handlebars to setup devicejs conf
-    "devicejsConfigFilePath": "./outputConfigFiles/softrelaydevicejs.conf",                                 //Devicejs conf file used on devicejs start
-    "devicedbTemplateFilePath": "./testConfigFiles/template.devicedb.conf",                                 //Template file with handlebars to setup devicedb conf
-    "devicedbConfigFilePath": "./outputConfigFiles/softrelaydevicedb.yaml",                                 //Devicedb conf file used on devicedb start
-    "devicedbLocalPort": 9000,                                                                              //Local port on which database will run
-    "overwriteConfig": true,                                                                                //Rewrite the config files
-    "overwriteSSL": true,                                                                                   //Rewrite ssl certs to boot partition
-    "eepromFile": "./testConfigFiles/WDRL00001D.json",                                                      //To generate soft relay specify EEPROM/HardwareConfig file
-    "certsMountPoint": "/mnt/.boot/",                                                                       //Mount partition where ssl certs will be saved
-    "certsSourcePoint": ".ssl",                                                                             //Source point on mount partition
-    "certsMemoryBlock": "/dev/mmcblk0p1",                                                                   //Memory block to mount
-    "certsOutputDirectory": "./outputConfigFiles/ssl",                                                      //Output directory where all the certs will be saved
-    "localDatabaseDirectory": "/userdata/etc/devicejs/db",                                                  //Directory where local database will be stored
-    "relayFirmwareVersionFile": "/wigwag/etc/versions.json"                                                 //Version file path which describes the software version running on the relay
+    //Specify the cloud URL path from which this relay is generated
+    "cloudURL": "https://cloud1.wigwag.com",
+
+    //Specify the devicejs cloud URL path
+    "devicejsCloudURL": "https://devicejs1.wigwag.com",
+
+    //Specify the devicedb cloud URL path
+    "devicedbCloudURL": "https://devicedb1.wigwag.com",
+
+    //Template file with handlebars for relay.config.json
+    "relayTemplateFilePath": "./testConfigFiles/template.config.json",
+
+    //Config file used by Runner
+    "relayConfigFilePath": "./outputConfigFiles/relay.config.json",
+
+    //Template file with handlebars to setup radio profile of this relay
+    "rsmiTemplateFilePath": "./testConfigFiles/radioProfile.template.json",
+
+    //RSMI config file used by Radio Status Monitoring Interface
+    "rsmiConfigFilePath": "./outputConfigFiles/radioProfile.config.json",
+
+    //Template file with handlebars to setup devicejs conf
+    "devicejsTemplateFilePath": "./testConfigFiles/template.devicejs.conf",
+
+    //Devicejs conf file used on devicejs start
+    "devicejsConfigFilePath": "./outputConfigFiles/softrelaydevicejs.conf",
+
+    //Template file with handlebars to setup devicedb conf
+    "devicedbTemplateFilePath": "./testConfigFiles/template.devicedb.conf",
+
+    //Devicedb conf file used on devicedb start
+    "devicedbConfigFilePath": "./outputConfigFiles/softrelaydevicedb.yaml",
+
+    //Local port on which database will run
+    "devicedbLocalPort": 9000,
+
+    //Rewrite the config files
+    "overwriteConfig": true,
+
+    //Rewrite ssl certs to boot partition
+    "overwriteSSL": true,
+
+    //To generate soft relay specify EEPROM/HardwareConfig file
+    "eepromFile": "./testConfigFiles/WDRL00001D.json",
+
+    //Mount partition where ssl certs will be saved
+    "certsMountPoint": "/mnt/.boot/",
+
+    //Source point on mount partition
+    "certsSourcePoint": ".ssl",
+
+    //Memory block to mount
+    "certsMemoryBlock": "/dev/mmcblk0p1",
+
+    //Output directory where all the certs will be saved
+    "certsOutputDirectory": "./outputConfigFiles/ssl",
+
+    //Directory where local database will be stored
+    "localDatabaseDirectory": "/userdata/etc/devicejs/db",
+
+    //Version file path which describes the software version running on the relay
+    "relayFirmwareVersionFile": "/wigwag/etc/versions.json"
 }

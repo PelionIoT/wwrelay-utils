@@ -3,7 +3,7 @@
 var WWAT24 = require('./WWrelay_at24c16.js');
 reader = new WWAT24();
 var DiskStorage = require("./diskstore.js");
-var diskprom = new DiskStorage("/dev/mmcblk0p1", "/mnt/.boot/", ".ssl");
+var diskprom = null;
 var mkdirp = require('mkdirp');
 
 //r/w files
@@ -20,7 +20,6 @@ var handleBars = require('handlebars');
 var program = require('commander');
 
 var sslPathDefault = "/wigwag/devicejs-core-modules/Runner/.ssl/";
-mkdirp.sync(sslPathDefault);
 var ssl_client_key = "client.key.pem";
 var ssl_client_cert = "client.cert.pem";
 var ssl_server_key = "server.key.pem";
@@ -47,6 +46,7 @@ var databasePort = null;
 
 var cloudURL = "https://cloud.wigwag.com";
 var overwrite_conf = false;
+var POM = 'overwrite';
 var softwareBasedRelay = false;
 
 var hardware_conf = "./relay.conf";
@@ -215,8 +215,8 @@ function createHandlebarsData(eeprom, platform) {
 	data.wwplatform = platform;
 	data.cloudddburl = cloudDdbURL;
 	data.databasePort = databasePort;
-	if(typeof eeprom.ledConfig !== 'undefined' && 
-		((eeprom.ledConfig == '01') || (eeprom.ledConfig == '00') || 
+	if(typeof eeprom.ledConfig !== 'undefined' &&
+		((eeprom.ledConfig == '01') || (eeprom.ledConfig == '00') ||
 			(eeprom.ledConfig == '--') || (eeprom.ledConfig == 'xx') ) )
 		data.ledconfig = 'RGB';
 	else
@@ -444,7 +444,9 @@ function enableRTC() {
 
 function writeSecurity() {
 	return new Promise(function(resolve, reject) {
-		var DProm = new Array();
+		diskprom = new DiskStorage("/dev/mmcblk0p1", "/mnt/.boot/", ".ssl");
+		mkdirp.sync(sslPathDefault);
+		var DProm = [];
 		DProm.push(diskprom.cpFile(ssl_client_key, sslPathDefault + ssl_client_key, POM));
 		DProm.push(diskprom.cpFile(ssl_client_cert, sslPathDefault + ssl_client_cert, POM));
 		DProm.push(diskprom.cpFile(ssl_server_key, sslPathDefault + ssl_server_key, POM));
@@ -578,7 +580,7 @@ function generateRadioProfileConf(eeprom) {
 
 }
 
-//main fuction, first determines if we are on purpose based hardware (currently only detects WigWag Relays), or software.   It does this by detecting the EEprom type @ a specific location. 
+//main fuction, first determines if we are on purpose based hardware (currently only detects WigWag Relays), or software.   It does this by detecting the EEprom type @ a specific location.
 function main() {
 	return new Promise(function(resolve, reject) {
 
@@ -602,21 +604,21 @@ function main() {
 						var p = [];
 
 						p.push(writeSecurity());
-						p.push(generateDevicedbConf(result)); 
-						p.push(generateDevicejsConf(result)); 
-						p.push(generateRelayConf(result, "wwrelay_v")); 
-						p.push(generateHardwareConf(result)); 
+						p.push(generateDevicedbConf(result));
+						p.push(generateDevicejsConf(result));
+						p.push(generateRelayConf(result, "wwrelay_v"));
+						p.push(generateHardwareConf(result));
 
-						if(radioProfile_template_conf_file) { 
-							p.push(generateRadioProfileConf(result)); 
-						} 
+						if(radioProfile_template_conf_file) {
+							p.push(generateRadioProfileConf(result));
+						}
 
-						Promise.all(p).then(function(result) { 
-							console.log('EEPROM reader successful'); 
-							resolve(); 
-						}, function(err) { 
-							reject(err); 
-						}); 
+						Promise.all(p).then(function(result) {
+							console.log('EEPROM reader successful');
+							resolve();
+						}, function(err) {
+							reject(err);
+						});
 					}
 					else {
 						console.log("EEPROM is not configured properly.");
@@ -642,6 +644,9 @@ function main() {
 
 							var p = [];
 
+							p.push(writeSecurity());
+							p.push(generateDevicedbConf(result));
+							p.push(generateDevicejsConf(result));
 							p.push(generateRelayConf(result, "softrelay"));
 							p.push(generateHardwareConf(result));
 
@@ -665,28 +670,40 @@ function main() {
 
 program
 	.version('0.0.1')
-	.option('-c, --cloudURL [URL]', 'Specify cloud URL for your relay', 'https://cloud.wigwag.com')
-	.option('-o, --overwrite [true/false]', 'overwrite relay.config.json', 'false')
-	.option('-O, --overwriteSSL [overwrite|dontoverwrite]', 'overwrite the SSL certificates if they exist', 'overwrite') 
-	.option('-e, --eepromFile [filepath]', 'For software based relay specify the eeprom json object file path')
-	.option('-t, --templateFile [filepath]', 'Specify the template config file')
-	.option('-r, --relayConfFile [true/false]', 'Specify the path for relay.config.json for Runner')
-	.option('-p, --radioProfiletemplateFile [filepath]', 'Specify the rsmi template config file')
-	.option('-s, --rsmiConfFile [filepath]', 'Specify the rsmi radioProfile.config.json for RSMI')
-	.option('-b, --cloudDdbURL [url]', 'Specify the cloud database url', 'https://devicedb.wigwag.com') 
-	.option('-i, --databasePort [port]', 'Specify the database local port', '9000') 
-	.option('-d, --cloudDevicejsURL [url]', 'Specify the cloud devicejs url', 'https://devicejs.wigwag.com') 
-	.option('-m, --devicejsConfTemplateFile [filepath]', 'Specify the devicejs config template file') 
-	.option('-n, --devicejsConfFile [filepath]', 'Specify the output devicejs configuration file path') 
-	.option('-g, --devicedbConfTemplateFile [filepath]', 'Specify the devicedb config template file') 
-	.option('-h, --devicedbConfFile [filepath]', 'Specify the output devicedb configuration file path') 
+	.option('-c, --config [filepath]', 'Specify relay_eeprom setup file', '/wigwag/wwrelay-utils/I2C/relaySetup.json')
 	.parse(process.argv);
 
 program.on('--help', function() {
 	console.log(' Examples:');
 	console.log("");
-	console.log("  $ node qrLabelMaker.js -t relay <infile> [<outfile>] (No extension. We will add .ps and .csv");
+	console.log("  $ node ww_eeprom_reader -c relaySetup.json");
 });
+
+if(program.config) {
+	try {
+		relaySetupFile = JSON.parse(jsonminify(fs.readFileSync(program.config, 'utf8')));
+
+		program.cloudURL = relaySetupFile.cloudURL || "https://cloud.wigwag.com";
+		program.cloudDevicejsURL = relaySetupFile.devicejsCloudURL || "https://devicejs.wigwag.com";
+		program.cloudDdbURL = relaySetupFile.devicedbCloudURL || "https://devicedb.wigwag.com";
+		program.templateFile = relaySetupFile.relayTemplateFilePath;
+		program.relayConfFile = relaySetupFile.relayConfigFilePath;
+		program.radioProfiletemplateFile = relaySetupFile.rsmiTemplateFilePath;
+		program.rsmiConfFile = relaySetupFile.rsmiConfigFilePath;
+		program.devicejsConfTemplateFile = relaySetupFile.devicejsTemplateFilePath;
+		program.devicejsConfFile = relaySetupFile.devicejsConfigFilePath;
+		program.devicedbConfTemplateFile = relaySetupFile.devicedbTemplateFilePath;
+		program.devicedbConfFile = relaySetupFile.devicedbConfigFilePath;
+		program.databasePort = relaySetupFile.devicedbLocalPort || 9000;
+		program.eepromFile = relaySetupFile.eepromFile;
+		program.overwriteSSL = (relaySetupFile.overwriteSSL || false) ? 'overwrite' : 'dontoverwrite';
+		program.overwrite = relaySetupFile.overwriteConfig || false;
+	} catch(e) {
+		console.error('Unable to read relay_eeprom setup file ', e);
+		process.exit(1);
+	}
+}
+
 if (program.cloudURL) {
 	cloudURL = program.cloudURL;
 	console.log('Using cloud URL- ', cloudURL);
@@ -748,41 +765,41 @@ else {
 }
 
 if (program.overwrite) {
-	overwrite_conf = program.overwrite == 'true';
+	overwrite_conf = program.overwrite === true;
 	console.log('Using overwrite- ', overwrite_conf);
 }
 if (program.overwriteSSL) {
-	var POM = program.overwriteSSL;
+	POM = program.overwriteSSL;
 	console.log('Using overwriteSSL- ', POM);
 }
 
-if(program.devicejsConfFile && program.devicejsConfTemplateFile) { 
-	console.log('Got to generate devicejs conf file for devicejs2.0'); 
-	console.log('Using devicejs conf template- ', program.devicejsConfTemplateFile); 
+if(program.devicejsConfFile && program.devicejsConfTemplateFile) {
+	console.log('Got to generate devicejs conf file for devicejs2.0');
+	console.log('Using devicejs conf template- ', program.devicejsConfTemplateFile);
 	console.log('Using devicejs conf output file- ', program.devicejsConfFile);
-	devicejs_conf_file = program.devicejsConfFile; 
-	templateDevicejsConf = JSON.parse(jsonminify(fs.readFileSync(program.devicejsConfTemplateFile, 'utf8'))); 
+	devicejs_conf_file = program.devicejsConfFile;
+	templateDevicejsConf = JSON.parse(jsonminify(fs.readFileSync(program.devicejsConfTemplateFile, 'utf8')));
 
 	if(program.cloudDevicejsURL && program.cloudDdbURL) {
-		console.log('Using cloud devicejs url- ' + program.cloudDevicejsURL + ' , using cloud database url- ' + program.cloudDdbURL); 
-		cloudDevicejsURL = program.cloudDevicejsURL; 
-		cloudDdbURL = program.cloudDdbURL; 
-	} else { 
-		console.error('Please specify urls for cloud database and devicejs'); 
+		console.log('Using cloud devicejs url- ' + program.cloudDevicejsURL + ' , using cloud database url- ' + program.cloudDdbURL);
+		cloudDevicejsURL = program.cloudDevicejsURL;
+		cloudDdbURL = program.cloudDdbURL;
+	} else {
+		console.error('Please specify urls for cloud database and devicejs');
 		process.exit(1);
 	}
 } else {
-	console.warn('Not generating devicejs config file as command line options are not provided'); 
+	console.warn('Not generating devicejs config file as command line options are not provided');
 }
 
 if(program.devicedbConfFile && program.devicedbConfTemplateFile) {
-	console.log('Got to generate devicedb conf file for ddb go'); 
-	console.log('Using devicedb conf template- ', program.devicedbConfTemplateFile); 
+	console.log('Got to generate devicedb conf file for ddb go');
+	console.log('Using devicedb conf template- ', program.devicedbConfTemplateFile);
 	console.log('Using devicedb conf output file- ', program.devicedbConfFile);
-	devicedb_conf_file = program.devicedbConfFile; 
-	templateDevicedbConf = fs.readFileSync(program.devicedbConfTemplateFile, 'utf8'); 
+	devicedb_conf_file = program.devicedbConfFile;
+	templateDevicedbConf = fs.readFileSync(program.devicedbConfTemplateFile, 'utf8');
 } else {
-	console.warn('Not generating deviced config file as command line options are not provided'); 
+	console.warn('Not generating deviced config file as command line options are not provided');
 }
 
 if(program.databasePort) {

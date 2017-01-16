@@ -1,0 +1,17 @@
+{
+    "cloudURL": "https://cloud1.wigwag.com",                                                        //Specify the cloud URL path from which this relay is generated
+    "devicejsCloudURL": "https://devicejs1.wigwag.com",                                             //Specify the devicejs cloud URL path
+    "devicedbCloudURL": "https://devicedb1.wigwag.com",                                             //Specify the devicedb cloud URL path
+    "relayTemplateFilePath": "/wigwag/devicejs-core-modules/Runner/template.config.json",           //Template file with handlebars for relay.config.json
+    "relayConfigFilePath": "/wigwag/devicejs-core-modules/Runner/relay.config.json",                //Config file used by Runner
+    "rsmiTemplateFilePath": "/wigwag/devicejs-core-modules/rsmi/radioProfile.template.json",        //Template file with handlebars to setup radio profile of this relay
+    "rsmiConfigFilePath": "/wigwag/devicejs-core-modules/rsmi/radioProfile.config.json",            //RSMI config file used by Radio Status Monitoring Interface
+    "devicejsTemplateFilePath": "/wigwag/devicejs-core-modules/Runner/template.devicejs.conf",      //Template file with handlebars to setup devicejs conf
+    "devicejsConfigFilePath": "/wigwag/etc/devicejs/devicejs.conf",                                 //Devicejs conf file used on devicejs start
+    "devicedbTemplateFilePath": "/wigwag/devicejs-core-modules/Runner/template.devicedb.conf",      //Template file with handlebars to setup devicedb conf
+    "devicedbConfigFilePath": "/wigwag/etc/devicejs/devicedb.yaml",                                 //Devicedb conf file used on devicedb start
+    "devicedbLocalPort": 9000,                                                                      //Local port on which database will run
+    "overwriteConfig": true,                                                                        //Rewrite the config files
+    "overwriteSSL": true,                                                                           //Rewrite ssl certs to boot partition
+    "eepromFile": ""                                                                               //To generate soft relay specify EEPROM/HardwareConfig file
+}

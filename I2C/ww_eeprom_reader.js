@@ -358,8 +358,10 @@ function eeprom2relay(uuid_eeprom, callback) {
 	R.relaySecret = CI.relaySecret;
 	R.pairingCode = CI.pairingCode;
 	R.relayID = CI.relayID;
-	R.cloudURL = cloudURL;
 	R.ssl = CI.ssl;
+	cloudURL = R.cloudURL = CI.cloudURL || cloudURL;
+	cloudDevicejsURL = R.devicejsCloudURL = CI.devicejsCloudURL || cloudDevicejsURL;
+	cloudDdbURL = R.devicedbCloudURL = CI.devicedbCloudURL || cloudDdbURL;
 	callback(null, R);
 }
 

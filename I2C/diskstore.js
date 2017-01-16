@@ -22,12 +22,12 @@ function diskstorage(dev, mp, storepoint) {
 			console.log("were not mounted " + error);
 			self.previouslymounted = false;
 			self._mount().then(function(result) {
-				console.log("we tried to mount and did it: " + result);
+				console.log("we tried to mount and did it: ", result);
 				self.previouslymounted = false;
 				self.mount = result;
 				mkdirp.sync(self.mountPoint + "/" + self.sp);
 			}).catch(function(error) {
-				console.log("Disksore couldn't do the prper mounting " + error);
+				console.log("Disksore couldn't do the prper mounting ", error);
 				self.previouslymounted = false;
 				self.mount = null;
 			});

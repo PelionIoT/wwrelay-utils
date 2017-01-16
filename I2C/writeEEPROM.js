@@ -69,10 +69,10 @@ function install_eeprom(ee) {
 
 function main_install() {
 	process_prog().then(function(result) {
-		console.log("debug", "process_program resolved: " + result);
+		console.log("debug", "process_program resolved: ");
 		return install_eeprom(result);
 	}).catch(function(error) {
-		console.log("debug", "process_program errored: " + error);
+		console.log("debug", "process_program errored: ", error);
 	});
 }
 
@@ -80,9 +80,9 @@ function main_erase() {
 	console.log("main erase");
 	var writer = new EEwriter();
 	writer.erase().then(function(result) {
-		console.log("debug", "erase resolved: " + result);
+		console.log("debug", "erase resolved: ", result);
 	}).catch(function(error) {
-		console.log("debug", "erase errored: " + error);
+		console.log("debug", "erase errored: ", error);
 	});
 }
 

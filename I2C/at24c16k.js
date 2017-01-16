@@ -111,11 +111,43 @@ AT24C16.prototype.writeout = function(spacenumber, from, Ray, callback) {
 }
 
 /*------------------------------------------------------------------------------------------------------------------
+ERASE
+-------------------------------------------------------------------------------------------------------------------*/
+AT24C16.prototype.erase = function(spacenumber, from, Ray, callback) {
+	var self = this;
+	self.base = baseaddress(from);
+	self.topp = self.base + 0xF;
+	self.ccells = self.topp - from + 1;
+	var temp = Ray.splice(0, self.ccells);
+	var newRay = new Array(self.ccells);
+	newRay.fill('0xFF');
+	self.spaces[spacenumber].writeBytes(from, newRay, function(err) {
+		if (err) {
+			callback(err, null);
+		}
+		else {
+			if (Ray.length > 0) {
+				setTimeout(function() {
+					self.erase(spacenumber, self.topp + 0x01, Ray, callback)
+				}, 35);
+			}
+			else {
+				setTimeout(function() {
+					callback(null, "success")
+				}, 100);
+				//callback(null, "success");
+			}
+		}
+	});
+};
+
+/*------------------------------------------------------------------------------------------------------------------
 READ
 -------------------------------------------------------------------------------------------------------------------*/
 AT24C16.prototype.readout = function(spacenumber, from, end, callback) {
 	var self = this;
 	var lastresn = "";
+	end = end || 256;
 	var diff = (+end - +from);
 	var done = false;
 	var spliton = 30;

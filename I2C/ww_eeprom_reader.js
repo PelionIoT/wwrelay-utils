@@ -51,7 +51,7 @@ var cloudDevicejsURL = null;
 var cloudDdbURL = null;
 var databasePort = null;
 
-var cloudURL = "https://cloud.wigwag.com";
+var cloudURL = null;
 var overwrite_conf = false;
 var POM = 'overwrite';
 var softwareBasedRelay = false;
@@ -190,20 +190,7 @@ function define_hardware(res) {
 			hw.radioProfile.CC2530_DBG_DATA = GPIOpath + "gpio7_pd6";
 			hw.radioProfile.CC2530_DBG_CLK = GPIOpath + "gpio6_pd5";
 			break;
-	};
-
-	///may need to nest this swtich into the above in the future... just make it a huge decision tree
-	// switch (res.radioConfig) {
-	// 	case "00":
-
-	// 		break;
-	// 	case "01":
-
-	// 		break;
-	// 	case "04":
-
-	// 		break;
-	// }
+	}
 	return hw;
 }
 
@@ -288,7 +275,9 @@ function get_all(callback) {
 		if(!!done) {
 			var res = done;
 			res.relayID = res.BRAND + res.DEVICE + res.UUID;
-			res.cloudURL = cloudURL;
+			cloudURL = res.cloudURL = res.cloudURL.replace(/[^a-zA-Z0-9-!$%^&*()_+|~=`{}\[\]:";'<>?,.\/]/g,'') || cloudURL;
+			cloudDevicejsURL = res.devicejsCloudURL = res.devicejsCloudURL.replace(/[^a-zA-Z0-9-!$%^&*()_+|~=`{}\[\]:";'<>?,.\/]/g,'') || cloudDevicejsURL;
+			cloudDdbURL = res.devicedbCloudURL = res.devicedbCloudURL.replace(/[^a-zA-Z0-9-!$%^&*()_+|~=`{}\[\]:";'<>?,.\/]/g,'') || cloudDdbURL;
 			callback(res);
 		} else {
 			callback(JSON.parse('{"eeprom":"not configured properly"}'));
@@ -628,7 +617,7 @@ function main() {
 				//	if (!exists) {
 				get_all(function(result) {
 					//this checks if the eeprom had valid data.  I may want to add a different check, perhaps a eeprom_version number, so this file never need to change
-					// console.log('Read EEPROM- ' + JSON.stringify(result));
+					console.log('Read EEPROM- ' + JSON.stringify(result));
 					if(typeof result.BRAND === 'undefined') {
 						reject(new Error('No relay ID found, please re-configure EEPROM'));
 						return;
@@ -724,9 +713,9 @@ if(program.config) {
 	try {
 		relaySetupFile = JSON.parse(jsonminify(fs.readFileSync(program.config, 'utf8')));
 
-		program.cloudURL = relaySetupFile.cloudURL || "https://cloud.wigwag.com";
-		program.cloudDevicejsURL = relaySetupFile.devicejsCloudURL || "https://devicejs.wigwag.com";
-		program.cloudDdbURL = relaySetupFile.devicedbCloudURL || "https://devicedb.wigwag.com";
+		program.cloudURL = relaySetupFile.cloudURL || "https://cloud1.wigwag.com";
+		program.cloudDevicejsURL = relaySetupFile.devicejsCloudURL || "https://devicejs1.wigwag.com";
+		program.cloudDdbURL = relaySetupFile.devicedbCloudURL || "https://devicedb1.wigwag.com";
 		program.templateFile = relaySetupFile.relayTemplateFilePath;
 		program.relayConfFile = relaySetupFile.relayConfigFilePath;
 		program.radioProfiletemplateFile = relaySetupFile.rsmiTemplateFilePath;

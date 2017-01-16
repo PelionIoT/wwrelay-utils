@@ -15,7 +15,7 @@
             "chroot_prefix":"/tmp/devjs_container"
         }
     },
-    "deviceJSConfig":"/wigwag/etc/devicejs/devicejs.conf",
+    "deviceJSConfig":"{{devicejsConfFile}}",
     "defaults":{
         "default_user":"*",        // means whoever runs it
         "default_group":"*"        // means whatever group runs it
@@ -66,7 +66,7 @@
                 "timeout":2000
             },
             "execPath":"/usr/bin/devicedb",
-            "configFile":"/wigwag/etc/devicejs/devicedb.yaml"
+            "configFile":"{{devicedbConfFile}}"
         },
         "all-modules":{
             "limits":{
@@ -90,11 +90,11 @@
                     "config":{
                         "cloudURL":"{{cloudurl}}",
                         "ssl":{
-                            "key":"/wigwag/devicejs-core-modules/Runner/.ssl/client.key.pem",
-                            "cert":"/wigwag/devicejs-core-modules/Runner/.ssl/client.cert.pem",
+                            "key":"{{sslCertsPath}}/client.key.pem",
+                            "cert":"{{sslCertsPath}}/client.cert.pem",
                             "ca":[
-                                "/wigwag/devicejs-core-modules/Runner/.ssl/ca.cert.pem",
-                                "/wigwag/devicejs-core-modules/Runner/.ssl/intermediate.cert.pem"
+                                "{{sslCertsPath}}/ca.cert.pem",
+                                "{{sslCertsPath}}/intermediate.cert.pem"
                             ]
                         },
                         "apiKey":"{{apikey}}",
@@ -121,7 +121,7 @@
                                 "baudrate":115200,
                                 "slip_delay":0,
                                 "ww_encryption":true,
-                                "firmware_path_mc1322":"/home/yashgoyal/workspace/devicejs/core/",
+                                "firmware_path_mc1322":"/home/wigwag/workspace/devicejs/core/",
                                 "firmware_file_prefix":"slip-radio_econotag",
                                 "reset_GPIO_path_firmware_mc1322":"/sys/class/gpio/gpio105/value",
                                 "erase_GPIO_path_firmware_mc1322":"/sys/class/gpio/gpio103/value",
@@ -172,14 +172,14 @@
                         "cloudAddress":"{{cloudurl}}",
                         "relayID":"{{apikey}}",
                         "ssl":{
-                            "key":"/wigwag/devicejs-core-modules/Runner/.ssl/client.key.pem",
-                            "cert":"/wigwag/devicejs-core-modules/Runner/.ssl/client.cert.pem",
+                            "key":"{{sslCertsPath}}/client.key.pem",
+                            "cert":"{{sslCertsPath}}/client.cert.pem",
                             "ca":[
-                                "/wigwag/devicejs-core-modules/Runner/.ssl/ca.cert.pem",
-                                "/wigwag/devicejs-core-modules/Runner/.ssl/intermediate.cert.pem"
+                                "{{sslCertsPath}}/ca.cert.pem",
+                                "{{sslCertsPath}}/intermediate.cert.pem"
                             ]
                         },
-                        "versionsFile":"/wigwag/etc/versions.json"
+                        "versionsFile":"{{relayFirmwareVersionFile}}"
                     }
                 },
                 {
@@ -267,11 +267,11 @@
                         "cloudAddress":"{{cloudurl}}",
                         "relayID":"{{apikey}}",
                         "ssl":{
-                            "key":"/wigwag/devicejs-core-modules/Runner/.ssl/client.key.pem",
-                            "cert":"/wigwag/devicejs-core-modules/Runner/.ssl/client.cert.pem",
+                            "key":"{{sslCertsPath}}/client.key.pem",
+                            "cert":"{{sslCertsPath}}/client.cert.pem",
                             "ca":[
-                                "/wigwag/devicejs-core-modules/Runner/.ssl/ca.cert.pem",
-                                "/wigwag/devicejs-core-modules/Runner/.ssl/intermediate.cert.pem"
+                                "{{sslCertsPath}}/ca.cert.pem",
+                                "{{sslCertsPath}}/intermediate.cert.pem"
                             ]
                         }
                     }
@@ -287,11 +287,11 @@
                         },
                         "port":443,
                         "ssl":{
-                            "key":"/wigwag/devicejs-core-modules/Runner/.ssl/client.key.pem",
-                            "cert":"/wigwag/devicejs-core-modules/Runner/.ssl/client.cert.pem",
+                            "key":"{{sslCertsPath}}/client.key.pem",
+                            "cert":"{{sslCertsPath}}/client.cert.pem",
                             "ca":[
-                                "/wigwag/devicejs-core-modules/Runner/.ssl/ca.cert.pem",
-                                "/wigwag/devicejs-core-modules/Runner/.ssl/intermediate.cert.pem"
+                                "{{sslCertsPath}}/ca.cert.pem",
+                                "{{sslCertsPath}}/intermediate.cert.pem"
                             ]
                         },
                         "relayID":"{{apikey}}"

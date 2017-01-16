@@ -1,7 +1,7 @@
 #!/usr/bin/env node
 
 //hints for i2cdump
-// ./i2cdump 
+// ./i2cdump
 var Promise = require('es6-promise').Promise;
 var WWAT24 = require('./WWrelay_at24c16.js');
 var DiskStorage = require("./diskstore.js");
@@ -20,13 +20,13 @@ function EEprom_Writer(obj) {
 }
 
 function decRay2str(array) {
-	var str = ""
+	var str = "";
 	for (var i = 0; i < array.length; i++) {
 		var hex = array[i].toString(16);
 		var charc = String.fromCharCode(array[i]);
 		//	console.log("I belive that %s is '%s' and is '%s' reversed '%s'", array[i], hex, charc, charc.charCodeAt(0));
 		str = str + charc;
-	};
+	}
 	return str;
 }
 
@@ -70,7 +70,7 @@ EEprom_Writer.prototype.rrec = function() {
 													cl("complete: relaySecret with [" + self.CI.relaySecret + "]");
 													writer.set("pairingCode", self.CI.pairingCode).then(function(result) {
 														cl("complete: pairingCode with [" + self.CI.pairingCode + "]");
-														if (self.CI.ledConfig == null || self.CI.ledConfig == undefined) {
+														if (self.CI.ledConfig === null || self.CI.ledConfig === undefined) {
 															self.CI.ledConfig = "01";
 														}
 														writer.set("ledConfig", self.CI.ledConfig).then(function(result) {
@@ -91,31 +91,45 @@ EEprom_Writer.prototype.rrec = function() {
 			});
 		});
 	});
-}
+};
+
+EEprom_Writer.prototype.recordCloudUrl = function() {
+	var self = this;
+	return new Promise(function(resolve, reject) {
+		self.CI.cloudURL = self.CI.cloudURL || "https://cloud.wigwag.com";
+		self.CI.devicejsCloudURL = self.CI.devicejsCloudURL || "https://devicejs.wigwag.com";
+		self.CI.devicedbCloudURL = self.CI.devicedbCloudURL || "https://devicedb.wigwag.com";
+
+		writer.set("cloudURL", self.CI.cloudURL).then(function(result) {
+			
+		})
+	});
+};
 
 EEprom_Writer.prototype.writeEMMC = function() {
 	var self = this;
 	return new Promise(function(resolve, reject) {
 		writer.erase(0).then(function(res) {
 			console.log("recording to EEPROM ");
-			Pcert = new Array();
+			Pcert = [];
 			Pcert.push(self.rrec());
+			Pcert.push(self.recordCloudUrl());
 			Promise.all(Pcert).then(function(result) {
 				resolve("successfull eeprom writer");
 			}).catch(function(error) {
-				console.log("debug", "EEprom_witer.prototype.writeEMMC.Pcert errored: " + error);
-				reject("EEprom_witer.prototype.writeEMMC.Pcert errored:" + error);
+				console.log("debug", "EEprom_Writer.prototype.writeEMMC.Pcert errored: " + error);
+				reject("EEprom_Writer.prototype.writeEMMC.Pcert errored:" + error);
 			});
 		});
 	});
-}
+};
 
 EEprom_Writer.prototype.writeSSL = function() {
 	var self = this;
 	return new Promise(function(resolve, reject) {
 		console.log("Writing to SSL diskprom");
 		console.log(JSON.stringify(self.CI));
-		Pcert = new Array();
+		Pcert = [];
 		Pcert.push(diskprom.setFile(ssl_server_cert, self.CI.ssl.server.certificate));
 		Pcert.push(diskprom.setFile(ssl_client_cert, self.CI.ssl.client.certificate));
 		Pcert.push(diskprom.setFile(ssl_server_key, self.CI.ssl.server.key));
@@ -127,19 +141,19 @@ EEprom_Writer.prototype.writeSSL = function() {
 		}).then(function(result) {
 			resolve("successfull diskprom writer");
 		}).catch(function(error) {
-			console.log("debug", "EEprom_witer.prototype.writeSSL.Pcert errored: " + error);
-			reject("EEprom_witer.prototype.writeSSL.Pcert errored:" + error);
+			console.log("debug", "EEprom_Writer.prototype.writeSSL.Pcert errored: " + error);
+			reject("EEprom_Writer.prototype.writeSSL.Pcert errored:" + error);
 		});
 
 	});
-}
+};
 
 EEprom_Writer.prototype.destroySSL = function() {
 	var self = this;
 	return new Promise(function(resolve, reject) {
 		console.log("Destroying  SSL diskprom");
 		//console.log(JSON.stringify(self.CI));
-		Pcert = new Array();
+		Pcert = [];
 		Pcert.push(diskprom.destroyFile(ssl_server_cert));
 		Pcert.push(diskprom.destroyFile(ssl_client_cert));
 		Pcert.push(diskprom.destroyFile(ssl_server_key));
@@ -149,18 +163,18 @@ EEprom_Writer.prototype.destroySSL = function() {
 		Promise.all(Pcert).then(function(result) {
 			resolve("successfull diskprom destroyer");
 		}).catch(function(error) {
-			console.log("debug", "EEprom_witer.prototype.destroySSL.Pcert errored: " + error);
-			reject("EEprom_witer.prototype.writeSSL.Pcert errored:" + error);
+			console.log("debug", "EEprom_Writer.prototype.destroySSL.Pcert errored: " + error);
+			reject("EEprom_Writer.prototype.writeSSL.Pcert errored:" + error);
 		});
 
 	});
-}
+};
 
 EEprom_Writer.prototype.writeBoth = function() {
 	var self = this;
 	return new Promise(function(resolve, reject) {
 		console.log("recording to EEPROM and to to disk for ssl");
-		Pcert = new Array();
+		Pcert = [];
 		Pcert.push(self.rrec());
 		Pcert.push(diskprom.setFile(ssl_server_cert, self.CI.ssl.server.certificate));
 		Pcert.push(diskprom.setFile(ssl_client_cert, self.CI.ssl.client.certificate));
@@ -171,36 +185,37 @@ EEprom_Writer.prototype.writeBoth = function() {
 		Promise.all(Pcert).then(function(result) {
 			resolve("successfull eeprom writer");
 		}).catch(function(error) {
-			console.log("debug", "EEprom_witer.prototype.write.Pcert errored: " + error);
-			reject("EEprom_witer.prototype.write.Pcert errored:" + error);
+			console.log("debug", "EEprom_Writer.prototype.write.Pcert errored: " + error);
+			reject("EEprom_Writer.prototype.write.Pcert errored:" + error);
 		});
 	});
-}
+};
 
 EEprom_Writer.prototype.erase = function() {
 	var self = this;
 	console.log("calling the rease");
-	Perase = new Array();
+	Perase = [];
 	Perase.push(self.destroySSL());
 	Perase.push(writer.erase(0));
 	return Promise.all(Perase);
-}
+};
+
 EEprom_Writer.prototype.eraseSSL = function() {
 	var self = this;
 	console.log("calling the rease");
-	Perase = new Array();
+	Perase = [];
 	Perase.push(self.destroySSL());
 	//Perase.push(writer.erase(0));
 	return Promise.all(Perase);
-}
+};
 
 EEprom_Writer.prototype.eraseEEPROM = function() {
 	var self = this;
 	console.log("calling the rease");
-	Perase = new Array();
+	Perase = [];
 	//Perase.push(self.destroySSL());
 	Perase.push(writer.erase(0));
 	return Promise.all(Perase);
-}
+};
 
 module.exports = EEprom_Writer;

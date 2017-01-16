@@ -100,6 +100,21 @@ function WWEEPROM() {
 			"memaddr": "96",
 			"len": "2",
 			"jname": "ledConfig"
+		},
+		"cloudURL": {
+			"serial": 1,
+			"memaddr": "00",
+			"jname": "cloudURL"
+		},
+		"devicejsCloudURL": {
+			"serial": 2,
+			"memaddr": "00",
+			"jname": "devicejsCloudURL"
+		},
+		"devicedbCloudURL": {
+			"serial": 3,
+			"memaddr": "00",
+			"jname": "devicedbCloudURL"
 		}
 	}
 
@@ -121,14 +136,14 @@ setText = function(spacenum, start, text, callback) {
 SERIAL
 -------------------------------------------------------------------------------------------------------------------*/
 
-WWEEPROM.prototype.set = function(key, value) {
+WWEEPROM.prototype.set = function(key, value, serial) {
 	var self = this;
 	//console.log("set %s %s %d", key, value, 5);
 	return new Promise(function(resolve, reject) {
 		lookup = eval("self.Layout." + key);
-		if (lookup.len == value.length) {
+		// if (lookup.len == value.length) {
 			//console.log("calling setText");
-			setText(serial_spacenum, lookup.memaddr, value, function(err, success) {
+			setText(serial || lookup.serial || serial_spacenum, lookup.memaddr, value, function(err, success) {
 				if (err) {
 					reject(Error(err));
 				}
@@ -136,8 +151,8 @@ WWEEPROM.prototype.set = function(key, value) {
 					resolve(success);
 				}
 			});
-		}
-		else reject(Eror("Length mismatch, provided %s != %s", value.length, lookup.len));
+		// }
+		// else reject(Eror("Length mismatch, provided %s != %s", value.length, lookup.len));
 	});
 }
 
@@ -152,13 +167,13 @@ WWEEPROM.prototype.erase = function(page, callback) {
 
 }
 
-WWEEPROM.prototype.get = function(key) {
+WWEEPROM.prototype.get = function(key, serial) {
 	var self = this;
 	return new Promise(function(resolve, reject) {
 		lookup = eval("self.Layout." + key);
 		var totalchars = (+lookup.memaddr + +lookup.len);
 		//console.log("reading from: 0x%s number of chars %s, for final memaddress of %s", parseInt(lookup.memaddr, 10).toString(16), lookup.len, parseInt(totalchars, 10).toString(16));
-		at24.readout(serial_spacenum, lookup.memaddr, totalchars, function(err, success) {
+		at24.readout(serial || lookup.serial || serial_spacenum, lookup.memaddr, totalchars, function(err, success) {
 			if (err) reject(Error(err));
 			else resolve(success);
 		});
@@ -166,9 +181,9 @@ WWEEPROM.prototype.get = function(key) {
 	});
 }
 
-WWEEPROM.prototype.readSpecial_testing = function() {
+WWEEPROM.prototype.readSpecial_testing = function(serial) {
 	var self = this;
-	at24.readout(serial_spacenum, 0x1A, 0x1B, function(a, b) {
+	at24.readout(serial || serial_spacenum, 0x1A, 0x1B, function(a, b) {
 		if (b instanceof Buffer) {
 			console.log("its a buffer");
 			//console.log("length %s, b %s", b.length, b.toString('ascii').charCodeAt());

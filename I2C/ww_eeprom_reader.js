@@ -711,7 +711,7 @@ function main() {
 
 program
 	.version('0.0.1')
-	.option('-c, --config [filepath]', 'Specify relay_eeprom setup file', '/wigwag/wwrelay-utils/I2C/relaySetup.json')
+	.option('-c, --config [filepath]', 'Specify relay_eeprom setup file')
 	.parse(process.argv);
 
 program.on('--help', function() {
@@ -751,6 +751,9 @@ if(program.config) {
 		console.error('Unable to read relay_eeprom setup file ', e);
 		process.exit(1);
 	}
+} else {
+	console.error('Please specify relay setup file, usage: node ww_eeprom_reader -c relaySetup.json');
+	process.exit(1);
 }
 
 if (program.cloudURL) {

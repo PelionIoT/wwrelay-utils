@@ -242,6 +242,13 @@
                         "waitForIPStack":true,
                         "port":443
                     }
+                },
+                {
+                    "path":"${thisdir}/../../wigwag-core-modules/VirtualDeviceControllers",
+                    "config": {
+                        "deviceControllersDirectory": "templates",
+                        "logLevel": 2
+                    }
                 }
             ]
         },

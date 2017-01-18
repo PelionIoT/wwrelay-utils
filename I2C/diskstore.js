@@ -19,7 +19,7 @@ function diskstorage(dev, mp, storepoint) {
 			self.mount = result;
 			mkdirp.sync(self.mountPoint + "/" + self.sp);
 		}).catch(function(error) {
-			console.log("were not mounted " + error);
+			console.log("were not mounted ", error);
 			self.previouslymounted = false;
 			self._mount().then(function(result) {
 				console.log("we tried to mount and did it: ", result);

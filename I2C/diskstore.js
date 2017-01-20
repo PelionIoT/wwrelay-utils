@@ -28,11 +28,15 @@ diskstorage.prototype.setup = function() {
 				self.previouslymounted = false;
 				self._mount().then(function(result) {
 					console.log("we tried to mount and did it: ", result);
-					self.previouslymounted = false;
-					self.mountPoint = result.mountpoint;
-					self.mount = result;
-					mkdirp.sync(self.mountPoint + "/" + self.sp);
-					resolve();
+					return self._checkMount().then(function(result) {
+						self.previouslymounted = true;
+						self.mountPoint = result.mountpoint;
+						self.mount = result;
+						mkdirp.sync(self.mountPoint + "/" + self.sp);
+						resolve();
+					}, function(err) {
+						reject(err);
+					});
 				}).catch(function(error) {
 					console.log("Disksore couldn't do the prper mounting ", error);
 					self.previouslymounted = false;

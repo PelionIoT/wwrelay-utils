@@ -6,7 +6,7 @@
 var i2c = require('i2c');
 var space_addresses = new Array(0x50, 0x51, 0x52, 0x53, 0x54, 0x55, 0x56, 0x57);
 var deviceName = '/dev/i2c-1';
-ATqueue = new Array();
+ATqueue = [];
 ATworking = false;
 
 baseaddress = function(x) {
@@ -60,12 +60,12 @@ baseaddress = function(x) {
 			return 0xF0;
 			break;
 	}
-}
+};
 
 //Public
 function AT24C16() {
 	var self = this;
-	this.spaces = new Array();
+	this.spaces = [];
 	space_addresses.forEach(function(address) {
 		temp = new i2c(address, {
 			device: deviceName
@@ -97,19 +97,19 @@ AT24C16.prototype.writeout = function(spacenumber, from, Ray, callback) {
 		else {
 			if (Ray.length > 0) {
 				setTimeout(function() {
-					self.writeout(spacenumber, topp + 0x01, Ray, callback)
+					self.writeout(spacenumber, topp + 0x01, Ray, callback);
 				}, 35);
 			}
 			else {
 
 				setTimeout(function() {
-					callback(null, "success")
+					callback(null, "success");
 				}, 100);
 				//callback(null, "success");
 			}
 		}
 	});
-}
+};
 
 /*------------------------------------------------------------------------------------------------------------------
 ERASE
@@ -129,12 +129,12 @@ AT24C16.prototype.erase = function(spacenumber, from, Ray, callback) {
 		else {
 			if (Ray.length > 0) {
 				setTimeout(function() {
-					self.erase(spacenumber, topp + 0x01, Ray, callback)
+					self.erase(spacenumber, topp + 0x01, Ray, callback);
 				}, 35);
 			}
 			else {
 				setTimeout(function() {
-					callback(null, "success")
+					callback(null, "success");
 				}, 100);
 				//callback(null, "success");
 			}
@@ -172,7 +172,7 @@ AT24C16.prototype.readout = function(spacenumber, from, end, callback) {
 		else lastres = res;
 		if (!err) {
 			if (!amdone) {
-				self.readout(spacenumber, nextfrom2, nextlen, callback)
+				self.readout(spacenumber, nextfrom2, nextlen, callback);
 			}
 			else {
 				callback(false, lastres);
@@ -184,7 +184,7 @@ AT24C16.prototype.readout = function(spacenumber, from, end, callback) {
 			lastres = undefined;
 		}
 	});
-}
+};
 
 AT24C16.prototype.exists = function(callback) {
 	var self = this;
@@ -196,7 +196,7 @@ AT24C16.prototype.exists = function(callback) {
 		wire.scan(function(err, success) {
 			if (err) callback(false);
 			if (success) {
-				if (success.length = 8 && success[0] == 80 && success[7] == 87) {
+				if (success.length == 8 && success[0] == 80 && success[7] == 87) {
 					callback(true);
 				}
 				else callback(false);
@@ -207,7 +207,8 @@ AT24C16.prototype.exists = function(callback) {
 	catch (err) {
 		callback(false);
 	}
-}
+};
+
 AT24C16.prototype.factory_written = function(callback) {
 	var self = this;
 	try {
@@ -218,7 +219,7 @@ AT24C16.prototype.factory_written = function(callback) {
 		wire.scan(function(err, success) {
 			if (err) callback(false);
 			if (success) {
-				if (success.length = 8 && success[0] == 80 && success[7] == 87) {
+				if (success.length == 8 && success[0] == 80 && success[7] == 87) {
 					callback(true);
 				}
 				else callback(false);
@@ -229,7 +230,7 @@ AT24C16.prototype.factory_written = function(callback) {
 	catch (err) {
 		callback(false);
 	}
-}
+};
 
 module.exports = AT24C16;
 // console.log("did you get your data");

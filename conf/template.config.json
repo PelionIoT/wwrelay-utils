@@ -210,7 +210,7 @@
                         "relayId": "{{apikey}}",
                         "platform":"{{wwplatform}}",    //Used to identify platform so that module can adapt and run automagically
                         "maxTransportRetries":1, //Transport layer retries, message retries are default to 3 so total retries will be 4
-                        "responseTimeout":500,  //Timeout if no data received on request (in ms)
+                        "responseTimeout":200,  //Timeout if no data received on request (in ms)
                         "modbusResourceId":"ModbusRTU", //ID on which the Modbus module will be registered with DeviceJS
                         "supportedResourceTypesDirectory":"controllers/supportedResourceTypes", //Directory where all the resouces are or will be defined,
                         "runtimeResourceTypesDirectory":"controllers/runtimeResourceTypes",

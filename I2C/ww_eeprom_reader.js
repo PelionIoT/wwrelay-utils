@@ -445,41 +445,43 @@ function enableRTC() {
 function writeSecurity() {
 	return new Promise(function(resolve, reject) {
 		diskprom = new DiskStorage(certsMemoryBlock, certsMountPoint, certsSourcePoint);
-		mkdirp.sync(sslPathDefault);
-		console.log("Writing to SSL diskprom ");
-		var DProm = [];
-		DProm.push(diskprom.cpFile(ssl_client_key, sslPathDefault + '/' + ssl_client_key, POM));
-		DProm.push(diskprom.cpFile(ssl_client_cert, sslPathDefault + '/' + ssl_client_cert, POM));
-		DProm.push(diskprom.cpFile(ssl_server_key, sslPathDefault + '/' + ssl_server_key, POM));
-		DProm.push(diskprom.cpFile(ssl_server_cert, sslPathDefault + '/' + ssl_server_cert, POM));
-		DProm.push(diskprom.cpFile(ssl_ca_cert, sslPathDefault + '/' + ssl_ca_cert, POM));
-		DProm.push(diskprom.cpFile(ssl_ca_int, sslPathDefault + '/' + ssl_ca_int, POM));
-		Promise.all(DProm).then(function(result) {
-			diskprom.disconnect();
-			console.log("Successfully wrote certs to " + sslPathDefault);
+		return diskprom.setup().then(function() {
+			mkdirp.sync(sslPathDefault);
+			console.log("Writing to SSL diskprom ");
+			var DProm = [];
+			DProm.push(diskprom.cpFile(ssl_client_key, sslPathDefault + '/' + ssl_client_key, POM));
+			DProm.push(diskprom.cpFile(ssl_client_cert, sslPathDefault + '/' + ssl_client_cert, POM));
+			DProm.push(diskprom.cpFile(ssl_server_key, sslPathDefault + '/' + ssl_server_key, POM));
+			DProm.push(diskprom.cpFile(ssl_server_cert, sslPathDefault + '/' + ssl_server_cert, POM));
+			DProm.push(diskprom.cpFile(ssl_ca_cert, sslPathDefault + '/' + ssl_ca_cert, POM));
+			DProm.push(diskprom.cpFile(ssl_ca_int, sslPathDefault + '/' + ssl_ca_int, POM));
+			Promise.all(DProm).then(function(result) {
+				diskprom.disconnect();
+				console.log("Successfully wrote certs to " + sslPathDefault);
 
-			var caCert = fs.readFileSync(sslPathDefault + '/' + ssl_ca_cert, 'utf8');
-			var caInt = fs.readFileSync(sslPathDefault + '/' + ssl_ca_int, 'utf8');
-			fs.writeFile(sslPathDefault + '/' + ssl_ca_chain, caCert, function(err) {
-                if(err) {
-                	console.error('Writing ca cert to chain file failed ', err);
-                    reject(err);
-                } else {
-                	fs.appendFile(sslPathDefault + '/' + ssl_ca_chain, caInt, function(err) {
-		                if(err) {
-                			console.error('Writing ca intermediate cert to chain file failed ', err);
-		                    reject(err);
-		                } else {
-		                	console.log('Successfully generated ca chain file');
-		                    resolve();
-		                }
-		            });
-                }
-            });
-		}).catch(function(error) {
-			diskprom.disconnect();
-			console.log("debug", "get sslclientkey errored: " + error);
-			reject(error);
+				var caCert = fs.readFileSync(sslPathDefault + '/' + ssl_ca_cert, 'utf8');
+				var caInt = fs.readFileSync(sslPathDefault + '/' + ssl_ca_int, 'utf8');
+				fs.writeFile(sslPathDefault + '/' + ssl_ca_chain, caCert, function(err) {
+	                if(err) {
+	                	console.error('Writing ca cert to chain file failed ', err);
+	                    reject(err);
+	                } else {
+	                	fs.appendFile(sslPathDefault + '/' + ssl_ca_chain, caInt, function(err) {
+			                if(err) {
+	                			console.error('Writing ca intermediate cert to chain file failed ', err);
+			                    reject(err);
+			                } else {
+			                	console.log('Successfully generated ca chain file');
+			                    resolve();
+			                }
+			            });
+	                }
+	            });
+			}).catch(function(error) {
+				diskprom.disconnect();
+				console.log("debug", "get sslclientkey errored: " + error);
+				reject(error);
+			});
 		});
 	});
 }

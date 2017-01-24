@@ -286,6 +286,12 @@
                     }
                 },
                 {
+                    "path":"${thisdir}/../../wigwag-core-modules/SchedulerEngine",
+                    "config":{
+                        "logLevel": 2 //Available- error- 0, warn- 1, info- 2, debug- 3, trace- 4
+                    }
+                },
+                {
                     "path":"${thisdir}/../AppServer",
                     "config":{
                         "authentication":{

@@ -6,7 +6,7 @@
 var i2c = require('i2c');
 var space_addresses = new Array(0x50, 0x51, 0x52, 0x53, 0x54, 0x55, 0x56, 0x57);
 var deviceName = '/dev/i2c-1';
-ATqueue = new Array();
+ATqueue = [];
 ATworking = false;
 
 baseaddress = function(x) {
@@ -60,19 +60,19 @@ baseaddress = function(x) {
 			return 0xF0;
 			break;
 	}
-}
+};
 
-//Public 
+//Public
 function AT24C16() {
 	var self = this;
-	this.spaces = new Array();
+	this.spaces = [];
 	space_addresses.forEach(function(address) {
 		temp = new i2c(address, {
 			device: deviceName
 		});
 		self.spaces.push(temp);
 	});
-	this.memspace_size = 256; //bytes 
+	this.memspace_size = 256; //bytes
 	this.memspaces = 8;
 	this.maxlength = this.memspace_size * this.memspaces;
 
@@ -83,12 +83,13 @@ WRITE
 -------------------------------------------------------------------------------------------------------------------*/
 AT24C16.prototype.writeout = function(spacenumber, from, Ray, callback) {
 	var self = this;
-	self.base = baseaddress(from);
-	self.topp = self.base + 0xF;
-	self.ccells = self.topp - from + 1;
-	var newRay = Ray.splice(0, self.ccells).map(function(val) {
+	var base = baseaddress(from);
+	var topp = base + 0xF;
+	var ccells = topp - from + 1;
+	var newRay = Ray.splice(0, ccells).map(function(val) {
 		return "0x" + val.charCodeAt(0).toString(16);
 	});
+	console.log('spacenumber ' + spacenumber + ' from ' + from + ' newRay ' + newRay);
 	self.spaces[spacenumber].writeBytes(from, newRay, function(err) {
 		if (err) {
 			callback(err, null);
@@ -96,30 +97,30 @@ AT24C16.prototype.writeout = function(spacenumber, from, Ray, callback) {
 		else {
 			if (Ray.length > 0) {
 				setTimeout(function() {
-					self.writeout(spacenumber, self.topp + 0x01, Ray, callback)
+					self.writeout(spacenumber, topp + 0x01, Ray, callback);
 				}, 35);
 			}
 			else {
 
 				setTimeout(function() {
-					callback(null, "success")
+					callback(null, "success");
 				}, 100);
 				//callback(null, "success");
 			}
 		}
 	});
-}
+};
 
 /*------------------------------------------------------------------------------------------------------------------
 ERASE
 -------------------------------------------------------------------------------------------------------------------*/
 AT24C16.prototype.erase = function(spacenumber, from, Ray, callback) {
 	var self = this;
-	self.base = baseaddress(from);
-	self.topp = self.base + 0xF;
-	self.ccells = self.topp - from + 1;
-	var temp = Ray.splice(0, self.ccells);
-	var newRay = new Array(self.ccells);
+	var base = baseaddress(from);
+	var topp = base + 0xF;
+	var ccells = topp - from + 1;
+	var temp = Ray.splice(0, ccells);
+	var newRay = new Array(ccells);
 	newRay.fill('0xFF');
 	self.spaces[spacenumber].writeBytes(from, newRay, function(err) {
 		if (err) {
@@ -128,12 +129,12 @@ AT24C16.prototype.erase = function(spacenumber, from, Ray, callback) {
 		else {
 			if (Ray.length > 0) {
 				setTimeout(function() {
-					self.erase(spacenumber, self.topp + 0x01, Ray, callback)
+					self.erase(spacenumber, topp + 0x01, Ray, callback);
 				}, 35);
 			}
 			else {
 				setTimeout(function() {
-					callback(null, "success")
+					callback(null, "success");
 				}, 100);
 				//callback(null, "success");
 			}
@@ -147,6 +148,7 @@ READ
 AT24C16.prototype.readout = function(spacenumber, from, end, callback) {
 	var self = this;
 	var lastresn = "";
+	var lastres;
 	end = end || 256;
 	var diff = (+end - +from);
 	var done = false;
@@ -166,23 +168,23 @@ AT24C16.prototype.readout = function(spacenumber, from, end, callback) {
 		var nextfrom2 = nextfrom;
 		var amdone = done;
 		//console.log("down here: nextlen %d, currentlen %d, nextfrom2 %d", nextlen, currentlen, nextfrom2);
-		if (typeof self.lastres != 'undefined') self.lastres = self.lastres + res;
-		else self.lastres = res;
+		if (typeof lastres != 'undefined') lastres = lastres + res;
+		else lastres = res;
 		if (!err) {
 			if (!amdone) {
-				self.readout(spacenumber, nextfrom2, nextlen, callback)
+				self.readout(spacenumber, nextfrom2, nextlen, callback);
 			}
 			else {
-				callback(false, self.lastres);
-				self.lastres = undefined;
+				callback(false, lastres);
+				lastres = undefined;
 			}
 		}
 		else {
 			callback(err, null);
-			self.lastres = undefined;
+			lastres = undefined;
 		}
 	});
-}
+};
 
 AT24C16.prototype.exists = function(callback) {
 	var self = this;
@@ -194,7 +196,7 @@ AT24C16.prototype.exists = function(callback) {
 		wire.scan(function(err, success) {
 			if (err) callback(false);
 			if (success) {
-				if (success.length = 8 && success[0] == 80 && success[7] == 87) {
+				if (success.length == 8 && success[0] == 80 && success[7] == 87) {
 					callback(true);
 				}
 				else callback(false);
@@ -205,7 +207,8 @@ AT24C16.prototype.exists = function(callback) {
 	catch (err) {
 		callback(false);
 	}
-}
+};
+
 AT24C16.prototype.factory_written = function(callback) {
 	var self = this;
 	try {
@@ -216,7 +219,7 @@ AT24C16.prototype.factory_written = function(callback) {
 		wire.scan(function(err, success) {
 			if (err) callback(false);
 			if (success) {
-				if (success.length = 8 && success[0] == 80 && success[7] == 87) {
+				if (success.length == 8 && success[0] == 80 && success[7] == 87) {
 					callback(true);
 				}
 				else callback(false);
@@ -227,7 +230,7 @@ AT24C16.prototype.factory_written = function(callback) {
 	catch (err) {
 		callback(false);
 	}
-}
+};
 
 module.exports = AT24C16;
 // console.log("did you get your data");

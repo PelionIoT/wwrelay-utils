@@ -163,7 +163,8 @@
                         "networkRefreshDuration":30000,
                         "panIdSelection":"fixed",
                         "panId":23,
-                        "platform":"{{wwplatform}}"
+                        "platform":"{{wwplatform}}",
+                        "logLevel": 2 //Available- info- 2, debug- 3, trace- 4, error- 0, warn- 1
                     }
                 },
                 {
@@ -209,7 +210,7 @@
                         "relayId": "{{apikey}}",
                         "platform":"{{wwplatform}}",    //Used to identify platform so that module can adapt and run automagically
                         "maxTransportRetries":1, //Transport layer retries, message retries are default to 3 so total retries will be 4
-                        "responseTimeout":500,  //Timeout if no data received on request (in ms)
+                        "responseTimeout":200,  //Timeout if no data received on request (in ms)
                         "modbusResourceId":"ModbusRTU", //ID on which the Modbus module will be registered with DeviceJS
                         "supportedResourceTypesDirectory":"controllers/supportedResourceTypes", //Directory where all the resouces are or will be defined,
                         "runtimeResourceTypesDirectory":"controllers/runtimeResourceTypes",
@@ -241,6 +242,13 @@
                         "id":"{{apikey}}",
                         "waitForIPStack":true,
                         "port":443
+                    }
+                },
+                {
+                    "path":"${thisdir}/../../wigwag-core-modules/VirtualDeviceControllers",
+                    "config": {
+                        "deviceControllersDirectory": "templates",
+                        "logLevel": 2
                     }
                 }
             ]
@@ -275,6 +283,12 @@
                                 "{{sslCertsPath}}/intermediate.cert.pem"
                             ]
                         }
+                    }
+                },
+                {
+                    "path":"${thisdir}/../../wigwag-core-modules/SchedulerEngine",
+                    "config":{
+                        "logLevel": 2 //Available- error- 0, warn- 1, info- 2, debug- 3, trace- 4
                     }
                 },
                 {

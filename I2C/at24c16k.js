@@ -148,7 +148,6 @@ READ
 AT24C16.prototype.readout = function(spacenumber, from, end, callback) {
 	var self = this;
 	var lastresn = "";
-	var lastres;
 	end = end || 256;
 	var diff = (+end - +from);
 	var done = false;
@@ -168,20 +167,20 @@ AT24C16.prototype.readout = function(spacenumber, from, end, callback) {
 		var nextfrom2 = nextfrom;
 		var amdone = done;
 		//console.log("down here: nextlen %d, currentlen %d, nextfrom2 %d", nextlen, currentlen, nextfrom2);
-		if (typeof lastres != 'undefined') lastres = lastres + res;
-		else lastres = res;
+		if (typeof self.lastres != 'undefined') self.lastres = self.lastres + res;
+		else self.lastres = res;
 		if (!err) {
 			if (!amdone) {
 				self.readout(spacenumber, nextfrom2, nextlen, callback);
 			}
 			else {
-				callback(false, lastres);
-				lastres = undefined;
+				callback(false, self.lastres);
+				self.lastres = undefined;
 			}
 		}
 		else {
 			callback(err, null);
-			lastres = undefined;
+			self.lastres = undefined;
 		}
 	});
 };

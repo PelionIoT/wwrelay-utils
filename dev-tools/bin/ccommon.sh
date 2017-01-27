@@ -350,7 +350,7 @@ fi
 #/	Expl:	up=$(isURLUp "http:/google.com")
 isURLUp(){
 	url="$1"
-	curl -k --output /dev/null --silent --fail -r 0-0 "$url"
+	curl -k --output /dev/null --silent --fail --connect-timeout 2 -r 0-0 "$url"
 	outtest=$?
 	if [[ "$outtest" -eq 0 ]]; then
 	  echo 1

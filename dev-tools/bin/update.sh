@@ -2,7 +2,8 @@
 #---------------Configuration-------------#
 . ccommon.sh nofunc
 LogToTerm=1
-loglevel=info;
+loglevel=verbose;
+loglevel=debug;
 thistarball="https://code.wigwag.com/ugs/ud.tar.gz"
 manifestLocalhost="https://10.10.102.57:8080/builds/manifest.dat"
 manifesturl="https://code.wigwag.com/ugs/manifest.dat"
@@ -34,7 +35,9 @@ thisRelease="1.0.20"
 upgradeDIR="/upgrades"
 
 localhostAvailable(){
-	if [[ $(isURLUp "$manifestLocalhost") -eq 1 ]]; then
+    isTHEURLup=$(isURLUp "$manifestLocalhost")
+    log "debug" "isURLUp($manifestLocalhost): '$isTHEURLup'"
+    if [[ $isTHEURLup -eq 1 ]]; then
 		echo 1
 	else
 		echo 0
@@ -66,7 +69,7 @@ readmanifest(){
 	echo -n "Crunching."
 	for line in "${bigR[@]}"; do  
 	temp=$((temp+1))
-	log "debug" "at temp $temp"
+	log "silly" "processing line: $temp"
 	echo -n "."
 	#echo -e "theline\t --> $line "
 		IFS="|" read -r -a lineR <<< "$line"
@@ -382,36 +385,40 @@ fi
 }
 
 main(){
-	log "debug" "entered main with $upgradeDIR and $wipeeeprom <-- wipe eeprom"
-	if [[ "$wipeeeprom" != "" && "$wipeeeprom" = "ERASEIT" ]]; then
-		erasePage
-		log "info" "erased eeprom"
-		uninstallCloudKeys
-	elif [[ "$wipeeeprom" != "" ]]; then
-			log "error" "Exiting now, incorrect wipe eeprom response provided: '$wipeeeprom'"
-			COMMON_MENU_HELP
-	fi
-	cd "$upgradeDIR"
-	if [[ "$buildurl" != "" ]]; then
-		downloadfile="$buildurl";
-	else
-		if [[ "$upgrd" = "factory" ]]; then
-			UU=0;
-			WU=1;
-			if [[ "$(localhostAvailable)" -eq 1 ]]; then
-				downloadfile="${LFACTORYURL[$mybuild]}"
-			else
-				downloadfile="${FACTORYURL[$mybuild]}"
-			fi
-		else
-			if [[ "$(localhostAvailable)" -eq 1 ]]; then
-				downloadfile="${LUPGRADEURL[$mybuild]}"
-			else
-				downloadfile="${UPGRADEURL[$mybuild]}"
-			fi
-			
-		fi
-	fi
+        log "debug" "entered main with $upgradeDIR and $wipeeeprom <-- wipe eeprom"
+        if [[ "$wipeeeprom" != "" && "$wipeeeprom" = "ERASEIT" ]]; then
+                erasePage
+                log "info" "erased eeprom"
+                uninstallCloudKeys
+        elif [[ "$wipeeeprom" != "" ]]; then
+                        log "error" "Exiting now, incorrect wipe eeprom response provided: '$wipeeeprom'"
+                        COMMON_MENU_HELP
+        fi
+        cd "$upgradeDIR"
+        if [[ "$buildurl" != "" ]]; then
+                downloadfile="$buildurl";
+                log "debug" "setting download file to $downloadfile"
+        else
+                lha=$(localhostAvailable)
+                log "debug" "upgrade type: $upgrd, localhostAvailable: $lha"
+                if [[ "$upgrd" = "factory" ]]; then
+                        UU=0;
+                        WU=1;
+                        if [[ "$lha" -eq 1 ]]; then
+                                downloadfile="${LFACTORYURL[$mybuild]}"
+                        else
+                                downloadfile="${FACTORYURL[$mybuild]}"
+                        fi
+                else
+                        if [[ "$lha" -eq 1 ]]; then
+                                downloadfile="${LUPGRADEURL[$mybuild]}"
+                        else
+                                downloadfile="${UPGRADEURL[$mybuild]}"
+                        fi
+
+                fi
+        fi
+
 		log "info" "downloading: ${CYAN}$downloadfile${NORM} for installation"
 		curl -o f.tar.gz -k "$downloadfile"
 		log "info" "${YELLOW}unzipping the upgrade.  30 sec... ${NORM}"
@@ -524,6 +531,12 @@ argprocessor(){
 	readmanifest "$manifesturl"
 	main
 } 
+
+lha=$(localhostAvailable)
+
+if [[ "$lha" = "1" ]]; then
+		manifesturl="$manifestLocalhost"
+fi
 
 if [[ "$#" -lt 1 ]]; then
 	interactive; exit;

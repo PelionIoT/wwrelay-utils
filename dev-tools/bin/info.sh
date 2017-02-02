@@ -4,7 +4,10 @@
 LogToTerm=1
 loglevel=info;
 
-	
+#run eetool
+ret(){
+	/wigwag/wwrelay-utils/I2C/eetool.sh get "$1"
+}
 
 software(){
 	currentV=$(grep -ne 'version' /wigwag/etc/versions.json 2> /dev/null | xargs | awk -F ' ' '{print $8}')
@@ -30,15 +33,26 @@ software(){
 	echo -e "- User Partition:\t${CYAN}$userV${NORM}"
 	echo -e "- Upgrade Partition:\t${CYAN}$upgradeV${NORM}"
 	echo -e "- Factory Partition:\t${CYAN}$factoryV${NORM}"
+	out=$(fdisk -l /dev/mmcblk0p1 | xargs | awk '{print $3}');
+	Pschema="4Gb"
+	if [[ $out -eq 50 ]]; then
+		Pschema="8Gb"
+	fi
+	echo -e "- Partition Schema:\t${CYAN}$Pschema${NORM}"
 }
 
 account(){
+	SN=$(ret relayID)
+	PAIRINGCODE=$(ret pairingCode)
 	echo -e "\n${YELLOW}Account Infomation${NORM}"
 	echo -e "- Serial Number:\t${CYAN}$SN${NORM}"
 	echo -e "- Pairing Code:\t\t${CYAN}$PAIRINGCODE${NORM}"
 }
 hardware(){
 	LEDTYPE="RBG"
+	LEDCONFIG=$(ret ledConfig)
+	HWV=$(ret hardwareVersion)
+	ETHERNETMAC=$(/wigwag/wwrelay-utils/I2C/eetool.sh -t hex-colon get ethernetMAC)
 	if [[ $LEDCONFIG = "01" ]]; then
 		LEDTYPE="RGB"
 	fi
@@ -68,9 +82,7 @@ manufacturing(){
 
 main(){
 	software
-	echo -e "\n${GREEN}scanning eeprom...\t${CYAN}5 seconds${NORM}"
 	hardware
-	logEEPROM "varibles"
 	account
 	manufacturing
 

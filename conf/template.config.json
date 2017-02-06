@@ -217,7 +217,7 @@
                     }
                 },
                 {
-                    "path":"${thisdir}/../../wigwag-core-modules/VirtualDeviceControllers",
+                    "path":"${thisdir}/../../wigwag-core-modules/VirtualDeviceDriver",
                     "config": {
                         "deviceControllersDirectory": "templates",
                         "logLevel": 2

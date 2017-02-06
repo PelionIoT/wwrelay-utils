@@ -108,11 +108,7 @@
                                 "tundev":"Witap0",
                                 "use_raw_ethernet":false,
                                 "log_level":[
-                                    "error",
-                                    "routing",
-                                    "info",
-                                    "debug",
-                                    "trace"
+                                    "error"
                                 ],
                                 "platform":"{{wwplatform}}",
                                 "siodev":"{{sixlbrtty}}",

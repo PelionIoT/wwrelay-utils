@@ -3,7 +3,7 @@
 . ccommon.sh nofunc
 LogToTerm=1
 loglevel=verbose;
-loglevel=debug;
+#loglevel=debug;
 thistarball="https://code.wigwag.com/ugs/ud.tar.gz"
 manifestLocalhost="https://10.10.102.57:8080/builds/manifest.dat"
 manifesturl="https://code.wigwag.com/ugs/manifest.dat"

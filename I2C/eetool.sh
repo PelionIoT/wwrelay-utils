@@ -1059,10 +1059,16 @@ getField(){
 			retdata=$data
 		fi
 	fi
-	if [[ "$retdata" != "" ]]; then
-		echo "$retdata"
+	# if [[ "$retdata" = "" ]]; then
+	# 	etdata=
+	# else
+	# 	echo ""
+	# fi
+	if [[ "$nonewline" -eq 1 ]]; then
+		#echo "here I am"
+		echo -n "$retdata"
 	else
-		echo ""
+		echo "$retdata"
 	fi
 }
 
@@ -1549,6 +1555,7 @@ hp[d]="dump all eeprom data"
 hp[h]="help"
 hp[i]="dump all i2c pages used"
 hp[j]="json output format"
+hp[l]="no newline on gets standard output"
 hp[mm]="munge data after (over) the import json data: Key=data,Key=data,Key=data e.g. ledConfig=01,hardwareVersion=0.1.1"
 hp[nn]="munge data before (under) the import json data: Key=data,Key=data,Key=data e.g. ledConfig=01,hardwareVersion=0.1.1"
 hp[oo]="during json import, mundge data <file.sh|file.json> will be applied after (over) the imported json file"
@@ -1579,7 +1586,7 @@ f) ;;
 h) clihelp_displayHelp; ;;
 i) i2cdumpit=1; ;;
 j) jsonoutput=1; ;;
-l) ;;
+l) nonewline=1; ;;
 o) mundgeOveridefile=$OPTARG; ;;
 m) mundgeOvertext=$OPTARG; ;;
 n) mundgeUndertext=$OPTARG; ;;

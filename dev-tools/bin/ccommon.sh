@@ -361,7 +361,7 @@ isURLUp(){
 
 #/	Desc:	prints a warning banner
 #/	Out:	text to the screen
-#/	Expl:	UIwarning
+#/	Expl:	UIwarning done in figlet
 UIwarning(){
 	echo "${RED}"
 echo "__        __     _      ____    _   _   ___   _   _    ____ "

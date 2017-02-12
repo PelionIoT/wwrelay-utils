@@ -178,14 +178,6 @@
                         },
                         "versionsFile":"{{relayFirmwareVersionFile}}"
                     }
-                },                 
-                {
-                     "path": "${thisdir}/../Insteon",      
-                     "config": {       
-                             "insteon": {      
-                                 "baudrate": 19200     
-                             }     
-                     }     
                 },
                 {
                     "path":"${thisdir}/../ww-zwave",
@@ -233,50 +225,50 @@
                 }
             ]
         },
-        // "modbus":{
-        //     "limits":{
-        //         "limit_group":""                // cgroup limits here - TBD
-        //     },
-        //     "node_args":[
-        //         "--max-executable-size=96",
-        //         "--max-old-space-size=128",
-        //         "--max-semi-space-size=1"
-        //     ],
-        //     "restart":{ // not required,but options are:
-        //         "timeout":90000, // the timeout between restarts will still take affect
-        //         "limit":5000
-        //     },
-        //     "env":{
-        //         "NODE_PATH":"${NODE_PATH}:${thisdir}/../node_modules:/wigwag/devicejs-core-modules/IPStack/node_modules"
-        //     },
-        //     "modules":[
-        //         {
-        //             "path":"${thisdir}/../ModbusRTU",
-        //             "config":{
-        //                 "serialInterfaceOptions":{ //Serial communication setup parameters
-        //                     "siodev":"/dev/ttyUSB0",
-        //                     "baudrate":19200,
-        //                     "dataBits":8,
-        //                     "stopBits":1,
-        //                     "parity":"none",
-        //                     "endPacketTimeout":15
-        //                 },
-        //                 "logLevel":1,   //Available- info- 2,debug- 3,trace- 4,error- 0,warn- 1
-        //                 "relayId": "{{apikey}}",
-        //                 "platform":"{{wwplatform}}",    //Used to identify platform so that module can adapt and run automagically
-        //                 "maxTransportRetries":1, //Transport layer retries, message retries are default to 3 so total retries will be 4
-        //                 "requestAckTimeout":100,  //Timeout if no data received on request (in ms)
-        //                 "throttleRate": 50,
-        //                 "modbusResourceId":"ModbusDriver", //ID on which the Modbus module will be registered with DeviceJS
-        //                 "supportedResourceTypesDirectory":"controllers/supportedResourceTypes", //Directory where all the resouces are or will be defined,
-        //                 "runtimeResourceTypesDirectory":"controllers/runtimeResourceTypes",
-        //                 "simulate":false, //Should be false in production, if true it will run even if there is no terminal connected
-        //                 "schedulerIntervalResolution":500    //in ms, interval in which it will check if a resource command needs to be polled. Minimum 500ms.
-        //                                                     //Define polling interval of device controller at this resolution
-        //             }
-        //         }
-        //     ]
-        // },
+        "modbus":{
+            "limits":{
+                "limit_group":""                // cgroup limits here - TBD
+            },
+            "node_args":[
+                "--max-executable-size=96",
+                "--max-old-space-size=128",
+                "--max-semi-space-size=1"
+            ],
+            "restart":{ // not required,but options are:
+                "timeout":90000, // the timeout between restarts will still take affect
+                "limit":5000
+            },
+            "env":{
+                "NODE_PATH":"${NODE_PATH}:${thisdir}/../node_modules:/wigwag/devicejs-core-modules/IPStack/node_modules"
+            },
+            "modules":[
+                {
+                    "path":"${thisdir}/../ModbusRTU",
+                    "config":{
+                        "serialInterfaceOptions":{ //Serial communication setup parameters
+                            "siodev":"/dev/ttyUSB0",
+                            "baudrate":19200,
+                            "dataBits":8,
+                            "stopBits":1,
+                            "parity":"none",
+                            "endPacketTimeout":15
+                        },
+                        "logLevel":1,   //Available- info- 2,debug- 3,trace- 4,error- 0,warn- 1
+                        "relayId": "{{apikey}}",
+                        "platform":"{{wwplatform}}",    //Used to identify platform so that module can adapt and run automagically
+                        "maxTransportRetries":1, //Transport layer retries, message retries are default to 3 so total retries will be 4
+                        "requestAckTimeout":100,  //Timeout if no data received on request (in ms)
+                        "throttleRate": 50,
+                        "modbusResourceId":"ModbusDriver", //ID on which the Modbus module will be registered with DeviceJS
+                        "supportedResourceTypesDirectory":"controllers/supportedResourceTypes", //Directory where all the resouces are or will be defined,
+                        "runtimeResourceTypesDirectory":"controllers/runtimeResourceTypes",
+                        "simulate":false, //Should be false in production, if true it will run even if there is no terminal connected
+                        "schedulerIntervalResolution":500    //in ms, interval in which it will check if a resource command needs to be polled. Minimum 500ms.
+                                                            //Define polling interval of device controller at this resolution
+                    }
+                }
+            ]
+        },
         "user":{
             "limits":{
                 "limit_group":""

@@ -62,7 +62,7 @@ case "$1" in
         echo "Led to purple"
         /wigwag/wwrelay-utils/GPIO/led.sh 10 0 10
         echo "starting watchdog"
-        /wigwag/system/bin/deviceOSWD -w 120 -m 120 -s /tmp/deviceOSkeepalive
+        /wigwag/system/bin/deviceOSWD -w 120 -m 120 -s /tmp/deviceOSkeepalive &
 	      echo "Starting WigWag Relay"
         checkForUpgrade
         prepDB

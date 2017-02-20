@@ -18,7 +18,6 @@
 WIGWAGROOT="/wigwag"
 GPIO_DIR="${WIGWAGROOT}/wwrelay-utils/GPIO"
 WWRELAY_LOG="${WIGWAGROOT}/log/wwrelay.log"
-START_DEVICEOSWD="/wigwag/system/bin/deviceOSWD -w 300 -m 90 -s /var/deviceOSkeepalive -d -p /tmp"
 GPIO_LOG="${WIGWAGROOT}/log/gpio.log"
 DBDIR="/userdata/etc/devicejs/db"
 RELAY_SETUP_FILE="${WIGWAGROOT}/wwrelay-utils/I2C/relaySetup.json"
@@ -79,7 +78,6 @@ case "$1" in
         OUT=$?
         if [ $OUT -eq 0 ]; then
           echo "EEPROM written properly, relay.config.json successfully generated"
-           $START_DEVICEOSWD
         else
           echo "EEPROM not written properly, relay.config.json is not generated."
           /wigwag/wwrelay-utils/GPIO/led.sh 10 10 0

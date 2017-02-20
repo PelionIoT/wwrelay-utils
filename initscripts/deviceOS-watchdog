@@ -14,10 +14,14 @@
 
 PROG_PATH="/wigwag/system/bin"
 PROG="deviceOSWD"
+#PROG="deviceOSWD_a10_debug"
 KEEPALIVE="/var/deviceOSkeepalive"
 PID_PATH="/var/run"
-START_DEVICEOSWD_CMD="$PROG_PATH/$PROG -w 300 -m 90 -s $KEEPALIVE -d -p $PID_PATH"
-STOP_DEVICEOSWD_CMD="echo -e 'stop' | socat unix-sendto:$KEEPALIVE STDIO"
+
+#this is fixed by the binary... you cannot change it, so go with it.
+FIXED_PID_FILE="deviceOSWD.pid"
+START_DEVICEOSWD_CMD="$PROG_PATH/$PROG -w 300 -m 90 -s $KEEPALIVE -d -p $PID_PATH/"
+STOP_DEVICEOSWD_CMD="echo -e \"stop\" | socat unix-sendto:$KEEPALIVE STDIO"
 
 start() {
     if [ -e "$PID_PATH/$PROG.pid" ]; then
@@ -26,28 +30,33 @@ start() {
         exit 1
     else
         ## Change from /dev/null to something like /var/log/$PROG if you want to save output.
-
         $START_DEVICEOSWD_CMD
-        pid=$!
-        echo $pid > "$PID_PATH/$PROG.pid"
 
-        echo "$PROG started ($pid)"
     fi
 }
 
 stop() {
-    if [ -e "$PID_PATH/$PROG.pid" ]; then
+    if [ -e "$PID_PATH/$FIXED_PID_FILE" ]; then
         ## Program is running, so stop it
-        pid=`cat $PID_PATH/$PROG.pid`
-        $STOP_DEVICEOSWD_CMD
-        kill $pid
+        pid=`cat $PID_PATH/$FIXED_PID_FILE`
+        eval "$STOP_DEVICEOSWD_CMD"
 
-        rm "$PID_PATH/$PROG.pid"
+
+        rm "$PID_PATH/$FIXED_PID_FILE"
         echo "$PROG stopped ($pid)"
     else
         ## Program is not running, exit with error.
         echo "Error! $PROG not started!" 1>&2
         exit 1
+    fi
+}
+
+status(){
+    pid=`cat $PID_PATH/$FIXED_PID_FILE`
+    if [[ $pid != "" ]]; then
+        echo "$PROG (pid $pid) is running... logging to /var/log/syslog"
+    else
+        echo "$PROG not running."
     fi
 }
 
@@ -58,13 +67,17 @@ if [ "$(id -u)" != "0" ]; then
 fi
 
 
-case "$2" in
+case "$1" in
     start)
         start
         exit 0
     ;;
     stop)
         stop
+        exit 0
+    ;;
+    status)
+        status
         exit 0
     ;;
     reload|restart|force-reload)

@@ -51,6 +51,10 @@ stop() {
     fi
 }
 
+panic(){
+    insmod /wigwag/system/other/panic.ko
+}
+
 status(){
     pid=`cat $PID_PATH/$FIXED_PID_FILE`
     if [[ $pid != "" ]]; then
@@ -80,13 +84,17 @@ case "$1" in
         status
         exit 0
     ;;
+    panic)
+        panic
+        exit 0
+    ;;
     reload|restart|force-reload)
         stop
         start
         exit 0
     ;;
     **)
-        echo "Usage: $0 {start|stop|reload}" 1>&2
+        echo "Usage: $0 {start|stop|status|panic|reload}" 1>&2
         exit 1
     ;;
 esac

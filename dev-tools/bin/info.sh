@@ -1,6 +1,7 @@
 #!/bin/bash
 #---------------Configuration-------------#
 . ccommon.sh nofunc
+version="1.5"
 LogToTerm=1
 loglevel=info;
 tab1="\t"
@@ -86,10 +87,16 @@ system(){
 	echo -e "\n${YELLOW}System Infomation${NORM}"
 	echo -e "  - UPTIME:$tab3${CYAN}$UPTIME${NORM}"
 	echo -e "  - IP Address:$tab3${CYAN}$IPADDRESS${NORM}"
-	
 }
 
+header(){
+	echo -e "\n${RED}Relay Information utility version $version ${NORM}"
+}
+	
+
+
 main(){
+	header
 	system
 	firmware
 	hardware

@@ -82,10 +82,27 @@ manufacturing(){
 }
 
 system(){
-	UPTIME=$(uptime | awk -F'( |,|:)+' '{print $6,$7",",$8,"hours,",$9,"minutes."}')
+	let upSeconds=$(cat /proc/uptime | cut -d ' ' -f1 | cut -d '.' -f1);
+	let secs=$((${upSeconds}%60))
+	let mins=$((${upSeconds}/60%60))
+	let hours=$((${upSeconds}/3600%24))
+	let days=$((${upSeconds}/86400))
+	if [[ "${days}" -ne "0" ]]; then
+	   UPTIME="${days}d ";
+	fi
+	UPTIME="$UPTIME${hours}h ${mins}m ${secs}s"
+	USERS="$(who | cut -d ' ' -f1 | sort | uniq | wc -l) users"
+	LOAD="$(cat /proc/loadavg)"
+	MIN1="$(echo $LOAD | awk '{ print $1}')"
+	MIN5="$(echo $LOAD | awk '{ print $2}')"
+	MIN15="$(echo $LOAD | awk '{ print $3}')"
+	TASKS="$(echo $LOAD | awk '{ print $4}')"
 	IPADDRESS=$(ifconfig  | grep 'inet addr:'| grep -v '127.0.0.1' | cut -d: -f2 | awk '{ print $1}')
 	echo -e "\n${YELLOW}System Infomation${NORM}"
 	echo -e "  - UPTIME:$tab3${CYAN}$UPTIME${NORM}"
+	echo -e "  - USERS:$tab3${CYAN}$USERS${NORM}"
+	echo -e "  - LOAD (1,5,15-min avg):$tab1${CYAN}$MIN1, $MIN5, $MIN15${NORM}"
+	echo -e "  - Queued Tasks:$tab2${CYAN}$TASKS${NORM}"
 	echo -e "  - IP Address:$tab3${CYAN}$IPADDRESS${NORM}"
 }
 

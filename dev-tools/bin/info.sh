@@ -90,6 +90,7 @@ system(){
 	if [[ "${days}" -ne "0" ]]; then
 	   UPTIME="${days}d ";
 	fi
+	
 	UPTIME="$UPTIME${hours}h ${mins}m ${secs}s"
 	USERS="$(who | cut -d ' ' -f1 | sort | uniq | wc -l) users"
 	LOAD="$(cat /proc/loadavg)"
@@ -99,9 +100,9 @@ system(){
 	TASKS="$(echo $LOAD | awk '{ print $4}')"
 	IPADDRESS=$(ifconfig  | grep 'inet addr:'| grep -v '127.0.0.1' | cut -d: -f2 | awk '{ print $1}')
 	echo -e "\n${YELLOW}System Infomation${NORM}"
-	echo -e "  - UPTIME:$tab3${CYAN}$UPTIME${NORM}"
-	echo -e "  - USERS:$tab3${CYAN}$USERS${NORM}"
-	echo -e "  - LOAD (1,5,15-min avg):$tab1${CYAN}$MIN1, $MIN5, $MIN15${NORM}"
+	echo -e "  - Uptime:$tab3${CYAN}$UPTIME${NORM}"
+	echo -e "  - Users:$tab3${CYAN}$USERS${NORM}"
+	echo -e "  - Load (1,5,15-min avg):$tab1${CYAN}$MIN1, $MIN5, $MIN15${NORM}"
 	echo -e "  - Queued Tasks:$tab2${CYAN}$TASKS${NORM}"
 	echo -e "  - IP Address:$tab3${CYAN}$IPADDRESS${NORM}"
 }

@@ -34,6 +34,9 @@ var certsMemoryBlock = "/dev/mmcblk0p1";
 var certsOutputDirectory = sslPathDefault;
 var localDatabaseDirectory = "/userdata/etc/devicejs/db";
 var relayFirmwareVersionFile = "/wigwag/etc/versions.json";
+var factoryFirmwareVersionFile = "/mnt/.overlay/factory/wigwag/etc/versions.json";
+var upgradeFirmwareVersionFile = "/mnt/.overlay/upgrade/wigwag/etc/versions.json";
+var userFirmwareVersionFile = "/mnt/.overlay/user/slash/wigwag/etc/versions.json";
 
 var template_conf_file = null;
 var radioProfile_template_conf_file = null;
@@ -200,6 +203,11 @@ function createHandlebarsData(eeprom, platform) {
 	data.apikey = eeprom.relayID;
 	data.apisecret = eeprom.relaySecret;
 	data.cloudurl = eeprom.cloudURL;
+	data.pairingCode = eeprom.pairingCode;
+	data.cloudddburl = cloudDdbURL;
+	data.clouddevicejsurl = cloudDevicejsURL;
+	data.hardwareVersion = eeprom.hardwareVersion;
+	data.radioConfig = eeprom.radioConfig;
 	data.zwavetty = eeprom.hardware.radioProfile.ZWAVE_TTY;
 	data.zigbeehatty = eeprom.hardware.radioProfile.ZIGBEEHA_TTY;
 	data.sixlbrtty = eeprom.hardware.radioProfile.SBMC_TTY.split("/")[2];
@@ -211,15 +219,21 @@ function createHandlebarsData(eeprom, platform) {
 	data.databasePort = databasePort;
 	data.sslCertsPath = sslPathDefault;
 	data.relayFirmwareVersionFile = relayFirmwareVersionFile;
+	data.factoryFirmwareVersionFile = factoryFirmwareVersionFile;
+	data.upgradeFirmwareVersionFile = upgradeFirmwareVersionFile;
+	data.userFirmwareVersionFile = userFirmwareVersionFile;
 	data.devicejsConfFile = devicejs_conf_file;
 	data.devicedbConfFile = devicedb_conf_file;
+	data.partitionScheme = (execSync('fdisk -l /dev/mmcblk0p1 | xargs | awk \'{print $3}\'') === '50\n') ? '8Gb' : '4Gb';
 	if(typeof eeprom.ledConfig !== 'undefined' &&
 		((eeprom.ledConfig == '01') || (eeprom.ledConfig == '00') ||
-			(eeprom.ledConfig == '--') || (eeprom.ledConfig == 'xx') ) )
+			(eeprom.ledConfig == '--') || (eeprom.ledConfig == 'xx') ) ) {
 		data.ledconfig = 'RGB';
-	else
+	}
+	else {
 		data.ledconfig = 'RBG';
-
+	}
+	data.ledConfig = data.ledconfig + '(' + eeprom.ledConfig.toString() + ')';
 	return data;
 }
 

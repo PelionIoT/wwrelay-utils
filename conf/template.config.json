@@ -116,6 +116,7 @@
                                 "sixBMAC":"{{sixbmac}}",
                                 "baudrate":115200,
                                 "slip_delay":0,
+                                "watchdog_interval": 0,
                                 "ww_encryption":true,
                                 "firmware_path_mc1322":"/home/wigwag/workspace/devicejs/core/",
                                 "firmware_file_prefix":"slip-radio_econotag",
@@ -182,7 +183,22 @@
                                 "{{sslCertsPath}}/intermediate.cert.pem"
                             ]
                         },
-                        "versionsFile":"{{relayFirmwareVersionFile}}"
+                        "versionsFile":"{{relayFirmwareVersionFile}}",
+                        "factoryVersionsFile": "{{factoryFirmwareVersionFile}}",
+                        "userVersionsFile": "{{upgradeFirmwareVersionFile}}",
+                        "upgradeVersionsFile": "{{userFirmwareVersionFile}}",
+                        "relayInfo": {
+                            "pairingCode": "{{pairingCode}}",
+                            "serialNumber": "{{apikey}}",
+                            "hardwareVersion": "{{hardwareVersion}}",
+                            "radioConfig": "{{radioConfig}}",
+                            "ledConfig": "{{ledConfig}}",
+                            "cloudServer": "{{cloudurl}}",
+                            "devicejsServer": "{{clouddevicejsurl}}",
+                            "devicedbServer": "{{cloudddburl}}",
+                            "partitionScheme": "{{partitionScheme}}",
+                            "ethernetMac": "{{ethernetmac}}"   
+                        }
                     }
                 },
                 {

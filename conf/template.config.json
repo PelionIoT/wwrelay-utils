@@ -185,8 +185,8 @@
                         },
                         "versionsFile":"{{relayFirmwareVersionFile}}",
                         "factoryVersionsFile": "{{factoryFirmwareVersionFile}}",
-                        "userVersionsFile": "{{upgradeFirmwareVersionFile}}",
-                        "upgradeVersionsFile": "{{userFirmwareVersionFile}}",
+                        "userVersionsFile": "{{userFirmwareVersionFile}}",
+                        "upgradeVersionsFile": "{{upgradeFirmwareVersionFile}}",
                         "relayInfo": {
                             "pairingCode": "{{pairingCode}}",
                             "serialNumber": "{{apikey}}",

@@ -116,6 +116,7 @@
                                 "sixBMAC":"{{sixbmac}}",
                                 "baudrate":115200,
                                 "slip_delay":0,
+                                "watchdog_interval": 0,
                                 "ww_encryption":true,
                                 "firmware_path_mc1322":"/home/wigwag/workspace/devicejs/core/",
                                 "firmware_file_prefix":"slip-radio_econotag",
@@ -163,7 +164,7 @@
                         "baudRate":115200,
                         "log_level":1,
                         "networkRefreshDuration":30000,
-                        "panIdSelection":"fixed",
+                        "panIdSelection":"randomInRange",
                         "panId":23,
                         "platform":"{{wwplatform}}",
                         "logLevel": 2 //Available- info- 2, debug- 3, trace- 4, error- 0, warn- 1
@@ -182,7 +183,22 @@
                                 "{{sslCertsPath}}/intermediate.cert.pem"
                             ]
                         },
-                        "versionsFile":"{{relayFirmwareVersionFile}}"
+                        "versionsFile":"{{relayFirmwareVersionFile}}",
+                        "factoryVersionsFile": "{{factoryFirmwareVersionFile}}",
+                        "userVersionsFile": "{{userFirmwareVersionFile}}",
+                        "upgradeVersionsFile": "{{upgradeFirmwareVersionFile}}",
+                        "relayInfo": {
+                            "pairingCode": "{{pairingCode}}",
+                            "serialNumber": "{{apikey}}",
+                            "hardwareVersion": "{{hardwareVersion}}",
+                            "radioConfig": "{{radioConfig}}",
+                            "ledConfig": "{{ledConfig}}",
+                            "cloudServer": "{{cloudurl}}",
+                            "devicejsServer": "{{clouddevicejsurl}}",
+                            "devicedbServer": "{{cloudddburl}}",
+                            "partitionScheme": "{{partitionScheme}}",
+                            "ethernetMac": "{{ethernetmac}}"   
+                        }
                     }
                 },
                 {

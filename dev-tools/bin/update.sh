@@ -29,6 +29,7 @@ setting_upgrade_force=0;
 setting_upgrade_upgrade=1;
 setting_upgrade_wipe=0;
 
+purefactory=0;
 
 wipeeeprom=""
 declare -A DESCRIPTION
@@ -165,6 +166,24 @@ upgradethis(){
 
 }
 
+pdec(){
+	local title="$1"
+	local choice="$2"
+	local flag="$3"
+	varname="$4"
+		clearpadding
+		PS3="${YELLOW}$title: "
+		echo -n "${NORM}"
+		select yn in "Enable" "Disable"; do
+			break;
+		done
+		if [[ "$yn" = "$choice" ]]; then
+			eval ${varname}=1
+			callstring="$callstring -$flag"
+		fi
+}
+
+
 interactive(){
 	callstring="upgrade "
 	buildurl="";
@@ -219,22 +238,7 @@ fi
 	   do break;
 	done
 
-	#decide what to replace
-	partitionDecision=("upgrade" "factory")
-	clearpadding
-	PS3="${YELLOW}Upgrade partition: ";
-	echo -n "${NORM}"
-	select upgrd in "${partitionDecision[@]}"; do
-	      break;
-	done
-	if [[ "$upgrd" = "factory" ]]; then
-		wupgradepart=1;
-		callstring="$callstring -f"
-	fi
-
-
-
-	#decide to wipe the user or not
+	#decide to wipe the user or not (w)
 	testray=("Keep" "Erase");
 	clearpadding
 	PS3="${YELLOW}User Partition: ";
@@ -243,11 +247,11 @@ fi
 		break;
 	done
 	if [[ "$userChoice" = "${testray[1]}" ]]; then
-		setting_user_upgrade=1
+		setting_user_wipe=1
 		callstring="$callstring -w"
 	fi
 
-	#decide to wipe the userdb
+	#decide to wipe the userdb (x)
 	testray=("Keep" "Erase");
 	PS3="${YELLOW}User Database: ";
 	clearpadding
@@ -257,83 +261,66 @@ fi
 	done
 	if [[ "$userChoice" = "${testray[1]}" ]]; then
 		setting_userdata_upgrade=1
-		callstring="$callstring -d"
+		callstring="$callstring -x"
 	fi
 
-
-
-	#decide to clear the factory settings
-	testray=("Keep" "Erase");
-	clearpadding
-	PS3="${YELLOW}Factory EEPROM and WigWag Cloud SSL access keys: "
-	echo -n "${NORM}"
-	select userChoice in "${testray[@]}"; do
-		break;
-	done
-	if [[ "$userChoice" = "${testray[1]}" ]]; then
-		clearpadding
-		UIwarning
-		echo "${YELLOW}You have chosen to destroy your ability to connect to the WigWag cloud services."
-		echo "${CYAN}Confirm that this is your desire by typing: \"ERASEIT\" in the next line:"
-		echo -n "${NORM}"
-		read -r response
-		if [[ "$response" = "ERASEIT" ]]; then
-			wipeeeprom="ERASEIT"
-			callstring="$callstring -e ERASEIT"
-		else 
-			log "error" "Exiting now, incorrect wipe eeprom response provided: '$response'"
-			exit
-		fi
-	fi
-	echo -n "${NORM}"
-
-
-
+#decide what to replace (G)
 	if [[ $advanced -eq 1 ]]; then
+		partitionDecision=("upgrade" "factory")
 		clearpadding
-		PS3="${YELLOW}Factory Partition update forced: "
+		PS3="${YELLOW}Upgrade partition: ";
 		echo -n "${NORM}"
-		select yn in "No Force" "Force"; do
-			break;
+		select upgrd in "${partitionDecision[@]}"; do
+		      break;
 		done
-		if [[ "$yn" = "Force" ]]; then
-			setting_factory_force=1
-			callstring="$callstring -F"
+		if [[ "$upgrd" = "factory" ]]; then
+			purefactory=1;
+			callstring="$callstring -G"
 		fi
 
+#decide to erase the eeprom
+		testray=("Keep" "Erase");
 		clearpadding
-		PS3="${YELLOW}Upgrade Partition update forced: "
+		PS3="${YELLOW}Factory EEPROM and WigWag Cloud SSL access keys: "
 		echo -n "${NORM}"
-		select yn in "No Force" "Force"; do
+		select userChoice in "${testray[@]}"; do
 			break;
 		done
-		if [[ "$yn" = "Force" ]]; then
-			setting_upgrade_force=1
-			callstring="$callstring -U"
+		if [[ "$userChoice" = "${testray[1]}" ]]; then
+			clearpadding
+			UIwarning
+			echo "${YELLOW}You have chosen to destroy your ability to connect to the WigWag cloud services."
+			echo "${CYAN}Confirm that this is your desire by typing: \"ERASEIT\" in the next line:"
+			echo -n "${NORM}"
+			read -r response
+			if [[ "$response" = "ERASEIT" ]]; then
+				wipeeeprom="ERASEIT"
+				callstring="$callstring -e ERASEIT"
+			else 
+				log "error" "Exiting now, incorrect wipe eeprom response provided: '$response'"
+				exit
+			fi
 		fi
-
-		clearpadding
-		PS3="${YELLOW}Wipe the factory partition: "
 		echo -n "${NORM}"
-		select yn in "No wipe" "wipe"; do
-			break;
-		done
-		if [[ "$yn" = "wipe" ]]; then
-			setting_factory_wipe=1
-			callstring="$callstring -g"
 		fi
+		#decide to disable the automatic factory upgrade when newer version is avaiable
+		pdec "factory partition automatic update when update is newer" 'Disable' "f" "setting_factory_update"
+		pdec "factory partition forced update" "Enalbe" "F" "setting_factory_force"
+		pdec "factory partition forced wipe" "Enable" "t" "setting_factory_wipe"
 
-		clearpadding
-		PS3="${YELLOW}Wipe the upgrade partition: "
-		echo -n "${NORM}"
-		select yn in "No wipe" "wipe"; do
-			break;
-		done
-		if [[ "$yn" = "wipe" ]]; then
-			setting_upgrade_wipe=1
-			callstring="$callstring -v"
-		fi
+		pdec "upgrade partition automatic update when update is newer" 'Disable' "u" "setting_upgrade_update"
+		pdec "upgrade partition forced update" "Enalbe" "U" "setting_upgrade_force"
+		pdec "upgrade partition forced wipe" "Enable" "v" "setting_upgrade_wipe"
 
+		pdec "user partition automatic update when update is newer" 'Enable' "s" "setting_user_partition_update"
+		pdec "user partition forced update" "Enalbe" "S" "setting_user_partition_force"
+
+		pdec "userdata partition automatic update when update is newer" 'Enable' "d" "setting_userdata_update"
+		pdec "userdata partition forced update" "Enalbe" "D" "setting_userdata_force"
+
+		pdec "boot partition automatic update when update is newer" 'Enable' "b" "setting_boot_update"
+		pdec "boot partition forced update" "Enalbe" "B" "setting_boot_force"
+		pdec "boot partition forced wipe" "Enable" "z" "setting_boot_wipe"
 	fi
 
 	#decide to reboot
@@ -348,10 +335,6 @@ fi
 		callstring="$callstring -r"
 	fi
 	echo -n "${NORM}"
-
-
-
-
 
 	clearpadding
 	callstring="$callstring $mybuild"
@@ -372,9 +355,8 @@ colorgrep(){
 main(){
         log "debug" "entered main with $upgradeDIR and $wipeeeprom <-- wipe eeprom"
         if [[ "$wipeeeprom" != "" && "$wipeeeprom" = "ERASEIT" ]]; then
-                erasePage
-                log "info" "erased eeprom"
-                uninstallCloudKeys
+                /wigwag/wwrelay-utils/I2C/eetool.sh erase all
+                log "info" "erased eeprom"               
         elif [[ "$wipeeeprom" != "" ]]; then
                         log "error" "Exiting now, incorrect wipe eeprom response provided: '$wipeeeprom'"
                         COMMON_MENU_HELP
@@ -388,6 +370,7 @@ main(){
                 log "debug" "upgrade type: $upgrd, localhostAvailable: $lha"
                 if [[ "$upgrd" = "factory" ]]; then
                         setting_upgrade_upgrade=0;
+                        setting_upgrade_force=0;
                         setting_upgrade_wipe=1;
                         if [[ "$lha" -eq 1 ]]; then
                                 downloadfile="${LFACTORYURL[$mybuild]}"
@@ -411,69 +394,46 @@ main(){
 		rm -rf f.tar.gz
 		rm -rf install.sh
 		rm -rf post-install.sh
+		#b,B,z
+		sedit "UPGRADETHEBOOT" $setting_boot_upgrade
+		sedit "FORCEUPGRADETHEBOOT" $setting_boot_force
+		sedit "WIPETHEBOOT" $setting_boot_wipe
 
+		#d,D,x
+		sedit "UPGRADETHEUSERDATA" $setting_userdata_upgrade
+		sedit "FORCEUPGRADETHEUSERDATA" $setting_userdata_force
+		sedit "WIPETHEUSERDATA" $setting_userdata_wipe
 
-			#b,B,z
-			sedit "UPGRADETHEBOOT" $setting_boot_upgrade
-			sedit "FORCEUPGRADETHEBOOT" $setting_boot_force
-			sedit "WIPETHEBOOT" $setting_boot_wipe
+		#f,F,t
+		sedit "UPGRADETHEFACTORY" $setting_factory_upgrade
+		sedit "FORCEUPGRADETHEFACTORY" $setting_factory_force
+		sedit "WIPETHEFACTORY" $setting_factory_wipe			
 
-			#d,D,x
-			sedit "UPGRADETHEUSERDATA" $setting_userdata_upgrade
-			sedit "FORCEUPGRADETHEUSERDATA" $setting_userdata_force
-			sedit "WIPETHEUSERDATA" $setting_userdata_wipe
+		#s,S,w
+		sedit "UPGRADETHEUSER_PARTITION" $setting_user_upgrade
+		sedit "FORCEUPGRADETHEUSER_PARTITION" $setting_user_force
+		sedit "WIPETHEUSER_PARTITION" $setting_user_wipe
 
-			#f,F,t
-			sedit "UPGRADETHEFACTORY" $setting_factory_upgrade
-			sedit "FORCEUPGRADETHEFACTORY" $setting_factory_force
-			sedit "WIPETHEFACTORY" $setting_factory_wipe			
-
-			#s,S,w
-			sedit "UPGRADETHEUSER_PARTITION" $setting_user_upgrade
-			sedit "FORCEUPGRADETHEUSER_PARTITION" $setting_user_force
-			sedit "WIPETHEUSER_PARTITION" $setting_user_wipe
-
-			#u,U,v 
-			sedit "UPGRADETHEUPGRADE" $setting_upgrade_upgrade
-			sedit "FORCEUPGRADETHEUPGRADE" $setting_upgrade_force
-			sedit "WIPETHEUPGRADE" $setting_upgrade_wipe
-
-			
+		#u,U,v 
+		sedit "UPGRADETHEUPGRADE" $setting_upgrade_upgrade
+		sedit "FORCEUPGRADETHEUPGRADE" $setting_upgrade_force
+		sedit "WIPETHEUPGRADE" $setting_upgrade_wipe
 		log "info" "configuration results"
-			colorgrep "UPGRADETHEBOOT"
-			colorgrep "FORCEUPGRADETHEBOOT"
-			colorgrep "WIPETHEBOOT"
-			colorgrep "UPGRADETHEUSERDATA"
-			colorgrep "FORCEUPGRADETHEUSERDATA"
-			colorgrep "WIPETHEUSERDATA"
-			colorgrep "UPGRADETHEFACTORY"
-			colorgrep "FORCEUPGRADETHEFACTORY"
-			colorgrep "WIPETHEFACTORY"
-			colorgrep "UPGRADETHEUSER_PARTITION"
-			colorgrep "FORCEUPGRADETHEUSER_PARTITION"
-			colorgrep "WIPETHEUSER_PARTITION"
-			colorgrep "UPGRADETHEUPGRADE"
-			colorgrep "FORCEUPGRADETHEUPGRADE"
-			colorgrep "WIPETHEUPGRADE"
-
-		# grep --color -m1 "UPGRADETHEFACTORY" upgrade.sh
-		# grep --color -m1 "FORCEUPGRADETHEFACTORY" upgrade.sh
-		# grep --color -m1 "WIPETHEFACTORY" upgrade.sh
-
-		# grep --color -m1 "UPGRADETHEUPGRADE" upgrade.sh
-		# grep --color -m1 "FORCEUPGRADETHEUPGRADE" upgrade.sh
-		# grep --color -m1 "WIPETHEUPGRADE" upgrade.sh
-
-		# grep --color -m1 "WIPETHEUSER_PARTITION" upgrade.sh
-
-		# grep --color -m1 "WIPETHEUSERDB" upgrade.sh
-
-
-		#echo  "#!/bin/bash" > postUpgrade.sh
-		#shellcheck disable=SC2129
-		# echo  "replace=\$(grep -ne 'version' /wigwag/etc/versions.json | xargs | awk -F ' ' '{print \$6}')" >>	 postUpgrade.sh
-		# echo  "replace=\${replace%%,*}" >> postUpgrade.sh
-		# echo  "sed -i \"s/\$replace/$mybuild/\" /wigwag/etc/versions.json" >> postUpgrade.sh
+		colorgrep "UPGRADETHEBOOT"
+		colorgrep "FORCEUPGRADETHEBOOT"
+		colorgrep "WIPETHEBOOT"
+		colorgrep "UPGRADETHEUSERDATA"
+		colorgrep "FORCEUPGRADETHEUSERDATA"
+		colorgrep "WIPETHEUSERDATA"
+		colorgrep "UPGRADETHEFACTORY"
+		colorgrep "FORCEUPGRADETHEFACTORY"
+		colorgrep "WIPETHEFACTORY"
+		colorgrep "UPGRADETHEUSER_PARTITION"
+		colorgrep "FORCEUPGRADETHEUSER_PARTITION"
+		colorgrep "WIPETHEUSER_PARTITION"
+		colorgrep "UPGRADETHEUPGRADE"
+		colorgrep "FORCEUPGRADETHEUPGRADE"
+		colorgrep "WIPETHEUPGRADE"
 		echo  "your build will be installed after a reboot.  To abort, delete /upgrades/ contents."	
 		if [[ "$rebootit" -eq 1 ]]; then
 			echo -en "rebooting in 5..."
@@ -497,21 +457,22 @@ declare -A hp=(
 	[description]="Updates a relay with a different firmware version (up and down)"
 	[useage]="-options <[buildNo|buildURL]>"
 	[a]="advanced interactive mode"
-	[b]="boot parittion:\tupgrade if newer version avaiable"
+	[b]="boot parittion:\tENABLE upgrade if newer version avaiable"
 	[B]="boot partition:\tforce upgrade regardless"
-	[d]="userdata partition:\tupgrade if newer version avialable"
+	[d]="userdata partition:\ENABLE upgrade if newer version avialable"
 	[D]="userdata partition:\tforce upgrade regardless"
 	[ee]="erase eeprom and ssl keys, must enter it this way: -e <ERASEIT>"
-	[f]="factory partition:\tupgrade if newer version avaiable"
+	[f]="factory partition:\tDISABLE upgrade if newer version avaiable"
 	[F]="factory partition:\tforce upgrade regardless"
+	[G]="factory partition:\t this build, with a true factory version only.  (internal development only)"
 	[h]="help"
 	[i]="interactive (will ignore all other flags)"
 	[mm]="url to manifest.dat -m <url>, defaults to: https://code.wigwag.com/ugs/"
 	[r]="reboot after install is complete"
-	[s]="user paritition:\tupgrade if newer version avaiable"
+	[s]="user paritition:\tENABLE upgrade if newer version avaiable"
 	[S]="user paritition:\tforce upgrade regardless"
 	[t]="wipe the factory partition"
-	[u]="upgrade paritition:\tupgrade if newer version avaiable"
+	[u]="upgrade paritition:\tDISABLE upgrade if newer version avaiable"
 	[U]="upgrade paritition:\tforce upgrade regardless"
 	[v]="wipe the upgrade partition"
 	[w]="wipe the user partition"
@@ -537,6 +498,7 @@ argprocessor(){
 			e)	wipeeeprom=$OPTARG; ;;
 			f)	setting_factory_update=1; ;;
 			F)  setting_factory_force=1; ;;
+			G)	purefactory=1;
 			h) 	COMMON_MENU_HELP; ;;
 			i) 	interactive; exit;;
 			m)	manifesturl=$OPTARG; ;;

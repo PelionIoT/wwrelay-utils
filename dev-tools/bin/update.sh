@@ -1,6 +1,7 @@
 #!/bin/bash
 #---------------Configuration-------------#
-. ccommon.sh nofunc
+source ccommon.sh nofunc
+
 LogToTerm=1
 loglevel=verbose;
 #loglevel=debug;
@@ -13,7 +14,7 @@ setting_user_upgrade=0;
 setting_user_force=0;
 setting_user_wipe=0;
 
-setting_boot_upgrade=0;
+setting_boot_upgrade=1;
 setting_boot_force=0;
 setting_boot_wipe=0;
 
@@ -21,17 +22,19 @@ setting_userdata_upgrade=0;
 setting_userdata_force=0;
 setting_userdata_wipe=0;
 
-setting_factory_upgrade=0;
+setting_factory_upgrade=1;
 setting_factory_force=0;
 setting_factory_wipe=0;
 
-setting_upgrade_force=0;
 setting_upgrade_upgrade=1;
+setting_upgrade_force=0;
 setting_upgrade_wipe=0;
 
+setting_repartition_emmc=1;
 purefactory=0;
 
 wipeeeprom=""
+
 declare -A DESCRIPTION
 declare -A DATE
 declare -A IMGTYPE
@@ -185,7 +188,7 @@ pdec(){
 
 
 interactive(){
-	callstring="upgrade "
+	callstring="upgrade"
 	buildurl="";
 	
 if [[ $advanced -eq 1 ]]; then
@@ -302,23 +305,22 @@ fi
 			fi
 		fi
 		echo -n "${NORM}"
-		fi
 		#decide to disable the automatic factory upgrade when newer version is avaiable
-		pdec "factory partition automatic update when update is newer" 'Disable' "f" "setting_factory_update"
+		pdec "factory partition automatic update when update is newer" 'Disable' "f" "setting_factory_upgrade"
 		pdec "factory partition forced update" "Enalbe" "F" "setting_factory_force"
 		pdec "factory partition forced wipe" "Enable" "t" "setting_factory_wipe"
 
-		pdec "upgrade partition automatic update when update is newer" 'Disable' "u" "setting_upgrade_update"
+		pdec "upgrade partition automatic update when update is newer" 'Disable' "u" "setting_upgrade_upgrade"
 		pdec "upgrade partition forced update" "Enalbe" "U" "setting_upgrade_force"
 		pdec "upgrade partition forced wipe" "Enable" "v" "setting_upgrade_wipe"
 
-		pdec "user partition automatic update when update is newer" 'Enable' "s" "setting_user_partition_update"
+		pdec "user partition automatic update when update is newer" 'Enable' "s" "setting_user_upgrade"
 		pdec "user partition forced update" "Enalbe" "S" "setting_user_partition_force"
 
-		pdec "userdata partition automatic update when update is newer" 'Enable' "d" "setting_userdata_update"
+		pdec "userdata partition automatic update when update is newer" 'Enable' "d" "setting_userdata_upgrade"
 		pdec "userdata partition forced update" "Enalbe" "D" "setting_userdata_force"
 
-		pdec "boot partition automatic update when update is newer" 'Enable' "b" "setting_boot_update"
+		pdec "boot partition automatic update when update is newer" 'Enable' "b" "setting_boot_upgrade"
 		pdec "boot partition forced update" "Enalbe" "B" "setting_boot_force"
 		pdec "boot partition forced wipe" "Enable" "z" "setting_boot_wipe"
 	fi
@@ -338,14 +340,14 @@ fi
 
 	clearpadding
 	callstring="$callstring $mybuild"
-	log "info" "Commandline Command: ${CYAN}$callstring${NORM}"
+	log "info" "Commandline Command----->${CYAN}$callstring${NORM}"
 	main
 }
 
 sedit(){
 	tag="$1"
 	data="$2"
-	SedGeneric upgrade.sh \"0,/$tag.*/s//$tag=$data/\"
+	SedGeneric upgrade.sh "\"0,/$tag.*/s//$tag=$data/\""
 }
 
 colorgrep(){
@@ -395,45 +397,61 @@ main(){
 		rm -rf install.sh
 		rm -rf post-install.sh
 		#b,B,z
-		sedit "UPGRADETHEBOOT" $setting_boot_upgrade
+		sedit "UPGRADETHEBOOTWHENNEWER" $setting_boot_upgrade
 		sedit "FORCEUPGRADETHEBOOT" $setting_boot_force
 		sedit "WIPETHEBOOT" $setting_boot_wipe
 
 		#d,D,x
-		sedit "UPGRADETHEUSERDATA" $setting_userdata_upgrade
+		sedit "UPGRADETHEUSERDATAWHENNEWER" $setting_userdata_upgrade
 		sedit "FORCEUPGRADETHEUSERDATA" $setting_userdata_force
 		sedit "WIPETHEUSERDATA" $setting_userdata_wipe
 
 		#f,F,t
-		sedit "UPGRADETHEFACTORY" $setting_factory_upgrade
+		sedit "UPGRADETHEFACTORYWHENNEWER" $setting_factory_upgrade
 		sedit "FORCEUPGRADETHEFACTORY" $setting_factory_force
 		sedit "WIPETHEFACTORY" $setting_factory_wipe			
 
 		#s,S,w
-		sedit "UPGRADETHEUSER_PARTITION" $setting_user_upgrade
+		sedit "UPGRADETHEUSER_PARTITIONWHENNEWER" $setting_user_upgrade
 		sedit "FORCEUPGRADETHEUSER_PARTITION" $setting_user_force
 		sedit "WIPETHEUSER_PARTITION" $setting_user_wipe
 
 		#u,U,v 
-		sedit "UPGRADETHEUPGRADE" $setting_upgrade_upgrade
+		sedit "UPGRADETHEUPGRADEWHENNEWER" $setting_upgrade_upgrade
 		sedit "FORCEUPGRADETHEUPGRADE" $setting_upgrade_force
 		sedit "WIPETHEUPGRADE" $setting_upgrade_wipe
+
+		sedit "REPARTITIONEMMC" $setting_repartition_emmc
+
 		log "info" "configuration results"
-		colorgrep "UPGRADETHEBOOT"
+		echo ""
+		echo "${CYAN}boot partition${NORM}"
+		colorgrep "UPGRADETHEBOOTWHENNEWER"
 		colorgrep "FORCEUPGRADETHEBOOT"
 		colorgrep "WIPETHEBOOT"
-		colorgrep "UPGRADETHEUSERDATA"
+		echo ""
+		echo "${CYAN}userdata partition${NORM}"
+		colorgrep "UPGRADETHEUSERDATAWHENNEWER"
 		colorgrep "FORCEUPGRADETHEUSERDATA"
 		colorgrep "WIPETHEUSERDATA"
-		colorgrep "UPGRADETHEFACTORY"
+		echo ""
+		echo "${CYAN}factory partition${NORM}"
+		colorgrep "UPGRADETHEFACTORYWHENNEWER"
 		colorgrep "FORCEUPGRADETHEFACTORY"
 		colorgrep "WIPETHEFACTORY"
-		colorgrep "UPGRADETHEUSER_PARTITION"
+		echo ""
+		echo "${CYAN}user paritition${NORM}"
+		colorgrep "UPGRADETHEUSER_PARTITIONWHENNEWER"
 		colorgrep "FORCEUPGRADETHEUSER_PARTITION"
 		colorgrep "WIPETHEUSER_PARTITION"
-		colorgrep "UPGRADETHEUPGRADE"
+		echo ""
+		echo "${CYAN}upgrade partition${NORM}"
+		colorgrep "UPGRADETHEUPGRADEWHENNEWER"
 		colorgrep "FORCEUPGRADETHEUPGRADE"
 		colorgrep "WIPETHEUPGRADE"
+		echo ""
+		echo "${CYAN}other${NORM}"
+		colorgrep "REPARTITIONEMMC"
 		echo  "your build will be installed after a reboot.  To abort, delete /upgrades/ contents."	
 		if [[ "$rebootit" -eq 1 ]]; then
 			echo -en "rebooting in 5..."
@@ -457,7 +475,7 @@ declare -A hp=(
 	[description]="Updates a relay with a different firmware version (up and down)"
 	[useage]="-options <[buildNo|buildURL]>"
 	[a]="advanced interactive mode"
-	[b]="boot parittion:\tENABLE upgrade if newer version avaiable"
+	[b]="boot parittion:\tDISABLE upgrade if newer version avaiable"
 	[B]="boot partition:\tforce upgrade regardless"
 	[d]="userdata partition:\ENABLE upgrade if newer version avialable"
 	[D]="userdata partition:\tforce upgrade regardless"
@@ -469,6 +487,7 @@ declare -A hp=(
 	[i]="interactive (will ignore all other flags)"
 	[mm]="url to manifest.dat -m <url>, defaults to: https://code.wigwag.com/ugs/"
 	[r]="reboot after install is complete"
+	[R]="DISABLE repartition the emmc automatically if a size delta is discovered"
 	[s]="user paritition:\tENABLE upgrade if newer version avaiable"
 	[S]="user paritition:\tforce upgrade regardless"
 	[t]="wipe the factory partition"
@@ -491,22 +510,23 @@ argprocessor(){
 	while getopts "$switch_conditions" flag; do
 		case $flag in
 			a)  advanced=1; interactive; exit; ;;
-			b)	setting_boot_upgrade=1; ;;
+			b)	setting_boot_upgrade=0; ;;
 			B)	setting_boot_force=1; ;;
 			d)  setting_userdata_upgrade=1; ;;
 			D)  setting_userdata_force=1; ;;
 			e)	wipeeeprom=$OPTARG; ;;
-			f)	setting_factory_update=1; ;;
+			f)	setting_factory_upgrade=0; ;;
 			F)  setting_factory_force=1; ;;
-			G)	purefactory=1;
+			G)	purefactory=1; ;;
 			h) 	COMMON_MENU_HELP; ;;
 			i) 	interactive; exit;;
 			m)	manifesturl=$OPTARG; ;;
 			r)	rebootit=1; ;;
-			s) 	setting_user_upgrade=1;
-			S) 	setting_user_force=1;
+			R)	setting_repartition_emmc=0; ;;
+			s) 	setting_user_upgrade=1; ;;
+			S) 	setting_user_force=1; ;;
 			t)  setting_factory_wipe=1; ;;
-			u)	setting_upgrade_upgrade; exit;;
+			u)	setting_upgrade_upgrade=0; ;;
 			U)  setting_upgrade_force=1; ;;
 			v)  setting_upgrade_wipe=1; ;;
 			w)	setting_user_wipe=1; ;; 

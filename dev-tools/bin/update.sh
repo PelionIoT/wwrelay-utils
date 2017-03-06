@@ -171,29 +171,39 @@ upgradethis(){
 
 pdec(){
 	local title="$1"
-	local choice="$2"
+	local defaultsetting="$2"
 	local flag="$3"
 	varname="$4"
-		clearpadding
-		PS3="${YELLOW}$title: "
-		echo -n "${NORM}"
-		select yn in "Enable" "Disable"; do
+	clearpadding
+	PS3="${YELLOW}$title: "
+	echo -n "${NORM}"
+	if [[ $defaultsetting != "Enable" ]]; then
+		select yn in "Disable*" "Enable"; do
 			break;
 		done
-		if [[ "$yn" = "$choice" ]]; then
+		if [[ "$yn" = "Enable" ]]; then
 			eval ${varname}=1
 			callstring="$callstring -$flag"
 		fi
+	else
+		select yn in "Enable*" "Disable"; do
+			break;
+		done
+		if [[ "$yn" = "Disable" ]]; then
+			eval ${varname}=0
+			callstring="$callstring -$flag"
+		fi
+	fi
 }
 
+callstring="upgrade"
 
 interactive(){
-	callstring="upgrade"
 	buildurl="";
 	
 if [[ $advanced -eq 1 ]]; then
 	#decide what to replace
-	manifestChoices=("https://code.wigwag.com/ugs/manifest.dat" "Other")
+	manifestChoices=("https://code.wigwag.com/ugs/manifest.dat*" "Other")
 	clearpadding
 	PS3="${YELLOW}Manifset choice: ";
 	echo -n "${NORM}"
@@ -242,47 +252,42 @@ fi
 	done
 
 	#decide to wipe the user or not (w)
-	testray=("Keep" "Erase");
-	clearpadding
-	PS3="${YELLOW}User Partition: ";
-	echo -n "${NORM}"
-	select userChoice in "${testray[@]}"; do
-		break;
-	done
-	if [[ "$userChoice" = "${testray[1]}" ]]; then
-		setting_user_wipe=1
-		callstring="$callstring -w"
-	fi
+	pdec "user partition forced wipe" "Disable" "w" "setting_user_wipe"
+	# testray=("Keep*" "Erase");
+	# clearpadding
+	# PS3="${YELLOW}User Partition: ";
+	# echo -n "${NORM}"
+	# select userChoice in "${testray[@]}"; do
+	# 	break;
+	# done
+	# if [[ "$userChoice" = "${testray[1]}" ]]; then
+	# 	setting_user_wipe=1
+	# 	callstring="$callstring -w"
+	# 	echo "the callstring $callstring"
+	# fi
 
 	#decide to wipe the userdb (x)
-	testray=("Keep" "Erase");
-	PS3="${YELLOW}User Database: ";
-	clearpadding
-	echo -n "${NORM}"
-	select userChoice in "${testray[@]}"; do
-		break;
-	done
-	if [[ "$userChoice" = "${testray[1]}" ]]; then
-		setting_userdata_upgrade=1
-		callstring="$callstring -x"
-	fi
+	pdec "userdata partition (aka database) forced wipe" "Disable" "x" "setting_userdata_wipe"
+	
 
 #decide what to replace (G)
 	if [[ $advanced -eq 1 ]]; then
-		partitionDecision=("upgrade" "factory")
+		partitionDecision=("no*" "yes")
 		clearpadding
-		PS3="${YELLOW}Upgrade partition: ";
+		PS3="${YELLOW}Advanced, convert this build to a pure factory ";
 		echo -n "${NORM}"
-		select upgrd in "${partitionDecision[@]}"; do
+		select thechoicenow in "${partitionDecision[@]}"; do
 		      break;
 		done
-		if [[ "$upgrd" = "factory" ]]; then
+		if [[ "$thechoicenow" = "yes" ]]; then
+			upgrd=factory
 			purefactory=1;
 			callstring="$callstring -G"
+			echo "the callstring $callstring"
 		fi
 
 #decide to erase the eeprom
-		testray=("Keep" "Erase");
+		testray=("Keep*" "Erase");
 		clearpadding
 		PS3="${YELLOW}Factory EEPROM and WigWag Cloud SSL access keys: "
 		echo -n "${NORM}"
@@ -299,6 +304,7 @@ fi
 			if [[ "$response" = "ERASEIT" ]]; then
 				wipeeeprom="ERASEIT"
 				callstring="$callstring -e ERASEIT"
+				echo "the callstring $callstring"
 			else 
 				log "error" "Exiting now, incorrect wipe eeprom response provided: '$response'"
 				exit
@@ -306,23 +312,23 @@ fi
 		fi
 		echo -n "${NORM}"
 		#decide to disable the automatic factory upgrade when newer version is avaiable
-		pdec "factory partition automatic update when update is newer" 'Disable' "f" "setting_factory_upgrade"
-		pdec "factory partition forced update" "Enalbe" "F" "setting_factory_force"
-		pdec "factory partition forced wipe" "Enable" "t" "setting_factory_wipe"
+		pdec "factory partition automatic update when update is newer" 'Enable' "f" "setting_factory_upgrade"
+		pdec "factory partition forced update" "Disable" "F" "setting_factory_force"
+		pdec "factory partition forced wipe" "Disable" "t" "setting_factory_wipe"
 
-		pdec "upgrade partition automatic update when update is newer" 'Disable' "u" "setting_upgrade_upgrade"
-		pdec "upgrade partition forced update" "Enalbe" "U" "setting_upgrade_force"
-		pdec "upgrade partition forced wipe" "Enable" "v" "setting_upgrade_wipe"
+		pdec "upgrade partition automatic update when update is newer" 'Enable' "u" "setting_upgrade_upgrade"
+		pdec "upgrade partition forced update" "Disable" "U" "setting_upgrade_force"
+		pdec "upgrade partition forced wipe" "Disable" "v" "setting_upgrade_wipe"
 
-		pdec "user partition automatic update when update is newer" 'Enable' "s" "setting_user_upgrade"
-		pdec "user partition forced update" "Enalbe" "S" "setting_user_partition_force"
+		pdec "user partition automatic update when update is newer" 'Disable' "s" "setting_user_upgrade"
+		pdec "user partition forced update" "Disable" "S" "setting_user_force"
 
-		pdec "userdata partition automatic update when update is newer" 'Enable' "d" "setting_userdata_upgrade"
-		pdec "userdata partition forced update" "Enalbe" "D" "setting_userdata_force"
+		pdec "userdata partition automatic update when update is newer" 'Disable' "d" "setting_userdata_upgrade"
+		pdec "userdata partition forced update" "Disable" "D" "setting_userdata_force"
 
 		pdec "boot partition automatic update when update is newer" 'Enable' "b" "setting_boot_upgrade"
-		pdec "boot partition forced update" "Enalbe" "B" "setting_boot_force"
-		pdec "boot partition forced wipe" "Enable" "z" "setting_boot_wipe"
+		pdec "boot partition forced update" "Disable" "B" "setting_boot_force"
+		pdec "boot partition forced wipe" "Disable" "z" "setting_boot_wipe"
 	fi
 
 	#decide to reboot
@@ -340,7 +346,8 @@ fi
 
 	clearpadding
 	callstring="$callstring $mybuild"
-	log "info" "Commandline Command----->${CYAN}$callstring${NORM}"
+	echo "the callstring $callstring"
+	log "info" "Commandline Command-----> ${CYAN}$callstring${NORM}"
 	main
 }
 
@@ -370,7 +377,7 @@ main(){
         else
                 lha=$(localhostAvailable)
                 log "debug" "upgrade type: $upgrd, localhostAvailable: $lha"
-                if [[ "$upgrd" = "factory" ]]; then
+                if [[ "$upgrd" = "factory" || $purefactory = 1 ]]; then
                         setting_upgrade_upgrade=0;
                         setting_upgrade_force=0;
                         setting_upgrade_wipe=1;
@@ -390,37 +397,40 @@ main(){
         fi
 
 		log "info" "downloading: ${CYAN}$downloadfile${NORM} for installation"
-		curl -o f.tar.gz -k "$downloadfile"
-		log "info" "${YELLOW}unzipping the upgrade.  30 sec... ${NORM}"
-		tar -xzf f.tar.gz
-		rm -rf f.tar.gz
-		rm -rf install.sh
-		rm -rf post-install.sh
+		if [[ 1 -eq 1 ]]; then
+			curl -o f.tar.gz -k "$downloadfile"
+			log "info" "${YELLOW}unzipping the upgrade.  30 sec... ${NORM}"
+			tar -xzf f.tar.gz
+			rm -rf f.tar.gz
+			rm -rf install.sh
+			rm -rf post-install.sh
+		fi
 		#b,B,z
 		sedit "UPGRADETHEBOOTWHENNEWER" $setting_boot_upgrade
 		sedit "FORCEUPGRADETHEBOOT" $setting_boot_force
 		sedit "WIPETHEBOOT" $setting_boot_wipe
-
-		#d,D,x
-		sedit "UPGRADETHEUSERDATAWHENNEWER" $setting_userdata_upgrade
-		sedit "FORCEUPGRADETHEUSERDATA" $setting_userdata_force
-		sedit "WIPETHEUSERDATA" $setting_userdata_wipe
 
 		#f,F,t
 		sedit "UPGRADETHEFACTORYWHENNEWER" $setting_factory_upgrade
 		sedit "FORCEUPGRADETHEFACTORY" $setting_factory_force
 		sedit "WIPETHEFACTORY" $setting_factory_wipe			
 
-		#s,S,w
-		sedit "UPGRADETHEUSER_PARTITIONWHENNEWER" $setting_user_upgrade
-		sedit "FORCEUPGRADETHEUSER_PARTITION" $setting_user_force
-		sedit "WIPETHEUSER_PARTITION" $setting_user_wipe
-
 		#u,U,v 
 		sedit "UPGRADETHEUPGRADEWHENNEWER" $setting_upgrade_upgrade
 		sedit "FORCEUPGRADETHEUPGRADE" $setting_upgrade_force
 		sedit "WIPETHEUPGRADE" $setting_upgrade_wipe
 
+		#s,S,w
+		sedit "UPGRADETHEUSER_PARTITIONWHENNEWER" $setting_user_upgrade
+		sedit "FORCEUPGRADETHEUSER_PARTITION" $setting_user_force
+		sedit "WIPETHEUSER_PARTITION" $setting_user_wipe
+
+		#d,D,x
+		sedit "UPGRADETHEUSERDATAWHENNEWER" $setting_userdata_upgrade
+		sedit "FORCEUPGRADETHEUSERDATA" $setting_userdata_force
+		sedit "WIPETHEUSERDATA" $setting_userdata_wipe
+
+		
 		sedit "REPARTITIONEMMC" $setting_repartition_emmc
 
 		log "info" "configuration results"
@@ -430,25 +440,25 @@ main(){
 		colorgrep "FORCEUPGRADETHEBOOT"
 		colorgrep "WIPETHEBOOT"
 		echo ""
-		echo "${CYAN}userdata partition${NORM}"
-		colorgrep "UPGRADETHEUSERDATAWHENNEWER"
-		colorgrep "FORCEUPGRADETHEUSERDATA"
-		colorgrep "WIPETHEUSERDATA"
-		echo ""
 		echo "${CYAN}factory partition${NORM}"
 		colorgrep "UPGRADETHEFACTORYWHENNEWER"
 		colorgrep "FORCEUPGRADETHEFACTORY"
 		colorgrep "WIPETHEFACTORY"
+		echo ""
+		echo "${CYAN}upgrade partition${NORM}"
+		colorgrep "UPGRADETHEUPGRADEWHENNEWER"
+		colorgrep "FORCEUPGRADETHEUPGRADE"
+		colorgrep "WIPETHEUPGRADE"
 		echo ""
 		echo "${CYAN}user paritition${NORM}"
 		colorgrep "UPGRADETHEUSER_PARTITIONWHENNEWER"
 		colorgrep "FORCEUPGRADETHEUSER_PARTITION"
 		colorgrep "WIPETHEUSER_PARTITION"
 		echo ""
-		echo "${CYAN}upgrade partition${NORM}"
-		colorgrep "UPGRADETHEUPGRADEWHENNEWER"
-		colorgrep "FORCEUPGRADETHEUPGRADE"
-		colorgrep "WIPETHEUPGRADE"
+		echo "${CYAN}userdata partition${NORM}"
+		colorgrep "UPGRADETHEUSERDATAWHENNEWER"
+		colorgrep "FORCEUPGRADETHEUSERDATA"
+		colorgrep "WIPETHEUSERDATA"
 		echo ""
 		echo "${CYAN}other${NORM}"
 		colorgrep "REPARTITIONEMMC"
@@ -475,7 +485,7 @@ declare -A hp=(
 	[description]="Updates a relay with a different firmware version (up and down)"
 	[useage]="-options <[buildNo|buildURL]>"
 	[a]="advanced interactive mode"
-	[b]="boot parittion:\tDISABLE upgrade if newer version avaiable"
+	[b]="boot parittion:\tXXX upgrade if newer version avaiable"
 	[B]="boot partition:\tforce upgrade regardless"
 	[d]="userdata partition:\ENABLE upgrade if newer version avialable"
 	[D]="userdata partition:\tforce upgrade regardless"

@@ -378,7 +378,7 @@ echo "${NORM}"
 #/	$3:		name1
 #/	Out:	blank screen, currsor at the bottom
 #/	Expl:	clearpadding
-clearpadding2(){
+clearpadding(){
 	clear; echo -e "\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n"
 } #end_clearpadding\n
 

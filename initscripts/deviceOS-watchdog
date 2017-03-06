@@ -30,12 +30,14 @@ start() {
         exit 1
     else
         ## Change from /dev/null to something like /var/log/$PROG if you want to save output.
+        pgrep $PROG
+        pkill $PROG
         $START_DEVICEOSWD_CMD
 
     fi
 }
 
-stop() {
+humanhalt() {
     if [ -e "$PID_PATH/$FIXED_PID_FILE" ]; then
         ## Program is running, so stop it
         pid=`cat $PID_PATH/$FIXED_PID_FILE`
@@ -76,8 +78,8 @@ case "$1" in
         start
         exit 0
     ;;
-    stop)
-        stop
+    humanhalt)
+        humanhalt
         exit 0
     ;;
     status)
@@ -94,7 +96,7 @@ case "$1" in
         exit 0
     ;;
     **)
-        echo "Usage: $0 {start|stop|status|panic|reload}" 1>&2
+        echo "Usage: $0 {start|humanhalt|status|panic|reload}" 1>&2
         exit 1
     ;;
 esac

@@ -496,6 +496,7 @@ declare -A hp=(
 	[h]="help"
 	[i]="interactive (will ignore all other flags)"
 	[mm]="url to manifest.dat -m <url>, defaults to: https://code.wigwag.com/ugs/"
+	[N]="nuke, same as -t -v -z -w -x -z -F -U -B"
 	[r]="reboot after install is complete"
 	[R]="DISABLE repartition the emmc automatically if a size delta is discovered"
 	[s]="user paritition:\tENABLE upgrade if newer version avaiable"
@@ -531,6 +532,7 @@ argprocessor(){
 			h) 	COMMON_MENU_HELP; ;;
 			i) 	interactive; exit;;
 			m)	manifesturl=$OPTARG; ;;
+			N)	setting_factory_force=1;setting_upgrade_force=1;setting_boot_force=1;setting_boot_wipe=1;setting_factory_wipe=1;setting_upgrade_wipe=1;setting_user_wipe=1;setting_userdata_wipe=1; ;;
 			r)	rebootit=1; ;;
 			R)	setting_repartition_emmc=0; ;;
 			s) 	setting_user_upgrade=1; ;;

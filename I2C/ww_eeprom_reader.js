@@ -224,7 +224,15 @@ function createHandlebarsData(eeprom, platform) {
 	data.userFirmwareVersionFile = userFirmwareVersionFile;
 	data.devicejsConfFile = devicejs_conf_file;
 	data.devicedbConfFile = devicedb_conf_file;
-	data.partitionScheme = (execSync('fdisk -l /dev/mmcblk0p1 | xargs | awk \'{print $3}\'').toString() === '50\n') ? '8Gb' : '4Gb';
+	var _temps = null;
+	try {
+		_temps = execSync('fdisk -l /dev/mmcblk0p1 | xargs | awk \'{print $3}\'');
+	} catch(e) {
+		console.error("FAILED to run check for MMC",e);
+	}
+	if(_temps) {
+		data.partitionScheme = (_temps.toString() === '50\n') ? '8Gb' : '4Gb';	
+	}
 	if(typeof eeprom.ledConfig !== 'undefined' &&
 		((eeprom.ledConfig == '01') || (eeprom.ledConfig == '00') ||
 			(eeprom.ledConfig == '--') || (eeprom.ledConfig == 'xx') ) ) {

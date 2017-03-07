@@ -231,7 +231,8 @@ function createHandlebarsData(eeprom, platform) {
 		console.error("FAILED to run check for MMC",e);
 	}
 	if(_temps) {
-		data.partitionScheme = (_temps.toString() === '50\n') ? '8Gb' : '4Gb';	
+		if(Buffer.isBuffer(_temps)) _temps = _temps.toString()
+		data.partitionScheme = (_temps === '50\n') ? '8Gb' : '4Gb';	
 	}
 	if(typeof eeprom.ledConfig !== 'undefined' &&
 		((eeprom.ledConfig == '01') || (eeprom.ledConfig == '00') ||
@@ -920,6 +921,9 @@ main().then(function() {
 		});
 	}
 }, function(err) {
-	console.log('EEPROM reader got error- ', err);
+	console.error('EEPROM reader got error- ', err);
+	if(err.stack) {
+		console.error('Back trace:',err.stack)
+	}
 	process.exit(1);
 });

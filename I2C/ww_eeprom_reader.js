@@ -242,7 +242,8 @@ function createHandlebarsData(eeprom, platform) {
 	else {
 		data.ledconfig = 'RBG';
 	}
-	data.ledConfig = data.ledconfig + '(' + eeprom.ledConfig.toString() + ')';
+	if(eeprom && eeprom.ledConfig)
+		data.ledConfig = data.ledconfig + '(' + eeprom.ledConfig.toString() + ')';
 	return data;
 }
 

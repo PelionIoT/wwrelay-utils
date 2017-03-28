@@ -224,7 +224,16 @@ function createHandlebarsData(eeprom, platform) {
 	data.userFirmwareVersionFile = userFirmwareVersionFile;
 	data.devicejsConfFile = devicejs_conf_file;
 	data.devicedbConfFile = devicedb_conf_file;
-	data.partitionScheme = (execSync('fdisk -l /dev/mmcblk0p1 | xargs | awk \'{print $3}\'').toString() === '50\n') ? '8Gb' : '4Gb';
+	var _temps = null;
+	try {
+		_temps = execSync('fdisk -l /dev/mmcblk0p1 | xargs | awk \'{print $3}\'');
+	} catch(e) {
+		console.error("FAILED to run check for MMC",e);
+	}
+	if(_temps) {
+		if(Buffer.isBuffer(_temps)) _temps = _temps.toString()
+		data.partitionScheme = (_temps === '50\n') ? '8Gb' : '4Gb';	
+	}
 	if(typeof eeprom.ledConfig !== 'undefined' &&
 		((eeprom.ledConfig == '01') || (eeprom.ledConfig == '00') ||
 			(eeprom.ledConfig == '--') || (eeprom.ledConfig == 'xx') ) ) {
@@ -233,7 +242,8 @@ function createHandlebarsData(eeprom, platform) {
 	else {
 		data.ledconfig = 'RBG';
 	}
-	data.ledConfig = data.ledconfig + '(' + eeprom.ledConfig.toString() + ')';
+	if(eeprom && eeprom.ledConfig)
+		data.ledConfig = data.ledconfig + '(' + eeprom.ledConfig.toString() + ')';
 	return data;
 }
 
@@ -912,6 +922,9 @@ main().then(function() {
 		});
 	}
 }, function(err) {
-	console.log('EEPROM reader got error- ', err);
+	console.error('EEPROM reader got error- ', err);
+	if(err.stack) {
+		console.error('Back trace:',err.stack)
+	}
 	process.exit(1);
 });

@@ -1,5 +1,5 @@
 #!/bin/bash
-
+#a tool that can build a bootable version of the factory partition
 if [[ ! -e $1 ]]; then
 	echo "Useage: $0 <device>"
 	echo "-e.g. $0 /dev/sda"

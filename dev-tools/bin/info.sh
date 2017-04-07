@@ -10,7 +10,7 @@ tab3="\t\t\t"
 
 #run eetool
 ret(){
-	/wigwag/wwrelay-utils/I2C/eetool.sh get "$1"
+	eetool get "$1"
 }
 
 firmware(){
@@ -58,7 +58,7 @@ hardware(){
 	LEDTYPE="RBG"
 	LEDCONFIG=$(ret ledConfig)
 	HWV=$(ret hardwareVersion)
-	ETHERNETMAC=$(/wigwag/wwrelay-utils/I2C/eetool.sh -t hex-colon get ethernetMAC)
+	ETHERNETMAC=$(eetool -t hex-colon get ethernetMAC)
 	if [[ $LEDCONFIG = "01" ]]; then
 		LEDTYPE="RGB"
 	fi

@@ -60,7 +60,7 @@ function genCerts() {
 case "$1" in
     start)
         echo "Led to purple"
-        /wigwag/wwrelay-utils/GPIO/led.sh 10 0 10
+        led 10 0 10
         echo "starting watchdog"
 	      echo "Starting WigWag Relay"
         checkForUpgrade
@@ -80,7 +80,8 @@ case "$1" in
           echo "EEPROM written properly, relay.config.json successfully generated"
         else
           echo "EEPROM not written properly, relay.config.json is not generated."
-          /wigwag/wwrelay-utils/GPIO/led.sh 10 10 0
+          led 10 10 0
+          udhcpc -n
         fi
 	 ;;
     stop)

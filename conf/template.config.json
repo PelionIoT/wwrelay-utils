@@ -244,6 +244,13 @@
                         "deviceControllersDirectory": "templates",
                         "logLevel": 2
                     }
+                },
+                {
+                    "path":"${thisdir}/../../wigwag-core-modules/DevStateManager",
+                    "config": {
+                        "logLevel": 2,
+                        "pollingRate": 30000
+                    }
                 }
             ]
         },

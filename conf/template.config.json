@@ -244,13 +244,6 @@
                         "deviceControllersDirectory": "templates",
                         "logLevel": 2
                     }
-                },
-                {
-                    "path":"${thisdir}/../../wigwag-core-modules/DevStateManager",
-                    "config": {
-                        "logLevel": 2,
-                        "pollingRate": 30000
-                    }
                 }
             ]
         },
@@ -407,6 +400,13 @@
                         "jwtSecret":"IXPySxxr0f5X2CIqdB45eK",
                         "apiKey":"{{apikey}}",
                         "apiSecret":"{{apisecret}}"
+                    }
+                },
+                {
+                    "path":"${thisdir}/../../wigwag-core-modules/DevStateManager",
+                    "config": {
+                        "logLevel": 2,
+                        "pollingRate": 30000
                     }
                 }
             ]

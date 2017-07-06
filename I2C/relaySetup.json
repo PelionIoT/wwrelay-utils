@@ -14,6 +14,12 @@
     //Config file used by Runner
     "relayConfigFilePath": "/wigwag/devicejs-core-modules/Runner/relay.config.json",
 
+    //Template file with handlebars for config.json (of the relay-term)
+    "relaytermTemplateFilePath": "/wigwag/wigwag-core-modules/relay-term/config/relayterm_template.config.json",
+
+    //Config file used by relay-term
+    "relaytermConfigFilePath": "/wigwag/wigwag-core-modules/relay-term/config/config.json",
+
     //Template file with handlebars to setup radio profile of this relay
     "rsmiTemplateFilePath": "/wigwag/devicejs-core-modules/rsmi/radioProfile.template.json",
 

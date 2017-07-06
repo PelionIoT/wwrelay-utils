@@ -21,71 +21,83 @@ WWRELAY_LOG="${WIGWAGROOT}/log/wwrelay.log"
 GPIO_LOG="${WIGWAGROOT}/log/gpio.log"
 DBDIR="/userdata/etc/devicejs/db"
 RELAY_SETUP_FILE="${WIGWAGROOT}/wwrelay-utils/I2C/relaySetup.json"
+RELAYTERMSTARTER="${WIGWAGROOT}/wigwag-core-modules/relay-term/bin/relay-term"
+RELAYTERM="${WIGWAGROOT}/wigwag-core-modules/relay-term/src/index.js"
+RELAYTERMCONF="${WIGWAGROOT}/wigwag-core-modules/relay-term/config/config.json"
+RELAYTERM_LOG="${WIGWAGROOT}/log/wwrelayterm.log"
 
 function checkForUpgrade() {
   if [ -e /userdata/postUpgrade.sh ] ; then
-      /userdata/postUpgrade.sh
-      /bin/rm /userdata/postUpgrade.sh
+    /userdata/postUpgrade.sh
+    /bin/rm /userdata/postUpgrade.sh
   fi
 }
 
 function prepDB() {
   if [ ! -e ${DBDIR} ]; then
-     mkdir -p ${DBDIR}
-  fi
+   mkdir -p ${DBDIR}
+ fi
 }
 
 function genCerts() {
 
-   if [ ! -e ${WIGWAGROOT}/devicejs-core-modules/AppServer/Certs ]; then
-      mkdir ${WIGWAGROOT}/devicejs-core-modules/AppServer/Certs
-   fi
+ if [ ! -e ${WIGWAGROOT}/devicejs-core-modules/AppServer/Certs ]; then
+  mkdir ${WIGWAGROOT}/devicejs-core-modules/AppServer/Certs
+fi
 
-   if [ ! -e ${WIGWAGROOT}/devicejs-core-modules/AppServer/Certs/ca.crt ]; then
-      cd ${WIGWAGROOT}/devicejs-core-modules/AppServer/Certs
-      pwgen 50 1 > passphrase
-      openssl genrsa -des3 -passout file:passphrase -out ca.key 1024
-      openssl req -new -passin file:passphrase -key ca.key -out ca.csr -subj "/C=US/ST=Texas/L=Austin/O=WigWag Inc./OU=Consumer/CN=www.wigwag.com/emailAddress=support@wigwag.com"
-      openssl x509 -req -days 7300 -in ca.csr -out ca.crt -passin file:passphrase -signkey ca.key
-      openssl genrsa -des3 -passout file:passphrase -out server.key 1024
-      openssl req -new -passin file:passphrase -key server.key -out server.csr -subj "/C=US/ST=Texas/L=Austin/O=WigWag Inc./OU=Consumer/CN=www.wigwag.com/emailAddress=support@wigwag.com"
-      cp server.key server.key.passphrase
-      openssl rsa -in server.key.passphrase -passin file:passphrase -out server.key
-      openssl x509 -req -days 7300 -in server.csr -passin file:passphrase -signkey server.key -out server.crt
-      rm passphrase
-   fi
+if [ ! -e ${WIGWAGROOT}/devicejs-core-modules/AppServer/Certs/ca.crt ]; then
+  cd ${WIGWAGROOT}/devicejs-core-modules/AppServer/Certs
+  pwgen 50 1 > passphrase
+  openssl genrsa -des3 -passout file:passphrase -out ca.key 1024
+  openssl req -new -passin file:passphrase -key ca.key -out ca.csr -subj "/C=US/ST=Texas/L=Austin/O=WigWag Inc./OU=Consumer/CN=www.wigwag.com/emailAddress=support@wigwag.com"
+  openssl x509 -req -days 7300 -in ca.csr -out ca.crt -passin file:passphrase -signkey ca.key
+  openssl genrsa -des3 -passout file:passphrase -out server.key 1024
+  openssl req -new -passin file:passphrase -key server.key -out server.csr -subj "/C=US/ST=Texas/L=Austin/O=WigWag Inc./OU=Consumer/CN=www.wigwag.com/emailAddress=support@wigwag.com"
+  cp server.key server.key.passphrase
+  openssl rsa -in server.key.passphrase -passin file:passphrase -out server.key
+  openssl x509 -req -days 7300 -in server.csr -passin file:passphrase -signkey server.key -out server.crt
+  rm passphrase
+fi
 
 }
 
 case "$1" in
-    start)
-        echo "Led to purple"
-        led 10 0 10
-        echo "starting watchdog"
-	      echo "Starting WigWag Relay"
-        checkForUpgrade
-        prepDB
-        genCerts
-        if [ -x $WWRELAY_LOG ] ; then
-            mv $WWRELAY_LOG $WWRLAY_LOG.1
-        fi
+  start)
+echo "Led to purple"
+led 10 0 10
+echo "starting watchdog"
+echo "Starting WigWag Relay"
+checkForUpgrade
+prepDB
+genCerts
+if [ -x $WWRELAY_LOG ] ; then
+  mv $WWRELAY_LOG $WWRLAY_LOG.1
+fi
 
-        if [ -x $GPIO_LOG ] ; then
-            mv $GPIO_LOG $GPIO_LOG.1
-        fi
-        cd ${WIGWAGROOT}/wwrelay-utils/I2C
-        /usr/bin/node ./ww_eeprom_reader.js -c $RELAY_SETUP_FILE > $WWRELAY_LOG 2>&1
-        OUT=$?
-        if [ $OUT -eq 0 ]; then
-          echo "EEPROM written properly, relay.config.json successfully generated"
-        else
-          echo "EEPROM not written properly, relay.config.json is not generated."
-          led 10 10 0
-          udhcpc -n
-        fi
-	 ;;
-    stop)
-	echo "Stopping WigWag Relay"
+if [ -x $GPIO_LOG ] ; then
+  mv $GPIO_LOG $GPIO_LOG.1
+fi
+cd ${WIGWAGROOT}/wwrelay-utils/I2C
+/usr/bin/node ./ww_eeprom_reader.js -c $RELAY_SETUP_FILE > $WWRELAY_LOG 2>&1
+OUT=$?
+if [ $OUT -eq 0 ]; then
+  echo "EEPROM written properly, relay.config.json successfully generated"
+  #su - wigwaguser /usr/bin/node $RELAYTERM start $RELAYTERMCONF > $RELAYTERM_LOG 2>&1 &
+  if [[ ! -e $RELAYTERM_LOG ]]; then
+    touch $RELAYTERM_LOG
+  fi
+  chmod 777 $RELAYTERM_LOG
+  #sudo su -c "$RELAYTERMSTARTER start $RELAYTERMCONF > $RELAYTERM_LOG 2>&1 &" -s /bin/bash wigwaguser
+  sudo su -c "/usr/bin/node $RELAYTERM start $RELAYTERMCONF > $RELAYTERM_LOG 2>&1 &" -s /bin/bash wigwaguser
+else
+  echo "EEPROM not written properly, relay.config.json is not generated."
+  led 10 10 0
+  udhcpc -n
+fi
+
+;;
+stop)
+echo "Stopping WigWag Relay"
 esac
 
 exit 0

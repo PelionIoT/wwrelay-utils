@@ -5,15 +5,15 @@
 # Provides:             wwrelay
 # Required-Start:       $remote_fs $time
 # Required-Stop:        $remote_fs $time
-# Should-Start:         $network
-# Should-Stop:          $network
+# Should-Start:         
+# Should-Stop:          
 # Default-Start:        2 3 4 5
 # Default-Stop:         0 1 6
 # Short-Description:    System logger
 ### END INIT INFO
 
 # Source function library.
-. /etc/init.d/functions
+source /etc/init.d/functions
 
 WIGWAGROOT="/wigwag"
 GPIO_DIR="${WIGWAGROOT}/wwrelay-utils/GPIO"
@@ -83,17 +83,22 @@ OUT=$?
 if [ $OUT -eq 0 ]; then
   echo "EEPROM written properly, relay.config.json successfully generated"
   #su - wigwaguser /usr/bin/node $RELAYTERM start $RELAYTERMCONF > $RELAYTERM_LOG 2>&1 &
-  if [[ ! -e $RELAYTERM_LOG ]]; then
-    touch $RELAYTERM_LOG
-  fi
-  chmod 777 $RELAYTERM_LOG
-  #sudo su -c "$RELAYTERMSTARTER start $RELAYTERMCONF > $RELAYTERM_LOG 2>&1 &" -s /bin/bash wigwaguser
-  sudo su -c "/usr/bin/node $RELAYTERM start $RELAYTERMCONF > $RELAYTERM_LOG 2>&1 &" -s /bin/bash wigwaguser
 else
   echo "EEPROM not written properly, relay.config.json is not generated."
   led 10 10 0
   udhcpc -n
 fi
+
+
+#   #sudo su -c "$RELAYTERMSTARTER start $RELAYTERMCONF > $RELAYTERM_LOG 2>&1 &" -s /bin/bash wigwaguser
+#   sudo su -c "/usr/bin/node $RELAYTERM start $RELAYTERMCONF > $RELAYTERM_LOG 2>&1 &" -s /bin/bash wigwaguser
+#   OUT=$?
+#   if [ $OUT -eq 0 ]; then
+#     echo "relay-term strated successful"
+#   #su - wigwaguser /usr/bin/node $RELAYTERM start $RELAYTERMCONF > $RELAYTERM_LOG 2>&1 &
+# else
+#   echo "relay-term failed to start."
+# fi
 
 ;;
 stop)

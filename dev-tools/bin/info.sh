@@ -14,10 +14,13 @@ ret(){
 }
 
 firmware(){
+
 	currentV=$(grep -ne 'version' /wigwag/etc/versions.json 2> /dev/null | xargs | awk -F ' ' '{print $8}')
 	userV=$(grep -ne 'version' /mnt/.overlay/user/slash/wigwag/etc/versions.json 2> /dev/null | xargs | awk -F ' ' '{print $8}')
 	upgradeV=$(grep -ne 'version' /mnt/.overlay/upgrade/wigwag/etc/versions.json 2> /dev/null | xargs | awk -F ' ' '{print $8}')
 	factoryV=$(grep -ne 'version' /mnt/.overlay/factory/wigwag/etc/versions.json 2> /dev/null | xargs | awk -F ' ' '{print $8}')
+	
+
 	dd if=/dev/mmcblk0 of=/tmp/uboot.img seek=8 bs=1024 count=100 >> /dev/null 2>&1
 	ubootV=$(grep -a "WigWag-U-boot-version_id" /tmp/uboot.img | tail -1 | awk '{print $2}')
 	if [[ -e /mnt/.boot/version ]]; then

@@ -1,0 +1,171 @@
+#!/bin/bash
+# /etc/init.d/relayterm: starts relay-term
+
+### BEGIN INIT INFO
+# Provides:             relayterm
+# Required-Start:       wwrelay
+# Required-Stop:        
+# Should-Start:         network
+# Should-Stop:          
+# Default-Start:        5
+# Default-Stop:         0 1 6
+# Short-Description:    remote terminal for the relay through cloud
+### END INIT INFO
+# Source function library.
+source /etc/init.d/functions
+
+WIGWAGROOT="/wigwag"
+PROG="relay-term"
+
+RELAYTERMSTARTER="${WIGWAGROOT}/wigwag-core-modules/relay-term/bin/relay-term"
+RELAYTERM="${WIGWAGROOT}/wigwag-core-modules/relay-term/src/index.js"
+RELAYTERMCONF="${WIGWAGROOT}/wigwag-core-modules/relay-term/config/config.json"
+RELAYTERM_LOG="${WIGWAGROOT}/log/wwrelayterm.log"
+
+PID_PATH="/var/run"
+FIXED_PID_FILE="$PROG.pid"
+PIDFILE=$PID_PATH/$FIXED_PID_FILE
+START_RELAYTERM_CMD=""
+STOP_RELAYTERM_CMD="pkill -f $PROG"
+
+#if the executable is not there, lets exit
+if [[ ! -e $RELAYTERM ]]; then
+    echo "$RELAYTERM file is missing"
+    exit 5
+elif [[ ! -x /usr/bin/node ]]; then
+    echo "nodejs does not exist at /usr/bin/node"
+    exit 5
+fi
+
+
+start() {
+    if [[ ! -e $RELAYTERM_LOG ]]; then
+        touch $RELAYTERM_LOG
+    fi
+    chmod 777 $RELAYTERM_LOG
+    c=$(pgrep -f $PROG | wc -l)
+    if [[ $c -gt 1 ]]; then  
+        error
+        echo " Error! $c $PROG processes found.  Must fix this.  try killAll" 1>&2
+    elif [[ $c -eq 1 ]]; then
+        pid=$(cat $PIDFILE);
+        warning
+        echo " Warning! $PROG is currently running! ($pid)" 1>&2
+    else
+        ## Change from /dev/null to something like /var/log/$PROG if you want to save output.
+        #echo "my pgrep: -f $PROG"
+        sudo su -c "/usr/bin/node $RELAYTERM start $RELAYTERMCONF > $RELAYTERM_LOG 2>&1 &" -s /bin/bash wigwaguser
+        pid=$(pgrep -f $PROG)
+        echo "$pid">$PIDFILE
+        success
+        echo " Started $PROG ($pid)"
+        
+    fi
+}
+
+
+stop() {
+    if [ -e "$PIDFILE" ]; then
+        ## Program is running, so stop it
+        pid=`cat $PIDFILE`
+        kill -9 $pid
+        rm "$PIDFILE"
+        success
+        echo " $PROG stopped ($pid)"
+    else
+        ## Program is not running, exit with error.
+        warning
+        echo " Warning! $PROG not started!" 1>&2
+        exit 1
+    fi
+}
+
+killAll() {
+    if [ -e "$PIDFILE" ]; then
+        ## Program is running, so stop it
+        pid=`cat $PIDFILE`
+        kill -9 $pid
+        if [[ $? -eq 0 ]]; then
+           success 
+           echo " $PROG stopped ($pid)"
+       fi
+       rm "$PIDFILE"
+       if [[ $? -eq 0 ]]; then
+        success
+        echo " removed $PIDFILE"
+    fi
+fi
+c=$(pgrep -f $PROG | wc -l)
+    #c=$(($c - 2));
+    #echo "my c=$c prog=$PROG"
+    #pgrep -f $PROG
+    #ps ax | grep $PROG
+    if [[ $c -gt 0 ]]; then  
+
+        echo stopping $c rogue $PROG
+        pkill -f $PROG
+        if [[ $? ]]; then
+            success
+            echo " killed $c rogue $PROG"
+        fi
+    else
+        success
+        echo " no extra $PROG processes found"
+    fi
+}
+
+status(){
+    if [[ -e $PIDFILE ]]; then
+        pid=`cat $PIDFILE`
+        echo "$PROG (pid $pid) is running... logging to /var/log/syslog"
+    else
+        echo "$PROG not running."
+    fi
+}
+
+## Check to see if we are running as root first.
+if [ "$(id -u)" != "0" ]; then
+    echo "This script must be run as root" 1>&2
+    exit 1
+fi
+
+
+case "$1" in
+    start)
+        #
+        start
+        exit 0
+        ;;
+    #
+    stop)
+        #
+        stop
+        exit 0
+        ;;
+    #
+    killAll)
+        #
+        killAll
+        exit 0
+        ;;
+    #
+    status)
+        #
+        status
+        exit 0
+        ;;
+    #
+    reload|restart|force-reload)
+        #
+        stop
+        start
+        exit 0
+        ;;
+    #
+    **)
+        #
+        echo "Usage: $0 {start|stop|status|reload|killAll}" 1>&2
+        exit 1
+        ;;
+#
+esac

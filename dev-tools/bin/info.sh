@@ -1,6 +1,6 @@
 #!/bin/bash
 #---------------Configuration-------------#
-. ccommon.sh nofunc
+source ccommon.sh nofunc
 version="1.5"
 LogToTerm=1
 loglevel=info;
@@ -14,10 +14,22 @@ ret(){
 }
 
 firmware(){
+
 	currentV=$(grep -ne 'version' /wigwag/etc/versions.json 2> /dev/null | xargs | awk -F ' ' '{print $8}')
 	userV=$(grep -ne 'version' /mnt/.overlay/user/slash/wigwag/etc/versions.json 2> /dev/null | xargs | awk -F ' ' '{print $8}')
 	upgradeV=$(grep -ne 'version' /mnt/.overlay/upgrade/wigwag/etc/versions.json 2> /dev/null | xargs | awk -F ' ' '{print $8}')
 	factoryV=$(grep -ne 'version' /mnt/.overlay/factory/wigwag/etc/versions.json 2> /dev/null | xargs | awk -F ' ' '{print $8}')
+	
+
+	dd if=/dev/mmcblk0 of=/tmp/uboot.img seek=8 bs=1024 count=100 >> /dev/null 2>&1
+	ubootV=$(grep -a "WigWag-U-boot-version_id" /tmp/uboot.img | tail -1 | awk '{print $2}')
+	if [[ -e /mnt/.boot/version ]]; then
+		source /mnt/.boot/version
+		bootV=$bootversion 
+	else
+		bootV=0
+	fi
+	rm -rf /tmp/uboot.img
 	currentV=${currentV%%,*}
 	userV=${userV%%,*}
 	upgradeV=${upgradeV%%,*}
@@ -43,6 +55,9 @@ firmware(){
 	echo -e "  - Upgrade Partition:$tab2${CYAN}$upgradeV${NORM}"
 	echo -e "  - Factory Partition:$tab2${CYAN}$factoryV${NORM}"
 	echo -e "  - Partition Schema:$tab2${CYAN}$Pschema${NORM}"
+	echo -e "  - Boot Version:$tab2${CYAN}$bootV${NORM}"
+	echo -e "  - U-Boot Version:$tab2${CYAN}$ubootV${NORM}"
+
 }
 
 account(){
@@ -67,13 +82,13 @@ hardware(){
 	echo -e "  - Ethernet Mac:$tab2${CYAN}$ETHERNETMAC${NORM}"
 	echo -e "  - LED Type installed:$tab2${CYAN}$LEDTYPE ($LEDCONFIG)${NORM}"
 	curspeed=$(cat /sys/devices/system/cpu/cpu0/cpufreq/scaling_cur_freq)
-  	maxspeed=$(cat /sys/devices/system/cpu/cpu0/cpufreq/scaling_max_freq)
-  	minspeed=$(cat /sys/devices/system/cpu/cpu0/cpufreq/scaling_min_freq)
-  	echo -e "  - CPU0 speed (cur/min/max):$tab1${CYAN}$curspeed/$minspeed/$maxspeed${NORM}"
-  	curspeed=$(cat /sys/devices/system/cpu/cpu1/cpufreq/scaling_cur_freq)
-  	maxspeed=$(cat /sys/devices/system/cpu/cpu1/cpufreq/scaling_max_freq)
-  	minspeed=$(cat /sys/devices/system/cpu/cpu1/cpufreq/scaling_min_freq)
-  	echo -e "  - CPU1 speed (cur/min/max):$tab1${CYAN}$curspeed/$minspeed/$maxspeed${NORM}"
+	maxspeed=$(cat /sys/devices/system/cpu/cpu0/cpufreq/scaling_max_freq)
+	minspeed=$(cat /sys/devices/system/cpu/cpu0/cpufreq/scaling_min_freq)
+	echo -e "  - CPU0 speed (cur/min/max):$tab1${CYAN}$curspeed/$minspeed/$maxspeed${NORM}"
+	curspeed=$(cat /sys/devices/system/cpu/cpu1/cpufreq/scaling_cur_freq)
+	maxspeed=$(cat /sys/devices/system/cpu/cpu1/cpufreq/scaling_max_freq)
+	minspeed=$(cat /sys/devices/system/cpu/cpu1/cpufreq/scaling_min_freq)
+	echo -e "  - CPU1 speed (cur/min/max):$tab1${CYAN}$curspeed/$minspeed/$maxspeed${NORM}"
 }
 
 manufacturing(){
@@ -88,7 +103,7 @@ system(){
 	let hours=$((${upSeconds}/3600%24))
 	let days=$((${upSeconds}/86400))
 	if [[ "${days}" -ne "0" ]]; then
-	   UPTIME="${days}d ";
+		UPTIME="${days}d ";
 	fi
 	
 	UPTIME="$UPTIME${hours}h ${mins}m ${secs}s"
@@ -99,18 +114,25 @@ system(){
 	MIN15="$(echo $LOAD | awk '{ print $3}')"
 	TASKS="$(echo $LOAD | awk '{ print $4}')"
 	IPADDRESS=$(ifconfig  | grep 'inet addr:'| grep -v '127.0.0.1' | cut -d: -f2 | awk '{ print $1}')
+	WDOGPID=$(/etc/init.d/deviceOS-watchdog status | awk '{print $3}' | sed 's/)//')
+	if [[ "$WDOGPID" = 'running.' ]]; then
+		WDOGPID="not enabled"
+	else
+		WDOGPID="Enabled (PID: $WDOGPID)"
+	fi
 	echo -e "\n${YELLOW}System Infomation${NORM}"
 	echo -e "  - Uptime:$tab3${CYAN}$UPTIME${NORM}"
 	echo -e "  - Users:$tab3${CYAN}$USERS${NORM}"
 	echo -e "  - Load (1,5,15-min avg):$tab1${CYAN}$MIN1, $MIN5, $MIN15${NORM}"
 	echo -e "  - Queued Tasks:$tab2${CYAN}$TASKS${NORM}"
 	echo -e "  - IP Address:$tab3${CYAN}$IPADDRESS${NORM}"
+	echo -e "  - Watdog:$tab3${CYAN}$WDOGPID${NORM}"
 }
 
 header(){
 	echo -e "\n${RED}Relay Information utility version $version ${NORM}"
 }
-	
+
 
 
 main(){

@@ -406,7 +406,7 @@
                     "path":"${thisdir}/../../wigwag-core-modules/DevStateManager",
                     "config": {
                         "logLevel": 2,
-                        "pollingRate": 30000
+                        "pollingRate": 50000
                     }
                 }
             ]

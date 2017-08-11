@@ -163,7 +163,7 @@
                         "channelMask":25,
                         "baudRate":115200,
                         "log_level":1,
-                        "networkRefreshDuration":30000,
+                        "networkRefreshDuration":17000,
                         "panIdSelection":"randomInRange",
                         "panId":23,
                         "platform":"{{wwplatform}}",
@@ -406,7 +406,7 @@
                     "path":"${thisdir}/../../wigwag-core-modules/DevStateManager",
                     "config": {
                         "logLevel": 2,
-                        "pollingRate": 50000
+                        "pollingRate": 42000
                     }
                 }
             ]

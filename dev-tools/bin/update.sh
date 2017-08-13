@@ -558,7 +558,7 @@ main(){
 		echo -en "reboot!\n"
 		sync
 		sync
-		/etc/init.d/deviceOSWD panic
+		/etc/init.d/deviceOS-watchdog panic
 	fi
 }
 

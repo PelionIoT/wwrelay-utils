@@ -310,8 +310,10 @@ main(){
 		hardware
 		account
 		manufacturing
-		performance
-		memory
+		if [[ $memory -eq 1 ]]; then
+			performance
+			memory
+		fi
 	fi
 }
 
@@ -321,6 +323,7 @@ declare -A hp=(
 	[useage]="-options"
 	[a]="about"
 	[h]="help"
+	[m]="memory information added"
 	[e1]="\t${BOLD}${UND}displays vital system information and process data${NORM}\n\t\t$0${NORM}\n"
 	)
 
@@ -330,13 +333,15 @@ argprocessor(){
 		case $flag in
 			a)  about=1; ;;
 			#
+			m) memory=1; ;;
+			#
 			\?) echo -e \\n"Option -${BOLD}$OPTARG${NORM} not allowed.";COMMON_MENU_HELP;exit; ;;
 			#
 		esac
 	done
 	shift $(( OPTIND - 1 ));
 	main "$@"
-} 
+}
 
 argprocessor "$@"
 

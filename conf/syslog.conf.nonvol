@@ -1,0 +1,71 @@
+#  /etc/syslog.conf	Configuration file for syslogd.
+#
+#  Ported from debian by Yu Ke <ke.yu@intel.com>
+#
+
+#
+# First some standard logfiles.  Log by facility.
+#
+
+auth,authpriv.*			/wigwag/log/auth.log
+*.*;auth,authpriv.none		-/wigwag/log/syslog
+#cron.*				/var/log/cron.log
+daemon.*			-/wigwag/log/daemon.log
+kern.*				-/wigwag/log/kern.log
+lpr.*				-/wigwag/log/lpr.log
+mail.*				-/wigwag/log/mail.log
+user.*				-/wigwag/log/user.log
+
+#
+# Logging for the mail system.  Split it up so that
+# it is easy to write scripts to parse these files.
+#
+mail.info			-/wigwag/log/mail.info
+mail.warn			-/wigwag/log/mail.warn
+mail.err			/wigwag/log/mail.err
+
+# Logging for INN news system
+#
+news.crit			/wigwag/log/news.crit
+news.err			/wigwag/log/news.err
+news.notice			-/wigwag/log/news.notice
+
+#
+# Some `catch-all' logfiles.
+#
+*.=debug;\
+auth,authpriv.none;\
+news.none;mail.none	-/wigwag/log/debug
+
+*.=info;*.=notice;*.=warn;\
+auth,authpriv.none;\
+cron,daemon.none;\
+mail,news.none		-/wigwag/log/messages
+
+#
+# Emergencies are sent to everybody logged in.
+#
+*.emerg				*
+
+#
+# I like to have messages displayed on the console, but only on a virtual
+# console I usually leave idle.
+#
+#daemon,mail.*;\
+#news.=crit;news.=err;news.=notice;\
+#*.=debug;*.=info;\
+#*.=notice;*.=warn	/dev/tty8
+
+# The named pipe /dev/xconsole is for the `xconsole' utility.  To use it,
+# you must invoke `xconsole' with the `-file' option:
+#
+#    $ xconsole -file /dev/xconsole [...]
+#
+# NOTE: adjust the list below, or you'll go crazy if you have a reasonably
+#      busy site..
+#
+daemon.*;mail.*;\
+news.err;\
+*.=debug;*.=info;\
+*.=notice;*.=warn	|/dev/xconsole
+

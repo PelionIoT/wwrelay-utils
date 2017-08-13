@@ -73,8 +73,11 @@ AVAILABLE=$(free -m | awk 'NR==2{printf $7}')
 	#UMP=$(bc <<< "scale=2; $USED*100/$MEM")
 	
 	volatilePSS=$(df -h | grep volatile | awk '{print $3}');
-	volatilePSS=${volatilePSS::-1}
-
+	if [[ $volatilePSS = *"K" ]]; then
+		volatilePSS=1
+	else
+		volatilePSS=${volatilePSS::-1}
+	fi
 	system(){	
 	let upSeconds=$(cat /proc/uptime | cut -d ' ' -f1 | cut -d '.' -f1);
 	let secs=$((${upSeconds}%60))
@@ -118,10 +121,16 @@ firmware(){
 	ubootV=$(grep -a "WigWag-U-boot-version_id" /tmp/uboot.img | tail -1 | awk '{print $2}')
 	if [[ -e /mnt/.boot/version ]]; then
 		source /mnt/.boot/version
-		bootV=$initramfsversion 
+		bootV=$bootversion
 	else
-		bootV=0
+		bootV="unk"
 	fi
+	if [[ "$initramfsversion" = "" ]]; then
+		initV="unk"
+	else
+		initV="$initramfsversion"
+	fi
+	kernelV=$(uname -r)
 	rm -rf /tmp/uboot.img
 	currentV=${currentV%%,*}
 	userV=${userV%%,*}
@@ -149,7 +158,9 @@ firmware(){
 	_placeLine "  - Factory Partition:" "$factoryV"
 	_placeLine "  - Partition Schema:" "$Pschema"
 	_placeLine "  - Boot Version:" "$bootV"
+	_placeLine "  - initRamfs Version:" "$initV"
 	_placeLine "  - U-Boot Version:" "$ubootV"
+	_placeLine "  - Kernel Version:" "$kernelV"
 
 }
 
@@ -233,7 +244,7 @@ _memperf(){
 
 
 performance(){
-	_placeTitle "Key Process Performance Infomation"
+	_placeTitle "Key Process Memory Infomation"
 	_placeLine "  Memory in Mb" "Pss\tRss\tShared\tPrivte\tVirtual\tReferenced"
 	_memperf "devicedb" "devicedb"
 	_memperf "devicejs" "devicejs.conf"

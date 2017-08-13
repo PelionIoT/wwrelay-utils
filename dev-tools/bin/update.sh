@@ -560,7 +560,7 @@ main(){
 		sync
 		/etc/init.d/deviceOS-watchdog panic
 		sleep 3
-		reboot -f
+		init 6
 	fi
 }
 

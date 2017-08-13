@@ -24,14 +24,14 @@ _placeLine(){
 	echo -en "$SUBJECT"
 	if [[ $len -lt 8 ]]; then
 		echo -en "\t\t\t\t"
-	 elif [[ $len -lt 16 ]]; then
-	 	echo -en "\t\t\t"
-	 elif [[ $len -lt 24 ]]; then
-	 	echo -en "\t\t"
-	 elif [[ $len -lt 32 ]]; then
-	 	echo -en "\t"
-	 else
-	 	echo -en "";
+	elif [[ $len -lt 16 ]]; then
+		echo -en "\t\t\t"
+	elif [[ $len -lt 24 ]]; then
+		echo -en "\t\t"
+	elif [[ $len -lt 32 ]]; then
+		echo -en "\t"
+	else
+		echo -en "";
 	fi
 	echo -e "${CYAN}$BODY${NORM}"
 }
@@ -45,27 +45,37 @@ _div1000(){
 	if [[ "$out" = *".0" ]]; then
 		out=$(bc <<< "scale=0; $1 / 1000")
 	fi
-		echo "$out"
+	echo "$out"
 }
 _div1000b(){
 	out=$(bc <<< "scale=0; $1 / 1000")
 	if [[ "$out" = *".0" ]]; then
 		out=$(bc <<< "scale=0; $1 / 1000")
 	fi
-		echo "$out"
+	echo "$out"
 }
 _div1024(){
 	out=$(bc <<< "scale=1; $1 / 1024")
 	echo "$out"
 }
 
-	MEM=$(grep MemTotal /proc/meminfo | awk '{print $2}')
-	MEM=$(_div1000b "$MEM")
-	USED=$(free -m | awk 'NR==2{printf $3}')
-	UMP=$(bc <<< "scale=2; $USED*100/$MEM")
-	AVAILABLE=$(free -m | awk 'NR==2{printf $7}')
+_percentage(){
+	echo $(bc <<< "scale=2; $1*100/$2")
+}
 
-system(){	
+MEM=$(grep MemTotal /proc/meminfo | awk '{print $2}')
+MEM=$(_div1000b "$MEM")
+AVAILABLE=$(free -m | awk 'NR==2{printf $7}')
+	#USED=$(free -m | awk 'NR==2{printf $3}')
+	USED=$(bc <<< "scale=1; $MEM - $AVAILABLE");
+	#remainder=$(bc <<< "scale=1; $volatilePSS + $PSSTOT + $r2")
+	UMP=$(_percentage $USED $MEM)
+	#UMP=$(bc <<< "scale=2; $USED*100/$MEM")
+	
+	volatilePSS=$(df -h | grep volatile | awk '{print $3}');
+	volatilePSS=${volatilePSS::-1}
+
+	system(){	
 	let upSeconds=$(cat /proc/uptime | cut -d ' ' -f1 | cut -d '.' -f1);
 	let secs=$((${upSeconds}%60))
 	let mins=$((${upSeconds}/60%60))
@@ -76,6 +86,7 @@ system(){
 	fi
 	
 	UPTIME="$UPTIME${hours}h ${mins}m ${secs}s"
+	#let upSeconds=$(cat /proc/uptime | cut -d ' ' -f1 | cut -d '.' -f1);let secs=$((${upSeconds}%60));let mins=$((${upSeconds}/60%60));let hours=$((${upSeconds}/3600%24));let days=$((${upSeconds}/86400));UPTIME="${days}d ";UPTIME="$UPTIME${hours}h ${mins}m ${secs}s";echo $UPTIME
 	USERS="$(who | cut -d ' ' -f1 | sort | uniq | wc -l) users"
 	LOAD="$(cat /proc/loadavg)"
 	MIN1="$(echo $LOAD | awk '{ print $1}')"
@@ -92,8 +103,6 @@ system(){
 	_placeTitle "System Infomation"
 	_placeLine "  - Uptime:" "$UPTIME"
 	_placeLine "  - Users:" "$USERS"
-	_placeLine "  - System Memory Useage:" "$USED/$MEM MB (used/total) ($UMP%)"
-	_placeLine "  - True Available Mem:" "$AVAILABLE MB"
 	_placeLine "  - Load (1,5,15-min avg):" "$MIN1, $MIN5, $MIN15"
 	_placeLine "  - Queued Tasks:" "$TASKS"
 	_placeLine "  - IP Address:" "$IPADDRESS"
@@ -109,7 +118,7 @@ firmware(){
 	ubootV=$(grep -a "WigWag-U-boot-version_id" /tmp/uboot.img | tail -1 | awk '{print $2}')
 	if [[ -e /mnt/.boot/version ]]; then
 		source /mnt/.boot/version
-		bootV=$bootversion 
+		bootV=$initramfsversion 
 	else
 		bootV=0
 	fi
@@ -180,7 +189,7 @@ hardware(){
 		curspeed=$(_div1000 $curspeed)"Mhz"
 		maxspeed=$(_div1000 $maxspeed)"Mhz"
 		minspeed=$(_div1000 $minspeed)"Mhz"
-	_placeLine "    - CPU$i:" "$curspeed\t$minspeed\t$maxspeed"
+		_placeLine "    - CPU$i:" "$curspeed\t$minspeed\t$maxspeed"
 	done
 }
 
@@ -227,15 +236,30 @@ performance(){
 	_placeTitle "Key Process Performance Infomation"
 	_placeLine "  Memory in Mb" "Pss\tRss\tShared\tPrivte\tVirtual\tReferenced"
 	_memperf "devicedb" "devicedb"
-	_memperf "djs devicejs.conf" "devicejs.conf"
-	_memperf "djs relay.config" "node /wigwag/devicejs-core-modules/Runner/start.js"
+	_memperf "devicejs" "devicejs.conf"
+	_memperf "runner" "node /wigwag/devicejs-core-modules/Runner/start.js"
 	_memperf "devicejs-user" "=user"
 	_memperf "devicejs-modbus" "=modbus"
 	_memperf "devicejs-modules" "=all-modules"
 	_memperf "support-node" "support/index"
 	_memperf "relay-term" "relay-term/src"
 	_memperf "Watchdog" "deviceOS"
-	_placeLine "  Key Proccess/System Used:" "$PSSTOT/$USED MB"
+}
+memory(){
+	_placeTitle "System Memory"
+	_placeLine "  - Used/Total:" "$USED/$MEM MB\t($UMP%)"
+	UMP=$(_percentage $PSSTOT $MEM)
+	_placeLine "  - Key Proccesses:" "$PSSTOT MB\t($UMP%) "
+	UMP=$(_percentage $volatilePSS $MEM)
+	_placeLine "  - Volatile loging:" "$volatilePSS MB\t\t($UMP%)"
+	r2=$(bc <<< "scale=1; $MEM - $USED")
+	r2=$(bc <<< "scale=1; $AVAILABLE - $r2 ")
+	remainder=$(bc <<< "scale=1; $volatilePSS + $PSSTOT + $r2")
+	remainder=$(bc <<< "scale=1; $USED - $remainder")
+	UMP=$(_percentage $remainder $MEM )
+	_placeLine "  - Other:" "$remainder MB\t\t($UMP%)"
+	UMP=$(_percentage $AVAILABLE $MEM)
+	_placeLine "  - True Available Mem:" "$AVAILABLE MB\t\t($UMP%)"
 }
 
 
@@ -266,18 +290,42 @@ about(){
 }
 
 main(){
-	Stats
-	system
-	firmware
-	hardware
-	account
-	manufacturing
-	performance
+	if [[ $about -eq 1 ]]; then
+		about
+	else
+		Stats
+		system
+		firmware
+		hardware
+		account
+		manufacturing
+		performance
+		memory
+	fi
 }
-if [[ $1 = "" ]]; then
-main
-elif [[ $1 = "-h" || $1 = "--help" ]]; then
-	about
-else
-	echo -e "Usege $0"
-fi
+
+
+declare -A hp=(
+	[description]="Displays vital system information statistics and process data"
+	[useage]="-options"
+	[a]="about"
+	[h]="help"
+	[e1]="\t${BOLD}${UND}displays vital system information and process data${NORM}\n\t\t$0${NORM}\n"
+	)
+
+argprocessor(){
+	switch_conditions=$(COMMON_MENU_SWITCH_GRAB)
+	while getopts "$switch_conditions" flag; do
+		case $flag in
+			a)  about=1; ;;
+			#
+			\?) echo -e \\n"Option -${BOLD}$OPTARG${NORM} not allowed.";COMMON_MENU_HELP;exit; ;;
+			#
+		esac
+	done
+	shift $(( OPTIND - 1 ));
+	main "$@"
+} 
+
+argprocessor "$@"
+

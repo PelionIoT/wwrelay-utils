@@ -556,7 +556,9 @@ main(){
 		echo -en "1..."
 		sleep 1
 		echo -en "reboot!\n"
-		init 6
+		sync
+		sync
+		/etc/init.d/deviceOSWD panic
 	fi
 }
 

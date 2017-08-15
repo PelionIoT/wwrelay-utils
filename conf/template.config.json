@@ -406,7 +406,31 @@
                     "path":"${thisdir}/../../wigwag-core-modules/DevStateManager",
                     "config": {
                         "logLevel": 2,
-                        "pollingRate": 42000
+                        "pollingResolution": 1000,
+                        "defaultPollingRate": 120000,
+                        "maxPollingCycles": 65535,
+                        "pollingSchemePerFacade": {
+                            "Facades/HasTemperature": 15000,
+                            "Facades/ThermostatGStatus": 15000,
+                            "Facades/ThermostatSupplyTemperature": 15000,
+                            "Facades/ThermostatReturnTemperature": 15000,
+                            "Facades/ThermostatW1Status": 15000,
+                            "Facades/ThermostatW2Status": 15000,
+                            "Facades/ThermostatY1Status": 15000,
+                            "Facades/ThermostatY2Status": 15000,
+                            "Facades/ThermostatMode": 300000,
+                            "Facades/OccupiedCoolTemperatureLevel": 300000,
+                            "Facades/OccupiedHeatTemperatureLevel": 300000,
+                            "Facades/OccupiedAutoTemperatureLevel": 300000,
+                            "Facades/UnoccupiedCoolTemperatureLevel": 300000,
+                            "Facades/UnoccupiedHeatTemperatureLevel": 300000,
+                            "Facades/UnoccupiedAutoTemperatureLevel": 300000,
+                            "Facades/KeypadLockLevel": 0,
+                            "Facades/TemperatureDisplayMode": 0,
+                            "Facades/ThermostatFanMode": 300000,
+                            "Facades/OccupancyMode": 300000,
+                            "Facades/ThermostatDeadband": 0
+                        }
                     }
                 }
             ]

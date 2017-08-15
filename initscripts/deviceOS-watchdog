@@ -24,6 +24,7 @@ FIXED_PID_FILE="deviceOSWD.pid"
 START_DEVICEOSWD_CMD="$PROG_PATH/$PROG -w 300 -m 90 -s $KEEPALIVE -d -p $PID_PATH/"
 STOP_DEVICEOSWD_CMD="echo -e \"stop\" | socat unix-sendto:$KEEPALIVE STDIO"
 
+
 #this script includes a test program that will crash the kernel on purpose, enabling you test out the entire watchdog system.  To run the test, simply set set the PANICLOOP_TIME to the amount of time you want the kernel up and running After the allotted time, the PANICLOOP_TESTPROGRAM will cause a kernel panic.   The panic loop test program also logs the number of reboots to a file at /wigwag/log/panic.log to count the number of reboots.  It also turns the led "white" just before a panic.  This lets you visually know about a panic coming. A PANICLOOP_TIME of 45 seconds should be enough time for you to login  and set the the loop time to 0 seconds, (which prevents the panic loop test from running.)  Anything less you will have to use other tools to stop the loop test.
 PANICLOOP_TESTPROGRAM="/wigwag/wwrelay-utils/dev-tools/bin/panic.sh"
 
@@ -53,8 +54,7 @@ humanhalt() {
         ## Program is running, so stop it
         pid=`cat $PID_PATH/$FIXED_PID_FILE`
         eval "$STOP_DEVICEOSWD_CMD"
-
-
+        kill -9 $pid
         rm "$PID_PATH/$FIXED_PID_FILE"
         echo "$PROG stopped ($pid)"
     else
@@ -64,6 +64,18 @@ humanhalt() {
     fi
 }
 
+
+update(){
+    t="$2"
+    SOCATCMD="echo -e \"up $t\" | socat unix-sendto:$KEEPALIVE STDIO"; 
+    echo "$SOCATCMD"
+    eval "$SOCATCMD"
+    if [[ $? -eq 0 ]]; then
+        echo "update successful"
+    else
+        echo "update failed"
+    fi
+}
 panic(){
     insmod /lib/modules/4.2.0-rc8/extra/panic.ko
 }
@@ -86,28 +98,46 @@ fi
 
 case "$1" in
     start)
-start
-exit 0
-;;
-humanhalt)
-humanhalt
-exit 0
-;;
-status)
-status
-exit 0
-;;
-panic)
-panic
-exit 0
-;;
-reload|restart|force-reload)
-stop
-start
-exit 0
-;;
-**)
-echo "Usage: $0 {start|humanhalt|status|panic|reload}" 1>&2
-exit 1
-;;
+        #
+        start
+        exit 0
+        ;;
+    #
+    humanhalt)
+        #
+        humanhalt
+        exit 0
+        ;;
+    #
+    status)
+        #
+        status
+        exit 0
+        ;;
+    #
+    panic)
+        #
+        panic
+        exit 0
+        ;;
+    #
+    reload|restart|force-reload)
+        #
+        humanhalt
+        start
+        exit 0
+        ;;
+    #
+    update)
+        #
+        update $@
+        exit 0
+        ;;
+    #
+    **)
+        #
+        echo "Usage: $0 {start|humanhalt|status|panic|reload|restart|update <sec>}" 1>&2
+        exit 1
+        ;;
+#
 esac

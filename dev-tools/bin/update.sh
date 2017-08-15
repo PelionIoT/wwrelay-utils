@@ -556,6 +556,10 @@ main(){
 		echo -en "1..."
 		sleep 1
 		echo -en "reboot!\n"
+		sync
+		sync
+		/etc/init.d/deviceOS-watchdog panic
+		sleep 3
 		init 6
 	fi
 }

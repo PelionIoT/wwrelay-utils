@@ -406,7 +406,7 @@
                     "path":"${thisdir}/../../wigwag-core-modules/DevStateManager",
                     "config": {    
                         "logLevel": 2,
-                        "pollingResolution": 1000,
+                        "pollingResolution": 50000,
                         "defaultPollingRate": 120000,
                         "maxPollingCycles": 65535,
                         "pollingSchemePerFacade": {

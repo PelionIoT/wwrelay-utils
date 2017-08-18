@@ -404,32 +404,53 @@
                 },
                 {
                     "path":"${thisdir}/../../wigwag-core-modules/DevStateManager",
-                    "config": {    
+                    "config": {
                         "logLevel": 2,
-                        "pollingResolution": 50000,
-                        "defaultPollingRate": 120000,
+                        "pollingResolution": 500,
+                        "defaultPollingRate": 50000,
                         "maxPollingCycles": 65535,
-                        "pollingSchemePerFacade": {
-                            "Facades/HasTemperature": 25000,
-                            "Facades/ThermostatGStatus": 25000,
-                            "Facades/ThermostatSupplyTemperature": 25000,
-                            "Facades/ThermostatReturnTemperature": 25000,
-                            "Facades/ThermostatW1Status": 25000,
-                            "Facades/ThermostatW2Status": 25000,
-                            "Facades/ThermostatY1Status": 25000,
-                            "Facades/ThermostatY2Status": 25000,
-                            "Facades/ThermostatMode": 300000,
-                            "Facades/OccupiedCoolTemperatureLevel": 300000,
-                            "Facades/OccupiedHeatTemperatureLevel": 300000,
-                            "Facades/OccupiedAutoTemperatureLevel": 300000,
-                            "Facades/UnoccupiedCoolTemperatureLevel": 300000,
-                            "Facades/UnoccupiedHeatTemperatureLevel": 300000,
-                            "Facades/UnoccupiedAutoTemperatureLevel": 300000,
-                            "Facades/KeypadLockLevel": 0,
-                            "Facades/TemperatureDisplayMode": 0,
-                            "Facades/ThermostatFanMode": 300000,
-                            "Facades/OccupancyMode": 300000,
-                            "Facades/ThermostatDeadband": 0
+                        "pollingSchemes": {
+                            "fast": {
+                                "interval": 25000,
+                                "interfaces": [
+                                    "Facades/HasTemperature",
+                                    "Facades/ThermostatGStatus",
+                                    "Facades/ThermostatSupplyTemperature",
+                                    "Facades/ThermostatReturnTemperature",
+                                    "Facades/ThermostatW1Status",
+                                    "Facades/ThermostatW2Status",
+                                    "Facades/ThermostatY1Status",
+                                    "Facades/ThermostatY2Status"
+                                ]  
+                            },
+                            "medium": {
+                                "interval": 300000,
+                                "interfaces": [
+                                    "Facades/ThermostatMode",
+                                    "Facades/OccupiedCoolTemperatureLevel",
+                                    "Facades/OccupiedHeatTemperatureLevel",
+                                    "Facades/OccupiedAutoTemperatureLevel",
+                                    "Facades/UnoccupiedCoolTemperatureLevel",
+                                    "Facades/UnoccupiedHeatTemperatureLevel",
+                                    "Facades/UnoccupiedAutoTemperatureLevel",
+                                    "Facades/ThermostatFanMode",
+                                    "Facades/OccupancyMode"
+                                ]
+                            },
+                            "slow": {
+                                "interval": 900000,
+                                "interfaces": [
+                                ]
+                            },
+                            "never": {
+                                "interval": 0,
+                                "interfaces": [
+                                    "Facades/KeypadLockLevel",
+                                    "Facades/TemperatureDisplayMode",
+                                    "Facades/ThermostatDeadband"
+                                ]
+
+                            }
                         }
                     }
                 }

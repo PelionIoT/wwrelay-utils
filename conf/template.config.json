@@ -407,11 +407,11 @@
                     "config": {
                         "logLevel": 2,
                         "pollingResolution": 500,
-                        "defaultPollingRate": 50000,
+                        "defaultPollingRate": 51000,
                         "maxPollingCycles": 65535,
                         "pollingSchemes": {
                             "fast": {
-                                "interval": 25000,
+                                "interval": 21500,
                                 "interfaces": [
                                     "Facades/HasTemperature",
                                     "Facades/ThermostatGStatus",
@@ -424,15 +424,13 @@
                                 ]  
                             },
                             "medium": {
-                                "interval": 300000,
+                                "interval": 293500,
                                 "interfaces": [
                                     "Facades/ThermostatMode",
                                     "Facades/OccupiedCoolTemperatureLevel",
                                     "Facades/OccupiedHeatTemperatureLevel",
-                                    "Facades/OccupiedAutoTemperatureLevel",
                                     "Facades/UnoccupiedCoolTemperatureLevel",
                                     "Facades/UnoccupiedHeatTemperatureLevel",
-                                    "Facades/UnoccupiedAutoTemperatureLevel",
                                     "Facades/ThermostatFanMode",
                                     "Facades/OccupancyMode"
                                 ]
@@ -447,9 +445,12 @@
                                 "interfaces": [
                                     "Facades/KeypadLockLevel",
                                     "Facades/TemperatureDisplayMode",
-                                    "Facades/ThermostatDeadband"
+                                    "Facades/ThermostatDeadband",
+                                    "Facades/Humidity",
+                                    "Facades/HasMotion",
+                                    "Facades/UnoccupiedAutoTemperatureLevel",
+                                    "Facades/OccupiedAutoTemperatureLevel"
                                 ]
-
                             }
                         }
                     }

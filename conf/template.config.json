@@ -111,7 +111,7 @@
                                     "error"
                                 ],
                                 "platform":"{{wwplatform}}",
-                                "siodev":"{{sixlbrtty}}",
+                                "siodev":"ttyUSB0",
                                 "siodev_secondary":"ttyUSB1",
                                 "sixBMAC":"{{sixbmac}}",
                                 "baudrate":115200,
@@ -157,7 +157,7 @@
                 {
                     "path":"${thisdir}/../zigbeeHA",
                     "config":{
-                        "siodev":"{{zigbeehatty}}",
+                        "siodev":"/dev/ttyUSB0",
                         "devType":0,
                         "newNwk":false,
                         "channelMask":25,
@@ -205,7 +205,7 @@
                     "path":"${thisdir}/../ww-zwave",
                     "config":{
                         "serialInterfaceOptions":{
-                            "siodev":"{{zwavetty}}",
+                            "siodev":"/dev/ttyUSB0",
                             "baudrate":115200,
                             "dataBits":8,
                             "stopBits":1

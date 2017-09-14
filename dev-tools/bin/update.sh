@@ -476,38 +476,96 @@ main(){
 	rm -rf install.sh
 	rm -rf post-install.sh
 
-
-	#b,B,z
-	sedit "UPGRADETHEBOOTWHENNEWER" $setting_boot_upgrade
-	sedit "FORCEUPGRADETHEBOOT" $setting_boot_force
-	sedit "WIPETHEBOOT" $setting_boot_wipe
-
-	#j,J,k
-	sedit "UPGRADETHEU_BOOTWHENNEWER" $setting_U_boot_upgrade
-	sedit "FORCEUPGRADETHEU_BOOT" $setting_U_boot_force
-	sedit "WIPETHEU_BOOT" $setting_U_boot_wipe
-
-	#f,F,t
-	sedit "UPGRADETHEFACTORYWHENNEWER" $setting_factory_upgrade
-	sedit "FORCEUPGRADETHEFACTORY" $setting_factory_force
-	sedit "WIPETHEFACTORY" $setting_factory_wipe			
-
-	#u,U,v 
-	sedit "UPGRADETHEUPGRADEWHENNEWER" $setting_upgrade_upgrade
-	sedit "FORCEUPGRADETHEUPGRADE" $setting_upgrade_force
-	sedit "WIPETHEUPGRADE" $setting_upgrade_wipe
-
-	#s,S,w
-	sedit "UPGRADETHEUSER_PARTITIONWHENNEWER" $setting_user_upgrade
-	sedit "FORCEUPGRADETHEUSER_PARTITION" $setting_user_force
-	sedit "WIPETHEUSER_PARTITION" $setting_user_wipe
-
-	#d,D,x
-	sedit "UPGRADETHEUSERDATAWHENNEWER" $setting_userdata_upgrade
-	sedit "FORCEUPGRADETHEUSERDATA" $setting_userdata_force
-	sedit "WIPETHEUSERDATA" $setting_userdata_wipe
-
-	sedit "REPARTITIONEMMC" $setting_repartition_emmc
+	if [[ protect_switches -eq 1 ]]; then
+		if [[ $setting_boot_upgrade_SET -eq 1 ]]; then
+			sedit "UPGRADETHEBOOTWHENNEWER" $setting_boot_upgrade
+		fi
+		if [[ $setting_boot_force_SET -eq 1 ]]; then
+			sedit "FORCEUPGRADETHEBOOT" $setting_boot_force
+		fi
+		if [[ $setting_boot_wipe_SET -eq 1 ]]; then
+			sedit "WIPETHEBOOT" $setting_boot_wipe
+		fi
+		#j,J,k
+		if [[ $setting_U_boot_upgrade_SET -eq 1 ]]; then
+			sedit "UPGRADETHEU_BOOTWHENNEWER" $setting_U_boot_upgrade
+		fi
+		if [[ $setting_U_boot_force_SET -eq 1 ]]; then
+			sedit "FORCEUPGRADETHEU_BOOT" $setting_U_boot_force
+		fi
+		if [[ $setting_U_boot_wipe_SET -eq 1 ]]; then
+			sedit "WIPETHEU_BOOT" $setting_U_boot_wipe
+		fi
+		#f,F,t
+		if [[ $setting_factory_upgrade_SET -eq 1 ]]; then
+			sedit "UPGRADETHEFACTORYWHENNEWER" $setting_factory_upgrade
+		fi
+		if [[ $setting_factory_force_SET -eq 1 ]]; then
+			sedit "FORCEUPGRADETHEFACTORY" $setting_factory_force
+		fi
+		if [[ $setting_factory_wipe_SET -eq 1 ]]; then
+			sedit "WIPETHEFACTORY" $setting_factory_wipe			
+		fi
+		#u,U,v 
+		if [[ $setting_upgrade_upgrade_SET -eq 1 ]]; then
+			sedit "UPGRADETHEUPGRADEWHENNEWER" $setting_upgrade_upgrade
+		fi
+		if [[ $setting_upgrade_force_SET -eq 1 ]]; then
+			sedit "FORCEUPGRADETHEUPGRADE" $setting_upgrade_force
+		fi
+		if [[ $setting_upgrade_wipe_SET -eq 1 ]]; then
+			sedit "WIPETHEUPGRADE" $setting_upgrade_wipe
+		fi
+		#s,S,w
+		if [[ $setting_user_upgrade_SET -eq 1 ]]; then
+			sedit "UPGRADETHEUSER_PARTITIONWHENNEWER" $setting_user_upgrade
+		fi
+		if [[ $setting_user_force_SET -eq 1 ]]; then
+			sedit "FORCEUPGRADETHEUSER_PARTITION" $setting_user_force
+		fi
+		if [[ $setting_user_wipe_SET -eq 1 ]]; then
+			sedit "WIPETHEUSER_PARTITION" $setting_user_wipe
+		fi
+		#d,D,x
+		if [[ $setting_userdata_upgrade_SET -eq 1 ]]; then
+			sedit "UPGRADETHEUSERDATAWHENNEWER" $setting_userdata_upgrade
+		fi
+		if [[ $setting_userdata_force_SET -eq 1 ]]; then
+			sedit "FORCEUPGRADETHEUSERDATA" $setting_userdata_force
+		fi
+		if [[ $setting_userdata_wipe_SET -eq 1 ]]; then
+			sedit "WIPETHEUSERDATA" $setting_userdata_wipe
+		fi
+		if [[ $setting_repartition_emmc_SET -eq 1 ]]; then
+			sedit "REPARTITIONEMMC" $setting_repartition_emmc
+		fi
+	else
+		#b,B,z
+		sedit "UPGRADETHEBOOTWHENNEWER" $setting_boot_upgrade
+		sedit "FORCEUPGRADETHEBOOT" $setting_boot_force
+		sedit "WIPETHEBOOT" $setting_boot_wipe
+		#j,J,k
+		sedit "UPGRADETHEU_BOOTWHENNEWER" $setting_U_boot_upgrade
+		sedit "FORCEUPGRADETHEU_BOOT" $setting_U_boot_force
+		sedit "WIPETHEU_BOOT" $setting_U_boot_wipe
+		#f,F,t
+		sedit "UPGRADETHEFACTORYWHENNEWER" $setting_factory_upgrade
+		sedit "FORCEUPGRADETHEFACTORY" $setting_factory_force
+		sedit "WIPETHEFACTORY" $setting_factory_wipe			
+		#u,U,v 
+		sedit "UPGRADETHEUPGRADEWHENNEWER" $setting_upgrade_upgrade
+		sedit "FORCEUPGRADETHEUPGRADE" $setting_upgrade_force
+		sedit "WIPETHEUPGRADE" $setting_upgrade_wipe
+		#s,S,w
+		sedit "UPGRADETHEUSER_PARTITIONWHENNEWER" $setting_user_upgrade
+		sedit "FORCEUPGRADETHEUSER_PARTITION" $setting_user_force
+		sedit "WIPETHEUSER_PARTITION" $setting_user_wipe
+		#d,D,x
+		sedit "UPGRADETHEUSERDATAWHENNEWER" $setting_userdata_upgrade
+		sedit "FORCEUPGRADETHEUSERDATA" $setting_userdata_force
+		sedit "WIPETHEUSERDATA" $setting_userdata_wipe
+		sedit "REPARTITIONEMMC" $setting_repartition_emmc
+	fi
 
 	log "info" "configuration results"
 	echo ""
@@ -586,6 +644,7 @@ declare -A hp=(
 	[mm]="url to manifest.dat -m <url>, defaults to: https://code.wigwag.com/ugs/"
 	[N]="nuke to this x.y.z version, makes it look exactly as it would from the factory at this version (same as -k -t -v -z -w -x -F -U -B -J)"
 	[O]="downgrade, to this x.y.z version, but preserve userdata (database) and user partition.  light-weight nuke (same as -k -t -v -z -F -U -B -J)"
+	[p]="protect the default switches from the upgrade.sh file.  (only overide with switches called here.  The other behavior is that all switches get updated by this programs defaults.)"
 	[r]="reboot after install is complete"
 	[R]="DISABLE repartition the emmc automatically if a size delta is discovered"
 	[s]="user paritition:\tENABLE upgrade if newer version avaiable"
@@ -611,34 +670,35 @@ argprocessor(){
 	while getopts "$switch_conditions" flag; do
 		case $flag in
 			a)  advanced=1; interactive; exit; ;;
-b)	setting_boot_upgrade=0; ;;
-B)	setting_boot_force=1; ;;
-d)  setting_userdata_upgrade=1; ;;
-D)  setting_userdata_force=1; ;;
+b)	setting_boot_upgrade=0; setting_boot_upgrade_SET=1; ;;
+B)	setting_boot_force=1; setting_boot_force_SET=1; ;;
+d)  setting_userdata_upgrade=1; setting_userdata_upgrade_SET=1; ;;
+D)  setting_userdata_force=1; setting_userdata_force_SET=1; ;;
 V)	version; exit; ;;
 e)	wipeeeprom=$OPTARG; ;;
-f)	setting_factory_upgrade=0; ;;
-F)  setting_factory_force=1; ;;
+f)	setting_factory_upgrade=0; setting_factory_upgrade_SET=1; ;;
+F)  setting_factory_force=1; setting_factory_force_SET=1; ;;
 G)	purefactory=1; ;;
 h) 	COMMON_MENU_HELP; ;;
 i) 	interactive; exit;;
-j)  setting_U_boot_upgrade=0; ;;
-J)	setting_U_boot_force=1; ;;
-k)	setting_U_boot_wipe=1; ;;
+j)  setting_U_boot_upgrade=0; setting_U_boot_upgrade_SET=1; ;;
+J)	setting_U_boot_force=1; setting_U_boot_force_SET=1; ;;
+k)	setting_U_boot_wipe=1; setting_U_boot_wipe_SET=1; ;;
 m)	manifesturl=$OPTARG; ;;
-N)	setting_factory_force=1;setting_upgrade_force=1;setting_boot_force=1;setting_boot_wipe=1;setting_factory_wipe=1;setting_upgrade_wipe=1;setting_user_wipe=1;setting_userdata_wipe=1;setting_U_boot_wipe=1;setting_U_boot_force=1; ;;
-O)	setting_factory_force=1;setting_upgrade_force=1;setting_boot_force=1;setting_boot_wipe=1;setting_factory_wipe=1;setting_upgrade_wipe=1;setting_U_boot_wipe=1;setting_U_boot_force=1; ;;	
+N)	setting_factory_force=1;setting_upgrade_force=1;setting_boot_force=1;setting_boot_wipe=1;setting_factory_wipe=1;setting_upgrade_wipe=1;setting_user_wipe=1;setting_userdata_wipe=1;setting_U_boot_wipe=1;setting_U_boot_force=1; setting_factory_force_SET=1;setting_upgrade_force_SET=1;setting_boot_force_SET=1;setting_boot_wipe_SET=1;setting_factory_wipe_SET=1;setting_upgrade_wipe_SET=1;setting_user_wipe_SET=1;setting_userdata_wipe_SET=1;setting_U_boot_wipe_SET=1;setting_U_boot_force_SET=1; ;;
+O)	setting_factory_force=1;setting_upgrade_force=1;setting_boot_force=1;setting_boot_wipe=1;setting_factory_wipe=1;setting_upgrade_wipe=1;setting_U_boot_wipe=1;setting_U_boot_force=1; setting_factory_force_SET=1;setting_upgrade_force_SET=1;setting_boot_force_SET=1;setting_boot_wipe_SET=1;setting_factory_wipe_SET=1;setting_upgrade_wipe_SET=1;setting_U_boot_wipe_SET=1;setting_U_boot_force_SET=1;;;	
+p)	protect_switches=1; ;;
 r)	rebootit=1; ;;
-R)	setting_repartition_emmc=0; ;;
-s) 	setting_user_upgrade=1; ;;
-S) 	setting_user_force=1; ;;
-t)  setting_factory_wipe=1; ;;
-u)	setting_upgrade_upgrade=0; ;;
-U)  setting_upgrade_force=1; ;;
-v)  setting_upgrade_wipe=1; ;;
-w)	setting_user_wipe=1; ;; 
-x) 	setting_userdata_wipe=1; ;;
-z) 	setting_boot_wipe=1; ;;
+R)	setting_repartition_emmc=0; setting_repartition_emmc_SET=1; ;;
+s) 	setting_user_upgrade=1; setting_user_upgrade_SET=1; ;;
+S) 	setting_user_force=1; setting_user_force_SET=1; ;;
+t)  setting_factory_wipe=1; setting_factory_wipe_SET=1; ;;
+u)	setting_upgrade_upgrade=0; setting_upgrade_upgrade_SET=1; ;;
+U)  setting_upgrade_force=1; setting_upgrade_force_SET=1; ;;
+v)  setting_upgrade_wipe=1; setting_upgrade_wipe_SET=1; ;;
+w)	setting_user_wipe=1; setting_user_wipe_SET=1; ;; 
+x) 	setting_userdata_wipe=1; setting_userdata_wipe_SET=1; ;;
+z) 	setting_boot_wipe=1; setting_boot_wipe_SET=1; ;;
 \?) echo -e \\n"Option -${BOLD}$OPTARG${NORM} not allowed.";COMMON_MENU_HELP;exit; ;;
 esac
 done

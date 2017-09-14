@@ -1,0 +1,1977 @@
+#include <stdio.h>
+#include <stdlib.h>
+#include <string.h>
+#include <unistd.h>
+#include <errno.h>
+#include <fcntl.h>
+#include <dirent.h>
+//https://git.kernel.org/pub/scm/linux/kernel/git/torvalds/linux.git/tree/include/uapi/linux/input.h
+#include <linux/input.h>
+#include <sys/types.h>
+#include <sys/stat.h>
+#include <sys/select.h>
+#include <sys/time.h>
+#include <termios.h>
+#include <signal.h>
+#include <regex.h>
+#include <sys/types.h>
+#include <sys/socket.h>
+#include <sys/un.h>
+
+//#define SOCK_PATH "\0led"
+//#include <curl/curl.h>
+char *socket_path="\0led";
+//https://git.kernel.org/pub/scm/linux/kernel/git/torvalds/linux.git/tree/include/uapi/linux/input-event-codes.h
+#include "input-event-codes.h"
+//#include "hashmap.h"
+
+
+char scannerString[200]="";
+char pcServer[200]="";
+int pcc=0;
+struct input_event ev[64];
+int type,kvalue,code=0;
+//https://stackoverflow.com/questions/1371460/state-machines-tutorials
+int new_entry(void);
+int gathering(void);
+
+int exit_state(void);
+
+/* array and enum below must be in sync! */
+int (* state[])(void) = { new_entry, gathering, exit_state};
+enum state_codes { entry, gather, end};
+enum shiftstates { up, down};
+enum ret_codes { ok, fail, repeat};
+enum ledmode{led_needscanner,led_foundscanner,led_havecurlserver,led_success,led_failure,led_burningeeprom,led_failedcurlfetch}setled;
+enum shiftstates shiftstate;
+struct transition {
+    enum state_codes src_state;
+    enum ret_codes   ret_code;
+    enum state_codes dst_state;
+};
+/* transitions from end state aren't needed */
+struct transition state_transitions[] = {
+    {entry, ok,     gather},
+    {gather,  ok,     entry},
+    {gather,  repeat,  gather},
+    {gather,  fail,   end},
+    {entry, fail,   end},
+    {end,   ok,      end},
+    {end,   fail,    end},
+    {end,   repeat,  end}
+};
+
+#define EXIT_STATE end
+#define ENTRY_STATE entry
+
+
+
+char _LOOKUPCODE(int in){
+    if (shiftstate==up){
+        switch (in) {
+            case KEY_RESERVED:
+            return '%';
+            break;
+            case KEY_ESC:
+            return '%';
+            break;
+            case KEY_1:
+            return '1';
+            break;
+            case KEY_2:
+            return '2';
+            break;
+            case KEY_3:
+            return '3';
+            break;
+            case KEY_4:
+            return '4';
+            break;
+            case KEY_5:
+            return '5';
+            break;
+            case KEY_6:
+            return '6';
+            break;
+            case KEY_7:
+            return '7';
+            break;
+            case KEY_8:
+            return '8';
+            break;
+            case KEY_9:
+            return '9';
+            break;
+            case KEY_0:
+            return '0';
+            break;
+            case KEY_MINUS:
+            return '-';
+            break;
+            case KEY_EQUAL:
+            return '=';
+            break;
+            case KEY_BACKSPACE:
+            return '%';
+            break;
+            case KEY_TAB:
+            return '%';
+            break;
+            case KEY_Q:
+            return 'q';
+            break;
+            case KEY_W:
+            return 'w';
+            break;
+            case KEY_E:
+            return 'e';
+            break;
+            case KEY_R:
+            return 'r';
+            break;
+            case KEY_T:
+            return 't';
+            break;
+            case KEY_Y:
+            return 'y';
+            break;
+            case KEY_U:
+            return 'u';
+            break;
+            case KEY_I:
+            return 'i';
+            break;
+            case KEY_O:
+            return 'o';
+            break;
+            case KEY_P:
+            return 'p';
+            break;
+            case KEY_LEFTBRACE:
+            return '[';
+            break;
+            case KEY_RIGHTBRACE:
+            return ']';
+            break;
+            case KEY_ENTER:
+      return '%';  //28
+      break;
+      case KEY_LEFTCTRL:
+      return '%';
+      break;
+      case KEY_A:
+      return 'a';
+      break;
+      case KEY_S:
+      return 's';
+      break;
+      case KEY_D:
+      return 'd';
+      break;
+      case KEY_F:
+      return 'f';
+      break;
+      case KEY_G:
+      return 'g';
+      break;
+      case KEY_H:
+      return 'h';
+      break;
+      case KEY_J:
+      return 'j';
+      break;
+      case KEY_K:
+      return 'k';
+      break;
+      case KEY_L:
+      return 'l';
+      break;
+      case KEY_SEMICOLON:
+      return ';';
+      break;
+      case KEY_APOSTROPHE:
+      return '\'';
+      break;
+      case KEY_GRAVE:
+      return '`';
+      break;
+      case KEY_LEFTSHIFT:
+      return '%';
+      break;
+      case KEY_BACKSLASH:
+      return '\\';
+      break;
+      case KEY_Z:
+      return 'z';
+      break;
+      case KEY_X:
+      return 'x';
+      break;
+      case KEY_C:
+      return 'c';
+      break;
+      case KEY_V:
+      return 'v';
+      break;
+      case KEY_B:
+      return 'b';
+      break;
+      case KEY_N:
+      return 'n';
+      break;
+      case KEY_M:
+      return 'm';
+      break;
+      case KEY_COMMA:
+      return ',';
+      break;
+      case KEY_DOT:
+      return '.';
+      break;
+      case KEY_SLASH:
+      return '/';
+      break;
+      case KEY_RIGHTSHIFT:
+      return '%';
+      break;
+      case KEY_KPASTERISK:
+      return '*';
+      break;
+      case KEY_LEFTALT:
+      return '%';
+      break;
+      case KEY_SPACE:
+      return ' ';
+      break;
+      case KEY_CAPSLOCK:
+      return '%';
+      break;
+      case KEY_F1:
+      return '%';
+      break;
+      case KEY_F2:
+      return '%';
+      break;
+      case KEY_F3:
+      return '%';
+      break;
+      case KEY_F4:
+      return '%';
+      break;
+      case KEY_F5:
+      return '%';
+      break;
+      case KEY_F6:
+      return '%';
+      break;
+      case KEY_F7:
+      return '%';
+      break;
+      case KEY_F8:
+      return '%';
+      break;
+      case KEY_F9:
+      return '%';
+      break;
+      case KEY_F10:
+      return '%';
+      break;
+      case KEY_NUMLOCK:
+      return '%';
+      break;
+      case KEY_SCROLLLOCK:
+      return '%';
+      break;
+      case KEY_KP7:
+      return '%';
+      break;
+      case KEY_KP8:
+      return '%';
+      break;
+      case KEY_KP9:
+      return '%';
+      break;
+      case KEY_KPMINUS:
+      return '-';
+      break;
+      case KEY_KP4:
+      return '%';
+      break;
+      case KEY_KP5:
+      return '%';
+      break;
+      case KEY_KP6:
+      return '%';
+      break;
+      case KEY_KPPLUS:
+      return '+';
+      break;
+      case KEY_KP1:
+      return '%';
+      break;
+      case KEY_KP2:
+      return '%';
+      break;
+      case KEY_KP3:
+      return '%';
+      break;
+      case KEY_KP0:
+      return '%';
+      break;
+      case KEY_KPDOT:
+      return '%';
+      break;
+      case KEY_ZENKAKUHANKAKU:
+      return '%';
+      break;
+      case KEY_102ND:
+      return '%';
+      break;
+      case KEY_F11:
+      return '%';
+      break;
+      case KEY_F12:
+      return '%';
+      break;
+      case KEY_RO:
+      return '%';
+      break;
+      case KEY_KATAKANA:
+      return '%';
+      break;
+      case KEY_HIRAGANA:
+      return '%';
+      break;
+      case KEY_HENKAN:
+      return '%';
+      break;
+      case KEY_KATAKANAHIRAGANA:
+      return '%';
+      break;
+      case KEY_MUHENKAN:
+      return '%';
+      break;
+      case KEY_KPJPCOMMA:
+      return '%';
+      break;
+      case KEY_KPENTER:
+      return '%';
+      break;
+      case KEY_RIGHTCTRL:
+      return '%';
+      break;
+      case KEY_KPSLASH:
+      return '%';
+      break;
+      case KEY_SYSRQ:
+      return '%';
+      break;
+      case KEY_RIGHTALT:
+      return '%';
+      break;
+      case KEY_LINEFEED:
+      return '%';
+      break;
+      case KEY_HOME:
+      return '%';
+      break;
+      case KEY_UP:
+      return '%';
+      break;
+      case KEY_PAGEUP:
+      return '%';
+      break;
+      case KEY_LEFT:
+      return '%';
+      break;
+      case KEY_RIGHT:
+      return '%';
+      break;
+      case KEY_END:
+      return '%';
+      break;
+      case KEY_DOWN:
+      return '%';
+      break;
+      case KEY_PAGEDOWN:
+      return '%';
+      break;
+      case KEY_INSERT:
+      return '%';
+      break;
+      case KEY_DELETE:
+      return '%';
+      break;
+      case KEY_MACRO:
+      return '%';
+      break;
+      case KEY_MUTE:
+      return '%';
+      break;
+      case KEY_VOLUMEDOWN:
+      return '%';
+      break;
+      case KEY_VOLUMEUP:
+      return '%';
+      break;
+      case KEY_POWER:
+      return '%';
+      break;
+      case KEY_KPEQUAL:
+      return '%';
+      break;
+      case KEY_KPPLUSMINUS:
+      return '%';
+      break;
+      case KEY_PAUSE:
+      return '%';
+      break;
+      case KEY_SCALE:
+      return '%';
+      break;
+      case KEY_KPCOMMA:
+      return '%';
+      break;
+      case KEY_HANGEUL:
+      return '%';
+      break;
+      case KEY_HANJA:
+      return '%';
+      break;
+      case KEY_YEN:
+      return '%';
+      break;
+      case KEY_LEFTMETA:
+      return '%';
+      break;
+      case KEY_RIGHTMETA:
+      return '%';
+      break;
+      case KEY_COMPOSE:
+      return '%';
+      break;
+      case KEY_STOP:
+      return '%';
+      break;
+      case KEY_AGAIN:
+      return '%';
+      break;
+      case KEY_PROPS:
+      return '%';
+      break;
+      case KEY_UNDO:
+      return '%';
+      break;
+      case KEY_FRONT:
+      return '%';
+      break;
+      case KEY_COPY:
+      return '%';
+      break;
+      case KEY_OPEN:
+      return '%';
+      break;
+      case KEY_PASTE:
+      return '%';
+      break;
+      case KEY_FIND:
+      return '%';
+      break;
+      case KEY_CUT:
+      return '%';
+      break;
+      case KEY_HELP:
+      return '%';
+      break;
+      case KEY_MENU:
+      return '%';
+      break;
+      case KEY_CALC:
+      return '%';
+      break;
+      case KEY_SETUP:
+      return '%';
+      break;
+      case KEY_SLEEP:
+      return '%';
+      break;
+      case KEY_WAKEUP:
+      return '%';
+      break;
+      case KEY_FILE:
+      return '%';
+      break;
+      case KEY_SENDFILE:
+      return '%';
+      break;
+      case KEY_DELETEFILE:
+      return '%';
+      break;
+      case KEY_XFER:
+      return '%';
+      break;
+      case KEY_PROG1:
+      return '%';
+      break;
+      case KEY_PROG2:
+      return '%';
+      break;
+      case KEY_WWW:
+      return '%';
+      break;
+      case KEY_MSDOS:
+      return '%';
+      break;
+      case KEY_COFFEE:
+      return '%';
+      break;
+      case KEY_ROTATE_DISPLAY:
+      return '%';
+      break;
+      case KEY_CYCLEWINDOWS:
+      return '%';
+      break;
+      case KEY_MAIL:
+      return '%';
+      break;
+      case KEY_BOOKMARKS:
+      return '%';
+      break;
+      case KEY_COMPUTER:
+      return '%';
+      break;
+      case KEY_BACK:
+      return '%';
+      break;
+      case KEY_FORWARD:
+      return '%';
+      break;
+      case KEY_CLOSECD:
+      return '%';
+      break;
+      case KEY_EJECTCD:
+      return '%';
+      break;
+      case KEY_EJECTCLOSECD:
+      return '%';
+      break;
+      case KEY_NEXTSONG:
+      return '%';
+      break;
+      case KEY_PLAYPAUSE:
+      return '%';
+      break;
+      case KEY_PREVIOUSSONG:
+      return '%';
+      break;
+      case KEY_STOPCD:
+      return '%';
+      break;
+      case KEY_RECORD:
+      return '%';
+      break;
+      case KEY_REWIND:
+      return '%';
+      break;
+      case KEY_PHONE:
+      return '%';
+      break;
+      case KEY_ISO:
+      return '%';
+      break;
+      case KEY_CONFIG:
+      return '%';
+      break;
+      case KEY_HOMEPAGE:
+      return '%';
+      break;
+      case KEY_REFRESH:
+      return '%';
+      break;
+      case KEY_EXIT:
+      return '%';
+      break;
+      case KEY_MOVE:
+      return '%';
+      break;
+      case KEY_EDIT:
+      return '%';
+      break;
+      case KEY_SCROLLUP:
+      return '%';
+      break;
+      case KEY_SCROLLDOWN:
+      return '%';
+      break;
+      case KEY_KPLEFTPAREN:
+      return '%';
+      break;
+      case KEY_KPRIGHTPAREN:
+      return '%';
+      break;
+      case KEY_NEW:
+      return '%';
+      break;
+      case KEY_REDO:
+      return '%';
+      break;
+      case KEY_F13:
+      return '%';
+      break;
+      case KEY_F14:
+      return '%';
+      break;
+      case KEY_F15:
+      return '%';
+      break;
+      case KEY_F16:
+      return '%';
+      break;
+      case KEY_F17:
+      return '%';
+      break;
+      case KEY_F18:
+      return '%';
+      break;
+      case KEY_F19:
+      return '%';
+      break;
+      case KEY_F20:
+      return '%';
+      break;
+      case KEY_F21:
+      return '%';
+      break;
+      case KEY_F22:
+      return '%';
+      break;
+      case KEY_F23:
+      return '%';
+      break;
+      case KEY_F24:
+      return '%';
+      break;
+      case KEY_PLAYCD:
+      return '%';
+      break;
+      case KEY_PAUSECD:
+      return '%';
+      break;
+      case KEY_PROG3:
+      return '%';
+      break;
+      case KEY_PROG4:
+      return '%';
+      break;
+      case KEY_DASHBOARD:
+      return '%';
+      break;
+      case KEY_SUSPEND:
+      return '%';
+      break;
+      case KEY_CLOSE:
+      return '%';
+      break;
+      case KEY_PLAY:
+      return '%';
+      break;
+      case KEY_FASTFORWARD:
+      return '%';
+      break;
+      case KEY_BASSBOOST:
+      return '%';
+      break;
+      case KEY_PRINT:
+      return '%';
+      break;
+      case KEY_HP:
+      return '%';
+      break;
+      case KEY_CAMERA:
+      return '%';
+      break;
+      case KEY_SOUND:
+      return '%';
+      break;
+      case KEY_QUESTION:
+      return '%';
+      break;
+      case KEY_EMAIL:
+      return '%';
+      break;
+      case KEY_CHAT:
+      return '%';
+      break;
+      case KEY_SEARCH:
+      return '%';
+      break;
+      case KEY_CONNECT:
+      return '%';
+      break;
+      case KEY_FINANCE:
+      return '%';
+      break;
+      case KEY_SPORT:
+      return '%';
+      break;
+      case KEY_SHOP:
+      return '%';
+      break;
+      case KEY_ALTERASE:
+      return '%';
+      break;
+      case KEY_CANCEL:
+      return '%';
+      break;
+      case KEY_BRIGHTNESSDOWN:
+      return '%';
+      break;
+      case KEY_BRIGHTNESSUP:
+      return '%';
+      break;
+      case KEY_MEDIA:
+      return '%';
+      break;
+      case KEY_SWITCHVIDEOMODE:
+      return '%';
+      break;
+      case KEY_KBDILLUMTOGGLE:
+      return '%';
+      break;
+      case KEY_KBDILLUMDOWN:
+      return '%';
+      break;
+      case KEY_KBDILLUMUP:
+      return '%';
+      break;
+      case KEY_SEND:
+      return '%';
+      break;
+      case KEY_REPLY:
+      return '%';
+      break;
+      case KEY_FORWARDMAIL:
+      return '%';
+      break;
+      case KEY_SAVE:
+      return '%';
+      break;
+      case KEY_DOCUMENTS:
+      return '%';
+      break;
+      case KEY_BATTERY:
+      return '%';
+      break;
+      case KEY_BLUETOOTH:
+      return '%';
+      break;
+      case KEY_WLAN:
+      return '%';
+      break;
+      case KEY_UWB:
+      return '%';
+      break;
+      case KEY_UNKNOWN:
+      return '%';
+      break;
+      case KEY_VIDEO_NEXT:
+      return '%';
+      break;
+      case KEY_VIDEO_PREV:
+      return '%';
+      break;
+      case KEY_BRIGHTNESS_CYCLE:
+      return '%';
+      break;
+      case KEY_BRIGHTNESS_AUTO:
+      return '%';
+      break;
+      case KEY_DISPLAY_OFF:
+      return '%';
+      break;
+      case KEY_WWAN:
+      return '%';
+      break;
+      case KEY_RFKILL:
+      return '%';
+      break;
+      case KEY_MICMUTE:
+      return '%';
+      break;
+}
+}
+else {
+  switch (in) {
+      case KEY_RESERVED:
+      return '%';
+      break;
+      case KEY_ESC:
+      return '%';
+      break;
+      case KEY_1:
+      return '!';
+      break;
+      case KEY_2:
+      return '@';
+      break;
+      case KEY_3:
+      return '#';
+      break;
+      case KEY_4:
+      return '$';
+      break;
+      case KEY_5:
+      return '%';
+      break;
+      case KEY_6:
+      return '^';
+      break;
+      case KEY_7:
+      return '&';
+      break;
+      case KEY_8:
+      return '*';
+      break;
+      case KEY_9:
+      return '(';
+      break;
+      case KEY_0:
+      return ')';
+      break;
+      case KEY_MINUS:
+      return '_';
+      break;
+      case KEY_EQUAL:
+      return '+';
+      break;
+      case KEY_BACKSPACE:
+      return '%';
+      break;
+      case KEY_TAB:
+      return '%';
+      break;
+      case KEY_Q:
+      return 'Q';
+      break;
+      case KEY_W:
+      return 'W';
+      break;
+      case KEY_E:
+      return 'E';
+      break;
+      case KEY_R:
+      return 'R';
+      break;
+      case KEY_T:
+      return 'T';
+      break;
+      case KEY_Y:
+      return 'Y';
+      break;
+      case KEY_U:
+      return 'U';
+      break;
+      case KEY_I:
+      return 'I';
+      break;
+      case KEY_O:
+      return 'O';
+      break;
+      case KEY_P:
+      return 'P';
+      break;
+      case KEY_LEFTBRACE:
+      return '{';
+      break;
+      case KEY_RIGHTBRACE:
+      return '}';
+      break;
+      case KEY_ENTER:
+      return '%';  //28
+      break;
+      case KEY_LEFTCTRL:
+      return '%';
+      break;
+      case KEY_A:
+      return 'A';
+      break;
+      case KEY_S:
+      return 'S';
+      break;
+      case KEY_D:
+      return 'D';
+      break;
+      case KEY_F:
+      return 'F';
+      break;
+      case KEY_G:
+      return 'G';
+      break;
+      case KEY_H:
+      return 'H';
+      break;
+      case KEY_J:
+      return 'J';
+      break;
+      case KEY_K:
+      return 'K';
+      break;
+      case KEY_L:
+      return 'L';
+      break;
+      case KEY_SEMICOLON:
+      return ':';
+      break;
+      case KEY_APOSTROPHE:
+      return '"';
+      break;
+      case KEY_GRAVE:
+      return '~';
+      break;
+      case KEY_LEFTSHIFT:
+      return '%';
+      break;
+      case KEY_BACKSLASH:
+      return '|';
+      break;
+      case KEY_Z:
+      return 'Z';
+      break;
+      case KEY_X:
+      return 'X';
+      break;
+      case KEY_C:
+      return 'C';
+      break;
+      case KEY_V:
+      return 'V';
+      break;
+      case KEY_B:
+      return 'B';
+      break;
+      case KEY_N:
+      return 'N';
+      break;
+      case KEY_M:
+      return 'M';
+      break;
+      case KEY_COMMA:
+      return '<';
+      break;
+      case KEY_DOT:
+      return '>';
+      break;
+      case KEY_SLASH:
+      return '?';
+      break;
+      case KEY_RIGHTSHIFT:
+      return '%';
+      break;
+      case KEY_KPASTERISK:
+      return '*';
+      break;
+      case KEY_LEFTALT:
+      return '%';
+      break;
+      case KEY_SPACE:
+      return ' ';
+      break;
+      case KEY_CAPSLOCK:
+      return '%';
+      break;
+      case KEY_F1:
+      return '%';
+      break;
+      case KEY_F2:
+      return '%';
+      break;
+      case KEY_F3:
+      return '%';
+      break;
+      case KEY_F4:
+      return '%';
+      break;
+      case KEY_F5:
+      return '%';
+      break;
+      case KEY_F6:
+      return '%';
+      break;
+      case KEY_F7:
+      return '%';
+      break;
+      case KEY_F8:
+      return '%';
+      break;
+      case KEY_F9:
+      return '%';
+      break;
+      case KEY_F10:
+      return '%';
+      break;
+      case KEY_NUMLOCK:
+      return '%';
+      break;
+      case KEY_SCROLLLOCK:
+      return '%';
+      break;
+      case KEY_KP7:
+      return '%';
+      break;
+      case KEY_KP8:
+      return '%';
+      break;
+      case KEY_KP9:
+      return '%';
+      break;
+      case KEY_KPMINUS:
+      return '-';
+      break;
+      case KEY_KP4:
+      return '%';
+      break;
+      case KEY_KP5:
+      return '%';
+      break;
+      case KEY_KP6:
+      return '%';
+      break;
+      case KEY_KPPLUS:
+      return '+';
+      break;
+      case KEY_KP1:
+      return '%';
+      break;
+      case KEY_KP2:
+      return '%';
+      break;
+      case KEY_KP3:
+      return '%';
+      break;
+      case KEY_KP0:
+      return '%';
+      break;
+      case KEY_KPDOT:
+      return '%';
+      break;
+      case KEY_ZENKAKUHANKAKU:
+      return '%';
+      break;
+      case KEY_102ND:
+      return '%';
+      break;
+      case KEY_F11:
+      return '%';
+      break;
+      case KEY_F12:
+      return '%';
+      break;
+      case KEY_RO:
+      return '%';
+      break;
+      case KEY_KATAKANA:
+      return '%';
+      break;
+      case KEY_HIRAGANA:
+      return '%';
+      break;
+      case KEY_HENKAN:
+      return '%';
+      break;
+      case KEY_KATAKANAHIRAGANA:
+      return '%';
+      break;
+      case KEY_MUHENKAN:
+      return '%';
+      break;
+      case KEY_KPJPCOMMA:
+      return '%';
+      break;
+      case KEY_KPENTER:
+      return '%';
+      break;
+      case KEY_RIGHTCTRL:
+      return '%';
+      break;
+      case KEY_KPSLASH:
+      return '%';
+      break;
+      case KEY_SYSRQ:
+      return '%';
+      break;
+      case KEY_RIGHTALT:
+      return '%';
+      break;
+      case KEY_LINEFEED:
+      return '%';
+      break;
+      case KEY_HOME:
+      return '%';
+      break;
+      case KEY_UP:
+      return '%';
+      break;
+      case KEY_PAGEUP:
+      return '%';
+      break;
+      case KEY_LEFT:
+      return '%';
+      break;
+      case KEY_RIGHT:
+      return '%';
+      break;
+      case KEY_END:
+      return '%';
+      break;
+      case KEY_DOWN:
+      return '%';
+      break;
+      case KEY_PAGEDOWN:
+      return '%';
+      break;
+      case KEY_INSERT:
+      return '%';
+      break;
+      case KEY_DELETE:
+      return '%';
+      break;
+      case KEY_MACRO:
+      return '%';
+      break;
+      case KEY_MUTE:
+      return '%';
+      break;
+      case KEY_VOLUMEDOWN:
+      return '%';
+      break;
+      case KEY_VOLUMEUP:
+      return '%';
+      break;
+      case KEY_POWER:
+      return '%';
+      break;
+      case KEY_KPEQUAL:
+      return '%';
+      break;
+      case KEY_KPPLUSMINUS:
+      return '%';
+      break;
+      case KEY_PAUSE:
+      return '%';
+      break;
+      case KEY_SCALE:
+      return '%';
+      break;
+      case KEY_KPCOMMA:
+      return '%';
+      break;
+      case KEY_HANGEUL:
+      return '%';
+      break;
+      case KEY_HANJA:
+      return '%';
+      break;
+      case KEY_YEN:
+      return '%';
+      break;
+      case KEY_LEFTMETA:
+      return '%';
+      break;
+      case KEY_RIGHTMETA:
+      return '%';
+      break;
+      case KEY_COMPOSE:
+      return '%';
+      break;
+      case KEY_STOP:
+      return '%';
+      break;
+      case KEY_AGAIN:
+      return '%';
+      break;
+      case KEY_PROPS:
+      return '%';
+      break;
+      case KEY_UNDO:
+      return '%';
+      break;
+      case KEY_FRONT:
+      return '%';
+      break;
+      case KEY_COPY:
+      return '%';
+      break;
+      case KEY_OPEN:
+      return '%';
+      break;
+      case KEY_PASTE:
+      return '%';
+      break;
+      case KEY_FIND:
+      return '%';
+      break;
+      case KEY_CUT:
+      return '%';
+      break;
+      case KEY_HELP:
+      return '%';
+      break;
+      case KEY_MENU:
+      return '%';
+      break;
+      case KEY_CALC:
+      return '%';
+      break;
+      case KEY_SETUP:
+      return '%';
+      break;
+      case KEY_SLEEP:
+      return '%';
+      break;
+      case KEY_WAKEUP:
+      return '%';
+      break;
+      case KEY_FILE:
+      return '%';
+      break;
+      case KEY_SENDFILE:
+      return '%';
+      break;
+      case KEY_DELETEFILE:
+      return '%';
+      break;
+      case KEY_XFER:
+      return '%';
+      break;
+      case KEY_PROG1:
+      return '%';
+      break;
+      case KEY_PROG2:
+      return '%';
+      break;
+      case KEY_WWW:
+      return '%';
+      break;
+      case KEY_MSDOS:
+      return '%';
+      break;
+      case KEY_COFFEE:
+      return '%';
+      break;
+      case KEY_ROTATE_DISPLAY:
+      return '%';
+      break;
+      case KEY_CYCLEWINDOWS:
+      return '%';
+      break;
+      case KEY_MAIL:
+      return '%';
+      break;
+      case KEY_BOOKMARKS:
+      return '%';
+      break;
+      case KEY_COMPUTER:
+      return '%';
+      break;
+      case KEY_BACK:
+      return '%';
+      break;
+      case KEY_FORWARD:
+      return '%';
+      break;
+      case KEY_CLOSECD:
+      return '%';
+      break;
+      case KEY_EJECTCD:
+      return '%';
+      break;
+      case KEY_EJECTCLOSECD:
+      return '%';
+      break;
+      case KEY_NEXTSONG:
+      return '%';
+      break;
+      case KEY_PLAYPAUSE:
+      return '%';
+      break;
+      case KEY_PREVIOUSSONG:
+      return '%';
+      break;
+      case KEY_STOPCD:
+      return '%';
+      break;
+      case KEY_RECORD:
+      return '%';
+      break;
+      case KEY_REWIND:
+      return '%';
+      break;
+      case KEY_PHONE:
+      return '%';
+      break;
+      case KEY_ISO:
+      return '%';
+      break;
+      case KEY_CONFIG:
+      return '%';
+      break;
+      case KEY_HOMEPAGE:
+      return '%';
+      break;
+      case KEY_REFRESH:
+      return '%';
+      break;
+      case KEY_EXIT:
+      return '%';
+      break;
+      case KEY_MOVE:
+      return '%';
+      break;
+      case KEY_EDIT:
+      return '%';
+      break;
+      case KEY_SCROLLUP:
+      return '%';
+      break;
+      case KEY_SCROLLDOWN:
+      return '%';
+      break;
+      case KEY_KPLEFTPAREN:
+      return '%';
+      break;
+      case KEY_KPRIGHTPAREN:
+      return '%';
+      break;
+      case KEY_NEW:
+      return '%';
+      break;
+      case KEY_REDO:
+      return '%';
+      break;
+      case KEY_F13:
+      return '%';
+      break;
+      case KEY_F14:
+      return '%';
+      break;
+      case KEY_F15:
+      return '%';
+      break;
+      case KEY_F16:
+      return '%';
+      break;
+      case KEY_F17:
+      return '%';
+      break;
+      case KEY_F18:
+      return '%';
+      break;
+      case KEY_F19:
+      return '%';
+      break;
+      case KEY_F20:
+      return '%';
+      break;
+      case KEY_F21:
+      return '%';
+      break;
+      case KEY_F22:
+      return '%';
+      break;
+      case KEY_F23:
+      return '%';
+      break;
+      case KEY_F24:
+      return '%';
+      break;
+      case KEY_PLAYCD:
+      return '%';
+      break;
+      case KEY_PAUSECD:
+      return '%';
+      break;
+      case KEY_PROG3:
+      return '%';
+      break;
+      case KEY_PROG4:
+      return '%';
+      break;
+      case KEY_DASHBOARD:
+      return '%';
+      break;
+      case KEY_SUSPEND:
+      return '%';
+      break;
+      case KEY_CLOSE:
+      return '%';
+      break;
+      case KEY_PLAY:
+      return '%';
+      break;
+      case KEY_FASTFORWARD:
+      return '%';
+      break;
+      case KEY_BASSBOOST:
+      return '%';
+      break;
+      case KEY_PRINT:
+      return '%';
+      break;
+      case KEY_HP:
+      return '%';
+      break;
+      case KEY_CAMERA:
+      return '%';
+      break;
+      case KEY_SOUND:
+      return '%';
+      break;
+      case KEY_QUESTION:
+      return '%';
+      break;
+      case KEY_EMAIL:
+      return '%';
+      break;
+      case KEY_CHAT:
+      return '%';
+      break;
+      case KEY_SEARCH:
+      return '%';
+      break;
+      case KEY_CONNECT:
+      return '%';
+      break;
+      case KEY_FINANCE:
+      return '%';
+      break;
+      case KEY_SPORT:
+      return '%';
+      break;
+      case KEY_SHOP:
+      return '%';
+      break;
+      case KEY_ALTERASE:
+      return '%';
+      break;
+      case KEY_CANCEL:
+      return '%';
+      break;
+      case KEY_BRIGHTNESSDOWN:
+      return '%';
+      break;
+      case KEY_BRIGHTNESSUP:
+      return '%';
+      break;
+      case KEY_MEDIA:
+      return '%';
+      break;
+      case KEY_SWITCHVIDEOMODE:
+      return '%';
+      break;
+      case KEY_KBDILLUMTOGGLE:
+      return '%';
+      break;
+      case KEY_KBDILLUMDOWN:
+      return '%';
+      break;
+      case KEY_KBDILLUMUP:
+      return '%';
+      break;
+      case KEY_SEND:
+      return '%';
+      break;
+      case KEY_REPLY:
+      return '%';
+      break;
+      case KEY_FORWARDMAIL:
+      return '%';
+      break;
+      case KEY_SAVE:
+      return '%';
+      break;
+      case KEY_DOCUMENTS:
+      return '%';
+      break;
+      case KEY_BATTERY:
+      return '%';
+      break;
+      case KEY_BLUETOOTH:
+      return '%';
+      break;
+      case KEY_WLAN:
+      return '%';
+      break;
+      case KEY_UWB:
+      return '%';
+      break;
+      case KEY_UNKNOWN:
+      return '%';
+      break;
+      case KEY_VIDEO_NEXT:
+      return '%';
+      break;
+      case KEY_VIDEO_PREV:
+      return '%';
+      break;
+      case KEY_BRIGHTNESS_CYCLE:
+      return '%';
+      break;
+      case KEY_BRIGHTNESS_AUTO:
+      return '%';
+      break;
+      case KEY_DISPLAY_OFF:
+      return '%';
+      break;
+      case KEY_WWAN:
+      return '%';
+      break;
+      case KEY_RFKILL:
+      return '%';
+      break;
+      case KEY_MICMUTE:
+      return '%';
+      break;
+}
+}
+
+}
+
+int getSO_ERROR(int fd) {
+   int err = 1;
+   socklen_t len = sizeof err;
+   if (-1 == getsockopt(fd, SOL_SOCKET, SO_ERROR, (char *)&err, &len))
+      printf("fatalerror\n");
+if (err)
+      errno = err;              // set errno to the socket SO_ERROR
+return err;
+}
+
+
+int s;
+
+void connectLED(void){
+      int t, len;
+      memset(&s,0,sizeof(s));
+      memset(&t,0,sizeof(t));
+      memset(&len,0,sizeof(len));
+      struct sockaddr_un remote;
+      char str[100];
+      memset(str,'\0',sizeof(str));
+      if ((s = socket(AF_UNIX, SOCK_STREAM, 0)) == -1) {
+            perror("socket");
+            exit(1);
+      }
+      printf("Trying to connect...\n");
+
+      remote.sun_family = AF_UNIX;
+//strcpy(remote.sun_path, SOCK_PATH);
+
+      if (*socket_path == '\0') {
+            memset(remote.sun_path, '\0', sizeof(remote.sun_path));
+            *remote.sun_path = '\0';
+            strncpy(remote.sun_path+1, socket_path+1, sizeof(remote.sun_path)-2);
+      } else {
+            strncpy(remote.sun_path, socket_path, sizeof(remote.sun_path)-1);
+      }
+//strcpy(remote.sun_path, socket_path);
+
+      len = strlen(remote.sun_path) + sizeof(remote.sun_family);
+//if (connect(s, (struct sockaddr *)&remote, len) == -1) {
+      if (connect(s, (struct sockaddr *)&remote, sizeof(remote)) == -1) {
+            perror("connect fail");
+            exit(1);
+      }
+
+      printf("Connected.\n");
+}
+
+void disconnectLED(void){
+      if (s >= 0) {
+getSO_ERROR(s); // first clear any errors, which can cause close to fail
+if (shutdown(s, SHUT_RDWR) < 0) // secondly, terminate the 'reliable' delivery
+if (errno != ENOTCONN && errno != EINVAL) // SGI causes EINVAL
+      perror("shutdown");
+if (close(s) < 0) // finally call close()
+      perror("close");
+}
+}
+void messageLed(enum ledmode inled){
+      char str[100];
+      memset(str,'\0',sizeof(str));
+// while(printf("> "), fgets(str, 100, stdin), !feof(stdin)) {
+//strip(str);
+      switch (inled) {
+            case led_needscanner:
+            strcpy(str,"9 blink 11 0 0 75 0 0 0 75"); 
+            break;
+            case led_foundscanner:
+            strcpy(str,"9 blink 11 0 0 250 0 0 0 750"); 
+            break;
+            case led_havecurlserver:
+            strcpy(str,"9 blink 0 0 12 250 0 0 0 750"); 
+            break;
+            case led_failedcurlfetch:
+            strcpy(str,"9 blink 0 0 12 500 12 0 0 500"); 
+            break;
+            case led_burningeeprom:
+            strcpy(str,"9 blink 0 0 12 500 0 12 0 500"); 
+            break;
+            case led_success:
+            strcpy(str, "4 solid 0 10 0");
+            break;
+            case led_failure:
+            strcpy(str, "4 solid 10 0 0");
+            break;
+      }
+      if (send(s, str, strlen(str), 0) == -1) {
+            perror("send");
+            exit(1);
+      }
+
+}
+
+
+char _KEY(int key){
+    printf("key");
+}
+void _RECORD(int pos){
+    char thiscode=_LOOKUPCODE(pos);
+    printf("_Recording %i (%c)\n",pos,thiscode);
+    pcc++;
+    scannerString[pcc]=thiscode;
+    printf("pc: %s\n",scannerString);
+}
+
+
+
+void _PCFOUND(void){
+      regex_t regexHTTP_PCDIR;
+      int http_pcdir; 
+      http_pcdir = regcomp(&regexHTTP_PCDIR, "`PCSERVER_", 0);
+      char *token;
+      const char s[2] = "_";                                                    
+
+      if (http_pcdir) {
+            fprintf(stderr, "Could not compile regexHTTP_PCDIR\n");
+            exit(1);
+      }
+      char regexERROR[100];
+      printf("PC Found: %s\n",scannerString);
+      if (scannerString[0]=='`'){
+            printf("command string found%s\n",scannerString);
+            http_pcdir = regexec(&regexHTTP_PCDIR, scannerString, 0, NULL, 0);
+//http_pcdir = regexec(&regexHTTP_PCDIR, scannerString, nmatch,pmatch, 0);
+            if (!http_pcdir) {
+                  puts("Matched-http_pcdir");
+                  token = strtok(scannerString, s);
+                  token = strtok(NULL, s);
+                  strcpy(pcServer,token);
+                  messageLed(led_havecurlserver);
+            }
+            else if (http_pcdir == REG_NOMATCH) {
+//puts("No match");
+            }
+            else {
+                  regerror(http_pcdir, &regexHTTP_PCDIR, regexERROR, sizeof(regexERROR));
+                  fprintf(stderr, "regexHTTP_PCDIR match failed: %s\n", regexERROR);
+                  exit(1);
+            }
+
+/* Free memory allocated to the pattern buffer by regcomp() */
+            regfree(&regexHTTP_PCDIR);
+      }
+      else {
+            int failure;
+            char curlcmd[100],filename[35],eetoolcmd[100],filepath[100],exitcmd[100];
+            sprintf(filename, "%s.json", scannerString);
+            sprintf(filepath, "/tmp/%s",filename);
+            sprintf(curlcmd,"curl -o %s %s%s",filepath,pcServer,filename);
+            sprintf(eetoolcmd,"eetool set /tmp/%s",filename);
+            sprintf(exitcmd, "init 6");
+            printf ("curl command: (%s)",curlcmd);
+            printf ("eetool command: (%s)",eetoolcmd);
+//    strcpy(filename, scannerString);
+//    printf("filename: %s\n",filename);
+//    strcat(filename,".json");
+//    printf("filename: %s\n",filename);
+//    strcpy( command, "curl -o /tmp/");
+//    printf("cmd: %s\n",command);
+//    strcat(command,filename);
+//    strcat (command,pcServer);
+//    strcat (command,filename);
+// // strcat(command," /tmp/");
+//    printf("getstring:%s\n",command);
+            system(curlcmd);
+//    command[0]='\0';
+//    strcpy(filepath,"/tmp/");
+//    strcat(filepath,filename);
+//    strcpy(command, "eetool set ");
+//    strcat (command,filepath);
+//    printf("eetool command: %s\n",command);
+            if (access(filepath,F_OK)!=-1) {
+                  messageLed(led_burningeeprom);
+                  failure=system(eetoolcmd);
+                  printf("Did I have a failure:%i\n",failure);
+                  if (!failure){
+                        system(exitcmd);
+                        messageLed(led_success);
+                  }
+                  else {
+                       messageLed(led_failure);
+                 }
+           }
+           else {
+            printf("file (%s) does not exist\n",filepath);
+            messageLed(led_failedcurlfetch);
+      }
+}
+new_entry();
+}
+int new_entry(void){
+    printf("State: new_entry\n");
+    memset(&scannerString[0], 0, sizeof(scannerString));
+    pcc=-1;
+    return ok;
+}
+
+int gathering(void){
+    printf("State: gathering\n");
+    printf("t:%d, v:%d, c:%d\n",type,kvalue,code);
+    if (type==1 && kvalue==1 && code==KEY_LEFTSHIFT){
+        printf("LS down\n");
+        shiftstate=down;
+        printf("shiftsate: %i\n",shiftstate);
+  }
+  else if (type==1 && kvalue==0 && code==KEY_LEFTSHIFT){
+        shiftstate=up;
+        printf("LS up\n");
+        printf("shiftsate: %i\n",shiftstate);
+  }
+  else if (type==1 && kvalue==1 && code==KEY_ENTER){
+        printf("Enter down\n");
+  }
+  else if (type==1 && kvalue==0 && code==KEY_ENTER){
+        printf("Enter up, taking action\n");
+        _PCFOUND();
+        return repeat;
+  }
+  else if (type==1 && kvalue==1 && code==KEY_KPENTER){
+        printf("Enter down\n");
+  }
+  else if (type==1 && kvalue==0 && code==KEY_KPENTER){
+        printf("Enter up, taking action\n");
+        _PCFOUND();
+        return repeat;
+  }
+  else if (type==1 && kvalue==1){
+        printf("recording (%i) while the shift key is %i\n",code,shiftstate);
+        _RECORD(code);
+  }
+  return repeat;
+}
+
+int exit_state(void){
+    printf("State: exit_state\n");
+    return ok;
+}
+
+lookup_transitions(enum state_codes cur_state, enum ret_codes rc)
+{
+#if 0
+    switch (cur_state) {
+        case entry:
+            cur_state = ((rc == ok) ? (foo) : (end));
+            break;
+        case foo:
+            cur_state = ((rc == ok) ? (bar) : ((rc == fail) ? (end) : (foo)));
+            break;
+        default:
+            cur_state = ((rc == ok) ? (end) : ((rc == fail) ? (end) : (foo)));
+            break;
+    }
+
+    return cur_state;
+#else
+    char arr_size = (sizeof(state_transitions) / sizeof(state_transitions[0])); /* This can be shifted to main function to avoid redundant job. */
+    char count;
+
+    for (count = 0; count < arr_size; count++) {
+        if ((state_transitions[count].src_state == cur_state) && (state_transitions[count].ret_code == rc)) {
+            return (state_transitions[count].dst_state);
+      }
+}
+#endif
+}
+
+void handler (int sig){
+    printf ("nexiting...(%d)n", sig);
+    exit (0);
+}
+
+void perror_exit (char *error){
+    perror (error);
+    handler (9);
+}
+
+int main (int argc, char *argv[]) {
+      connectLED();
+
+      int fd, rd, value, size = sizeof (struct input_event);
+      char device_name[256] = "Unknown";
+      char *device = NULL;
+      printf ("entered main\n");
+      enum state_codes cur_state = entry;
+      enum ret_codes rc;
+      int (* state_function)(void);
+      regex_t regex;
+      int reti; 
+      char msgbuf[100];
+      int splithalf=0;
+
+
+  //Setup check
+      if (argv[1] == NULL){
+        printf("Please specify (on the command line) the path to the dev event interface devicen");
+        exit (0);
+  }
+
+  if ((getuid ()) != 0){
+        printf ("You are not root! This may not work...n\n");
+  }
+  else{
+        printf ("you are root, moving on\n");
+  }
+  if (argc > 1){
+        printf ("multiple args\n");
+        device = argv[1];
+  }
+  else {
+        printf ("single arg\n");
+  }
+  while (1){
+        if (access(device,F_OK)==-1) {
+            printf("No device to play with\n");
+            messageLed(led_needscanner);
+            sleep(2);
+      }
+      while ( access( device, F_OK ) != -1 ) {
+  //Open Device
+            if ((fd = open (device, O_RDONLY)) == -1){
+                printf ("%s is not a vaild device.n", device);
+          }
+          else{
+            messageLed(led_foundscanner);
+            printf ("I am ready, %s is a valid device\n",device);
+      }
+      ioctl (fd, EVIOCGNAME (sizeof (device_name)), device_name);
+      printf ("Reading From : %s (%s)\n", device, device_name);
+
+
+
+  /* Compile regular expression */
+      reti = regcomp(&regex, "^Symbol Technologies.*", 0);
+  //reti = regcomp(&regex, ".*", 0);
+      if (reti) {
+          fprintf(stderr, "Could not compile regex\n");
+          exit(1);
+    }
+
+    reti = regexec(&regex, device_name, 0, NULL, 0);
+    if (!reti) {
+          puts("Match");
+          splithalf=1;
+   // printf("mydev:%s\n",device_name);
+    }
+    else if (reti == REG_NOMATCH) {
+          puts("No match");
+    }
+    else {
+          regerror(reti, &regex, msgbuf, sizeof(msgbuf));
+          fprintf(stderr, "Regex match failed: %s\n", msgbuf);
+          exit(1);
+    }
+
+/* Free memory allocated to the pattern buffer by regcomp() */
+    regfree(&regex);
+
+  //Print Device Name
+    if (device_name)
+
+          rc = new_entry();
+    cur_state=lookup_transitions(cur_state,rc);    
+    printf("ENTERING WHILE LOOP\n");
+
+      //while (1){
+    for (;;) {
+          if ((rd = read (fd, ev, size * 64)) < size){
+              printf("device not here\n");
+              break;
+        //perror_exit ("read()\n");     
+        }
+        kvalue=ev[1].value;
+        type=ev[1].type;
+        code=ev[1].code;
+        printf("\n[0]type: %d\n",ev[0].type);
+        printf("[0]kvalue: %d\n",ev[0].value);
+        printf("[0]code: %d\n",ev[0].code);
+        printf("[1]type: %d\n",type);
+        printf("[1]kvalue: %d\n",kvalue);
+        printf("[1]code: %d\n",code);
+        printf("[2]type: %d\n",ev[2].type);
+        printf("[2]kvalue: %d\n",ev[2].value);
+        printf("[2]code: %d\n",ev[2].code);
+        printf("[3]type: %d\n",ev[3].type);
+        printf("[3]kvalue: %d\n",ev[3].value);
+        printf("[3]code: %d\n",ev[3].code);
+  #if 1
+        printf("current-state: %d\n",cur_state);
+        state_function = state[cur_state];
+        rc = state_function();
+        if (end == cur_state){
+              break;
+        }
+        cur_state = lookup_transitions(cur_state, rc);
+        if (splithalf){
+              kvalue=ev[3].value;
+              type=ev[3].type;
+              code=ev[3].code;
+              printf("current-state: %d\n",cur_state);
+              state_function = state[cur_state];
+              rc = state_function();
+              if (end == cur_state){
+                  break;
+            }
+            cur_state = lookup_transitions(cur_state, rc);
+      }
+  #endif
+
+}
+
+    //printf("I am getting somewhere\n");
+
+    // if (ev[1].code == KEY_B ){
+    //   printf("key b pressed\n");
+    // }
+
+
+    // kvalue = ev[1].kvalue;
+    // 
+      // printf("ev[0]: type[%d]\n",(ev[0].type));
+      // printf("ev[0]: kvalue[%d]\n",(ev[0].kvalue));
+      // printf ("ev[0]: Code[%d]\n", (ev[0].code));
+      // printf("ev[1]: type[%d]\n",(ev[1].type));
+      // printf("ev[1]: kvalue[%d]\n",(ev[1].kvalue));
+      // printf ("ev[1]: Code[%d]\n", (ev[1].code));
+
+
+    // if (ev[0].kvalue == 1 && ev[0].type == EV_KEY){ // Only read the key press event
+     // printf("keys?\n");
+    //   printf (“Code[%d]n”, (ev[0].code));
+      //if (kvalue != ' ' && ev[1].kvalue == 1 && ev[1].type == 1){ // Only read the key press event
+     // }
+      //}
+}
+}
+disconnectLED();
+return 0;
+} 

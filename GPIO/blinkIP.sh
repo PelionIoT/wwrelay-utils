@@ -12,9 +12,9 @@ IFS=. read ip1 ip2 ip3 ip4 <<< "$currentip"
 
 
 function blink(){
-./led.sh 12 3 0
+	led 12 3 0
 sleep 2
-./led.sh 0 0 0
+led 0 0 0
 sleep 2
 first=0;
 x=$2
@@ -25,14 +25,14 @@ sleep 2
 	s=${x:$i:1}; 
 	size=${#x}  
 		if [[ s -eq 0 ]]; then
-					./led.sh 10 0 0
+			led 10 0 0
 					sleep 1
-					./led.sh 0 0 0
+					led 0 0 0
 		else
 					for (( b = 0; b < s; b++ )); do
-						./led.sh 10 10 10
+						led 10 10 10
 						sleep .2
-						./led.sh 0 0 0
+						led 0 0 0
 						sleep .2
 					done
 		fi

@@ -17,6 +17,7 @@ source /etc/init.d/functions
 WIGWAGROOT="/wigwag"
 WIGWAGLOGROOT="/wigwag/log"
 PIDROOT="/var/run"
+
 SQAROOT=$WIGWAGROOT"/wwrelay-utils/devtools/sqa"
 SQALOG=$WIGWAGLOGROOT"/sqa.log"
 
@@ -155,11 +156,11 @@ killAll() {
         pid=`cat $PIDFILE`
         kill -9 $pid
         if [[ $? -eq 0 ]]; then
-           success 
-           echo " $PROG stopped ($pid)"
-       fi
-       rm "$PIDFILE"
-       if [[ $? -eq 0 ]]; then
+         success 
+         echo " $PROG stopped ($pid)"
+     fi
+     rm "$PIDFILE"
+     if [[ $? -eq 0 ]]; then
         success
         echo " removed $PIDFILE"
     fi

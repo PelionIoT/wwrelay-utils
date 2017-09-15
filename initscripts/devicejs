@@ -3,7 +3,7 @@
 
 ### BEGIN INIT INFO
 # Provides:             devicejs
-# Required-Start:       $remote_fs $time devicedbd
+# Required-Start:       $remote_fs $time wwrelay
 # Required-Stop:        $remote_fs $time
 # Should-Start:         $network
 # Should-Stop:          $network
@@ -15,60 +15,69 @@ WIGWAGROOT="/wigwag"
 RUNNER_DIR="${WIGWAGROOT}/devicejs-core-modules/Runner"
 RUNNER_START_CMD="./start -c ./relay.config.json"
 RUNNER_STOP_CMD="echo Need_Stop_Command"
+
 export NODE_PATH=${WIGWAGROOT}/devicejs-core-modules/node_modules 
 
 RUNNER_LOG="${WIGWAGROOT}/log/runner.log"
+WWRELAY_LOG=${WIGWAGLOGROOT}"/wwrelay.log"
+PIDROOT="/var/run"
+maestroOK=$PIDROOT"/maestroOK"
 
-function congig_cpu_scaling() {
-   MAX_FREQ=/sys/devices/system/cpu/cpu0/cpufreq/scaling_max_freq
-   MIN_FREQ=/sys/devices/system/cpu/cpu0/cpufreq/scaling_min_freq
-   cat $MAX_FREQ > $MIN_FREQ
-   MAX_FREQ=/sys/devices/system/cpu/cpu1/cpufreq/scaling_max_freq
-   MIN_FREQ=/sys/devices/system/cpu/cpu1/cpufreq/scaling_min_freq
-   cat $MAX_FREQ > $MIN_FREQ
+config_cpu_scaling() {
+	MAX_FREQ=/sys/devices/system/cpu/cpu0/cpufreq/scaling_max_freq
+	MIN_FREQ=/sys/devices/system/cpu/cpu0/cpufreq/scaling_min_freq
+	cat $MAX_FREQ > $MIN_FREQ
+	MAX_FREQ=/sys/devices/system/cpu/cpu1/cpufreq/scaling_max_freq
+	MIN_FREQ=/sys/devices/system/cpu/cpu1/cpufreq/scaling_min_freq
+	cat $MAX_FREQ > $MIN_FREQ
 }
 
-function stop_devjs() {
-    pushd $RUNNER_DIR
-    $RUNNER_STOP_CMD > $RUNNER_LOG 2>&1
-    popd
+stop_devjs() {
+	pushd $RUNNER_DIR
+	$RUNNER_STOP_CMD > $RUNNER_LOG 2>&1
+	popd
 }
-function run_devjs() {
+START() {
+	if [[ -e $maestroOK ]]; then
+		eval $COLOR_BOLD
+		eval $COLOR_NORMAL
+		config_cpu_scaling
+		if [ -e $RUNNER_LOG ]; then
+			mv $RUNNER_LOG $RUNNER_LOG.1
+		fi
 
-    if [ -e $RUNNER_LOG ]; then
-	# some trivial log rotation
-	mv $RUNNER_LOG $RUNNER_LOG.1
-    fi
-    
-    ulimit -c unlimited
-    pushd $RUNNER_DIR
-    $RUNNER_START_CMD > $RUNNER_LOG 2>&1 &
-    popd
+		ulimit -c unlimited
+		pushd $RUNNER_DIR
+		$RUNNER_START_CMD > $RUNNER_LOG 2>&1 &
+		popd
+	else
+	 #When the relay doesn't have its keys in the right places, we dont autostart devicejs or the watchdog...
+	 echo "did not start devicejs because wwrelay said not to" >> $RUNNER_LOG
+	 echo "did not start devicejs because wwrelay said not to" >> $WWRELAY_LOG
+	 exit 7
+	fi
 }
+
+
 
 case "$1" in
-    start)
-	eval $COLOR_BOLD
-	echo "Starting DeviceJS services."
-	eval $COLOR_NORMAL
-        congig_cpu_scaling
-	run_devjs
-	;;
-    stop)
-	echo "Stopping DeviceJS"
-        stop_devjs
-        ;;
-    restart) 
-	echo "Restarting DeviceJS"
-	stop_devjs
-        congig_cpu_scaling
-	run_devjs
-  	;;
-      *)
-	echo "Usage: $0 {start|stop|restart}"
-    exit 1
+	start) START; ;;
+	#
+	stop)
+echo "Stopping DeviceJS"
+stop_devjs
+;;
+restart) 
+echo "Restarting DeviceJS"
+stop_devjs
+config_cpu_scaling
+run_devjs
+;;
+*)
+echo "Usage: $0 {start|stop|restart}"
+exit 1
 esac
 
 exit 0
 
-     
+

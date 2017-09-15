@@ -17,9 +17,12 @@
 #include <sys/types.h>
 #include <sys/socket.h>
 #include <sys/un.h>
+#include <stdarg.h>
 
-//#define SOCK_PATH "\0led"
-//#include <curl/curl.h>
+#define DAEMON
+
+
+
 char *socket_path="\0led";
 //https://git.kernel.org/pub/scm/linux/kernel/git/torvalds/linux.git/tree/include/uapi/linux/input-event-codes.h
 #include "input-event-codes.h"
@@ -34,15 +37,15 @@ int type,kvalue,code=0;
 //https://stackoverflow.com/questions/1371460/state-machines-tutorials
 int new_entry(void);
 int gathering(void);
-
 int exit_state(void);
+int _printf(const char *fmt,...);
 
 /* array and enum below must be in sync! */
 int (* state[])(void) = { new_entry, gathering, exit_state};
 enum state_codes { entry, gather, end};
 enum shiftstates { up, down};
 enum ret_codes { ok, fail, repeat};
-enum ledmode{led_needscanner,led_foundscanner,led_havecurlserver,led_success,led_failure,led_burningeeprom,led_failedcurlfetch}setled;
+enum ledmode{led_needscanner,led_foundscanner,led_havecurlserver,led_success,led_verify,led_erase,led_reboot,led_failure,led_burningeeprom,led_failedcurlfetch}currentLedState,lastLedState;
 enum shiftstates shiftstate;
 struct transition {
     enum state_codes src_state;
@@ -1540,7 +1543,7 @@ int getSO_ERROR(int fd) {
    int err = 1;
    socklen_t len = sizeof err;
    if (-1 == getsockopt(fd, SOL_SOCKET, SO_ERROR, (char *)&err, &len))
-      printf("fatalerror\n");
+      _printf("fatalerror\n");
 if (err)
       errno = err;              // set errno to the socket SO_ERROR
 return err;
@@ -1561,7 +1564,7 @@ void connectLED(void){
             perror("socket");
             exit(1);
       }
-      printf("Trying to connect...\n");
+      _printf("Trying to connect...\n");
 
       remote.sun_family = AF_UNIX;
 //strcpy(remote.sun_path, SOCK_PATH);
@@ -1582,7 +1585,7 @@ void connectLED(void){
             exit(1);
       }
 
-      printf("Connected.\n");
+      _printf("Connected.\n");
 }
 
 void disconnectLED(void){
@@ -1596,122 +1599,214 @@ if (close(s) < 0) // finally call close()
 }
 }
 void messageLed(enum ledmode inled){
+      lastLedState=currentLedState;
+      currentLedState=inled;
       char str[100];
       memset(str,'\0',sizeof(str));
-// while(printf("> "), fgets(str, 100, stdin), !feof(stdin)) {
+// while(_printf("> "), fgets(str, 100, stdin), !feof(stdin)) {
 //strip(str);
       switch (inled) {
             case led_needscanner:
+            _printf("led setting to: led_needscanner\n");
             strcpy(str,"9 blink 11 0 0 75 0 0 0 75"); 
             break;
             case led_foundscanner:
+            _printf("led setting to: led_foundscanner\n");
             strcpy(str,"9 blink 11 0 0 250 0 0 0 750"); 
             break;
+            case led_erase:
+            _printf("led setting to: erase\n");
+            strcpy(str,"9 blink 0 0 12 75 0 0 0 75"); 
+            break;
+            case led_reboot:
+            _printf("led setting to: led_reboot\n");
+            strcpy(str,"4 solid 0 0 0"); 
+            break;
             case led_havecurlserver:
+            _printf("led setting to: led_havecurlserver\n");
             strcpy(str,"9 blink 0 0 12 250 0 0 0 750"); 
             break;
             case led_failedcurlfetch:
+            _printf("led setting to: led_failedcurlfetch\n");
             strcpy(str,"9 blink 0 0 12 500 12 0 0 500"); 
             break;
             case led_burningeeprom:
-            strcpy(str,"9 blink 0 0 12 500 0 12 0 500"); 
+            case led_verify:
+            _printf("led setting to: led_verify\n");
+            strcpy(str,"9 blink 0 12 0 75 0 0 0 75"); 
             break;
             case led_success:
+            _printf("led setting to: led_success\n");
             strcpy(str, "4 solid 0 10 0");
             break;
             case led_failure:
+            _printf("led setting to: led_failure\n");
             strcpy(str, "4 solid 10 0 0");
             break;
       }
       if (send(s, str, strlen(str), 0) == -1) {
             perror("send");
+            _printf("could't do my send, lets exit");
             exit(1);
+      }
+      else {
+            _printf("I sent the command (%s)\n",str);
       }
 
 }
 
 
 char _KEY(int key){
-    printf("key");
+    _printf("key");
 }
 void _RECORD(int pos){
     char thiscode=_LOOKUPCODE(pos);
-    printf("_Recording %i (%c)\n",pos,thiscode);
+    _printf("_Recording %i (%c)\n",pos,thiscode);
     pcc++;
     scannerString[pcc]=thiscode;
-    printf("pc: %s\n",scannerString);
+    _printf("pc: %s\n",scannerString);
 }
 
 
 
 void _PCFOUND(void){
-      regex_t regexHTTP_PCDIR;
-      int http_pcdir; 
-      http_pcdir = regcomp(&regexHTTP_PCDIR, "`PCSERVER_", 0);
+      regex_t regexHTTP_PCDIR,regexCLEAR,regexVERIFY,regexREBOOT,regexERASE;
+      int http_pcdir,ierase,ireboot,iverify,iclear,failure;
+      char curlcmd[100],filename[35],eetoolcmd[100],filepath[100],exitcmd[100];
+      sprintf(exitcmd, "init 6");
+      http_pcdir = regcomp(&regexHTTP_PCDIR, "`PCSERV_", 0);
+      ierase=regcomp(&regexERASE,"`ERASE",0);
+      ireboot=regcomp(&regexREBOOT,"`REBOOT",0);
+      iverify=regcomp(&regexVERIFY,"`VERIFY",0);
+      iclear=regcomp(&regexCLEAR,"`CLEAR",0);
       char *token;
       const char s[2] = "_";                                                    
 
-      if (http_pcdir) {
-            fprintf(stderr, "Could not compile regexHTTP_PCDIR\n");
+      if (http_pcdir+ierase+ireboot+iclear) {
+            fprintf(stderr, "Could not compile command regex's\n");
             exit(1);
       }
       char regexERROR[100];
-      printf("PC Found: %s\n",scannerString);
+      int lens=strlen(scannerString);
+      _printf("PC Found: (%s) len: %i\n",scannerString,lens);
+
       if (scannerString[0]=='`'){
-            printf("command string found%s\n",scannerString);
+            _printf("command string found%s\n",scannerString);
             http_pcdir = regexec(&regexHTTP_PCDIR, scannerString, 0, NULL, 0);
-//http_pcdir = regexec(&regexHTTP_PCDIR, scannerString, nmatch,pmatch, 0);
+            ierase = regexec(&regexERASE, scannerString, 0, NULL, 0);
+            ireboot = regexec(&regexREBOOT, scannerString, 0, NULL, 0);
+            iverify = regexec(&regexVERIFY, scannerString, 0, NULL, 0);
+            iclear = regexec(&regexCLEAR, scannerString, 0, NULL, 0);
+            
+            /* ACTION FOR PCSERV_*/
             if (!http_pcdir) {
-                  puts("Matched-http_pcdir");
+                  _printf("Matched PCSERV_\n");
                   token = strtok(scannerString, s);
                   token = strtok(NULL, s);
                   strcpy(pcServer,token);
                   messageLed(led_havecurlserver);
             }
             else if (http_pcdir == REG_NOMATCH) {
-//puts("No match");
             }
             else {
                   regerror(http_pcdir, &regexHTTP_PCDIR, regexERROR, sizeof(regexERROR));
                   fprintf(stderr, "regexHTTP_PCDIR match failed: %s\n", regexERROR);
                   exit(1);
             }
+            /* ACTION FOR ERASE*/
+            if (!ierase) {
+                  _printf("Matched ERASE_\n");
+                  messageLed(led_erase);
+                  sprintf(eetoolcmd,"/wigwag/system/bin/eetool erase all");
+                  failure=system(eetoolcmd);
+                  if (strlen(pcServer)){
+                        messageLed(led_havecurlserver);
+                  }
+                  else{
+                        messageLed(led_foundscanner);
+                  }
+            }
+            else if (ierase == REG_NOMATCH) {
+            }
+            else {
+                  regerror(ierase, &regexERASE, regexERROR, sizeof(regexERROR));
+                  fprintf(stderr, "regexERASE match failed: %s\n", regexERROR);
+                  exit(1);
+            }
+            /* ACTION FOR VERIFY_*/
+            if (!iverify) {
+                  _printf("Matched VERIFY\n");
+                  messageLed(led_verify);
+                  messageLed(lastLedState);
+            }
+            else if (iverify == REG_NOMATCH) {
+            }
+            else {
+                  regerror(iverify, &regexVERIFY, regexERROR, sizeof(regexERROR));
+                  fprintf(stderr, "regexVERIFY match failed: %s\n", regexERROR);
+                  exit(1);
+            }
+            /* ACTION FOR REBOOT*/
+            if (!ireboot) {
+                  _printf("Matched REBOOT\n");
+                  messageLed(led_reboot);
+                  system(exitcmd);
+            }
+            else if (ireboot == REG_NOMATCH) {
+            }
+            else {
+                  regerror(ireboot, &regexREBOOT, regexERROR, sizeof(regexERROR));
+                  fprintf(stderr, "regexREBOOT match failed: %s\n", regexERROR);
+                  exit(1);
+            }
+            /* ACTION FOR CLEAR*/
+            if (!iclear) {
+
+            }
+            else if (iclear == REG_NOMATCH) {
+            }
+            else {
+                  regerror(iclear, &regexCLEAR, regexERROR, sizeof(regexERROR));
+                  fprintf(stderr, "regexCLEAR match failed: %s\n", regexERROR);
+                  exit(1);
+            }
 
 /* Free memory allocated to the pattern buffer by regcomp() */
             regfree(&regexHTTP_PCDIR);
+            regfree(&regexREBOOT);
+            regfree(&regexERASE);
+            regfree(&regexCLEAR);
+            regfree(&regexVERIFY);
       }
-      else {
-            int failure;
-            char curlcmd[100],filename[35],eetoolcmd[100],filepath[100],exitcmd[100];
+      else if (lens==25) {
             sprintf(filename, "%s.json", scannerString);
             sprintf(filepath, "/tmp/%s",filename);
             sprintf(curlcmd,"curl -o %s %s%s",filepath,pcServer,filename);
-            sprintf(eetoolcmd,"eetool set /tmp/%s",filename);
-            sprintf(exitcmd, "init 6");
-            printf ("curl command: (%s)",curlcmd);
-            printf ("eetool command: (%s)",eetoolcmd);
+            sprintf(eetoolcmd,"/wigwag/system/bin/eetool set /tmp/%s",filename);
+            _printf ("curl command: (%s)\n",curlcmd);
+            _printf ("eetool command: (%s)\n",eetoolcmd);
 //    strcpy(filename, scannerString);
-//    printf("filename: %s\n",filename);
+//    _printf("filename: %s\n",filename);
 //    strcat(filename,".json");
-//    printf("filename: %s\n",filename);
+//    _printf("filename: %s\n",filename);
 //    strcpy( command, "curl -o /tmp/");
-//    printf("cmd: %s\n",command);
+//    _printf("cmd: %s\n",command);
 //    strcat(command,filename);
 //    strcat (command,pcServer);
 //    strcat (command,filename);
 // // strcat(command," /tmp/");
-//    printf("getstring:%s\n",command);
+//    _printf("getstring:%s\n",command);
             system(curlcmd);
 //    command[0]='\0';
 //    strcpy(filepath,"/tmp/");
 //    strcat(filepath,filename);
 //    strcpy(command, "eetool set ");
 //    strcat (command,filepath);
-//    printf("eetool command: %s\n",command);
+//    _printf("eetool command: %s\n",command);
             if (access(filepath,F_OK)!=-1) {
                   messageLed(led_burningeeprom);
                   failure=system(eetoolcmd);
-                  printf("Did I have a failure:%i\n",failure);
+                  _printf("Did I have a failure:%i\n",failure);
                   if (!failure){
                         system(exitcmd);
                         messageLed(led_success);
@@ -1721,57 +1816,57 @@ void _PCFOUND(void){
                  }
            }
            else {
-            printf("file (%s) does not exist\n",filepath);
+            _printf("file (%s) does not exist\n",filepath);
             messageLed(led_failedcurlfetch);
       }
 }
 new_entry();
 }
 int new_entry(void){
-    printf("State: new_entry\n");
+    _printf("State: new_entry\n");
     memset(&scannerString[0], 0, sizeof(scannerString));
     pcc=-1;
     return ok;
 }
 
 int gathering(void){
-    printf("State: gathering\n");
-    printf("t:%d, v:%d, c:%d\n",type,kvalue,code);
+    _printf("State: gathering\n");
+    _printf("t:%d, v:%d, c:%d\n",type,kvalue,code);
     if (type==1 && kvalue==1 && code==KEY_LEFTSHIFT){
-        printf("LS down\n");
+        _printf("LS down\n");
         shiftstate=down;
-        printf("shiftsate: %i\n",shiftstate);
+        _printf("shiftsate: %i\n",shiftstate);
   }
   else if (type==1 && kvalue==0 && code==KEY_LEFTSHIFT){
         shiftstate=up;
-        printf("LS up\n");
-        printf("shiftsate: %i\n",shiftstate);
+        _printf("LS up\n");
+        _printf("shiftsate: %i\n",shiftstate);
   }
   else if (type==1 && kvalue==1 && code==KEY_ENTER){
-        printf("Enter down\n");
+        _printf("Enter down\n");
   }
   else if (type==1 && kvalue==0 && code==KEY_ENTER){
-        printf("Enter up, taking action\n");
+        _printf("Enter up, taking action\n");
         _PCFOUND();
         return repeat;
   }
   else if (type==1 && kvalue==1 && code==KEY_KPENTER){
-        printf("Enter down\n");
+        _printf("Enter down\n");
   }
   else if (type==1 && kvalue==0 && code==KEY_KPENTER){
-        printf("Enter up, taking action\n");
+        _printf("Enter up, taking action\n");
         _PCFOUND();
         return repeat;
   }
   else if (type==1 && kvalue==1){
-        printf("recording (%i) while the shift key is %i\n",code,shiftstate);
+        _printf("recording (%i) while the shift key is %i\n",code,shiftstate);
         _RECORD(code);
   }
   return repeat;
 }
 
 int exit_state(void){
-    printf("State: exit_state\n");
+    _printf("State: exit_state\n");
     return ok;
 }
 
@@ -1803,8 +1898,27 @@ lookup_transitions(enum state_codes cur_state, enum ret_codes rc)
 #endif
 }
 
+FILE *logfile;
+
+
+int _printf(const char *fmt,...){
+  int n;
+  va_list ap;
+  char *logfilename = "/wigwag/log/scanner.log";
+  logfile = fopen(logfilename, "a");
+  if (logfile == NULL) {
+        fprintf(stderr, "Can't open log file %s\n", logfilename);
+        return 1;
+  }
+  va_start(ap, fmt);
+  n = fprintf(logfile, fmt, ap);
+  va_end(ap);
+  fclose(logfile);
+
+  return n;
+}
 void handler (int sig){
-    printf ("nexiting...(%d)n", sig);
+    _printf ("nexiting...(%d)n", sig);
     exit (0);
 }
 
@@ -1813,13 +1927,65 @@ void perror_exit (char *error){
     handler (9);
 }
 
-int main (int argc, char *argv[]) {
-      connectLED();
+int daemonize(void){
+      pid_t process_id = 0;
+      pid_t sid = 0;
+// Create child process
+      process_id = fork();
+// Indication of fork() failure
+      if (process_id < 0)
+      {
+            printf("fork failed!\n");
+// Return failure in exit status
+            return 1;
+      }
+// PARENT PROCESS. Need to kill it.
+      if (process_id > 0)
+      {
+            printf("process_id of child process %d \n", process_id);
+// return success in exit status
+            exit(0);
+      }
+//unmask the file mode
+      umask(0);
+//set new session
+      sid = setsid();
+      if(sid < 0)
+      {
+// Return failure
+            return 1;
+      }
+// Change the current working directory to root.
+      chdir("/");
+// Close stdin. stdout and stderr
+      close(STDIN_FILENO);
+      close(STDOUT_FILENO);
+      close(STDERR_FILENO);
+      sleep(1);
+      return 0;
+}
 
+int main (int argc, char *argv[]) {
+      char *device = NULL;
+      if (argv[1] == NULL){
+            printf("Please specify (on the command line) the path to the dev event interface device\nAssuming /dev/input/event1\n");
+            device="/dev/input/event1";
+      }
+      #ifdef DAEMON
+      if (daemonize()){
+            printf("failed to daemonize \n");
+            exit(1);
+      }
+      printf("rolling\n");
+      #endif
+
+
+      _printf("giving it a shot");
+
+      connectLED();
       int fd, rd, value, size = sizeof (struct input_event);
       char device_name[256] = "Unknown";
-      char *device = NULL;
-      printf ("entered main\n");
+      _printf ("entered main\n");
       enum state_codes cur_state = entry;
       enum ret_codes rc;
       int (* state_function)(void);
@@ -1830,41 +1996,36 @@ int main (int argc, char *argv[]) {
 
 
   //Setup check
-      if (argv[1] == NULL){
-        printf("Please specify (on the command line) the path to the dev event interface devicen");
-        exit (0);
-  }
-
-  if ((getuid ()) != 0){
-        printf ("You are not root! This may not work...n\n");
+      if ((getuid ()) != 0){
+        _printf ("You are not root! This may not work...n\n");
   }
   else{
-        printf ("you are root, moving on\n");
+        _printf ("you are root, moving on\n");
   }
   if (argc > 1){
-        printf ("multiple args\n");
+        _printf ("multiple args\n");
         device = argv[1];
   }
   else {
-        printf ("single arg\n");
+        _printf ("single arg\n");
   }
   while (1){
         if (access(device,F_OK)==-1) {
-            printf("No device to play with\n");
+            _printf("No device to play with\n");
             messageLed(led_needscanner);
             sleep(2);
       }
       while ( access( device, F_OK ) != -1 ) {
   //Open Device
             if ((fd = open (device, O_RDONLY)) == -1){
-                printf ("%s is not a vaild device.n", device);
+                _printf ("%s is not a vaild device.n", device);
           }
           else{
             messageLed(led_foundscanner);
-            printf ("I am ready, %s is a valid device\n",device);
+            _printf ("I am ready, %s is a valid device\n",device);
       }
       ioctl (fd, EVIOCGNAME (sizeof (device_name)), device_name);
-      printf ("Reading From : %s (%s)\n", device, device_name);
+      _printf ("Reading From : %s (%s)\n", device, device_name);
 
 
 
@@ -1880,7 +2041,7 @@ int main (int argc, char *argv[]) {
     if (!reti) {
           puts("Match");
           splithalf=1;
-   // printf("mydev:%s\n",device_name);
+   // _printf("mydev:%s\n",device_name);
     }
     else if (reti == REG_NOMATCH) {
           puts("No match");
@@ -1899,32 +2060,32 @@ int main (int argc, char *argv[]) {
 
           rc = new_entry();
     cur_state=lookup_transitions(cur_state,rc);    
-    printf("ENTERING WHILE LOOP\n");
+    _printf("ENTERING WHILE LOOP\n");
 
       //while (1){
     for (;;) {
           if ((rd = read (fd, ev, size * 64)) < size){
-              printf("device not here\n");
+              _printf("device not here\n");
               break;
         //perror_exit ("read()\n");     
         }
         kvalue=ev[1].value;
         type=ev[1].type;
         code=ev[1].code;
-        printf("\n[0]type: %d\n",ev[0].type);
-        printf("[0]kvalue: %d\n",ev[0].value);
-        printf("[0]code: %d\n",ev[0].code);
-        printf("[1]type: %d\n",type);
-        printf("[1]kvalue: %d\n",kvalue);
-        printf("[1]code: %d\n",code);
-        printf("[2]type: %d\n",ev[2].type);
-        printf("[2]kvalue: %d\n",ev[2].value);
-        printf("[2]code: %d\n",ev[2].code);
-        printf("[3]type: %d\n",ev[3].type);
-        printf("[3]kvalue: %d\n",ev[3].value);
-        printf("[3]code: %d\n",ev[3].code);
+        _printf("\n[0]type: %d\n",ev[0].type);
+        _printf("[0]kvalue: %d\n",ev[0].value);
+        _printf("[0]code: %d\n",ev[0].code);
+        _printf("[1]type: %d\n",type);
+        _printf("[1]kvalue: %d\n",kvalue);
+        _printf("[1]code: %d\n",code);
+        _printf("[2]type: %d\n",ev[2].type);
+        _printf("[2]kvalue: %d\n",ev[2].value);
+        _printf("[2]code: %d\n",ev[2].code);
+        _printf("[3]type: %d\n",ev[3].type);
+        _printf("[3]kvalue: %d\n",ev[3].value);
+        _printf("[3]code: %d\n",ev[3].code);
   #if 1
-        printf("current-state: %d\n",cur_state);
+        _printf("current-state: %d\n",cur_state);
         state_function = state[cur_state];
         rc = state_function();
         if (end == cur_state){
@@ -1935,7 +2096,7 @@ int main (int argc, char *argv[]) {
               kvalue=ev[3].value;
               type=ev[3].type;
               code=ev[3].code;
-              printf("current-state: %d\n",cur_state);
+              _printf("current-state: %d\n",cur_state);
               state_function = state[cur_state];
               rc = state_function();
               if (end == cur_state){
@@ -1947,31 +2108,32 @@ int main (int argc, char *argv[]) {
 
 }
 
-    //printf("I am getting somewhere\n");
+    //_printf("I am getting somewhere\n");
 
     // if (ev[1].code == KEY_B ){
-    //   printf("key b pressed\n");
+    //   __printf("key b pressed\n");
     // }
 
 
     // kvalue = ev[1].kvalue;
     // 
-      // printf("ev[0]: type[%d]\n",(ev[0].type));
-      // printf("ev[0]: kvalue[%d]\n",(ev[0].kvalue));
-      // printf ("ev[0]: Code[%d]\n", (ev[0].code));
-      // printf("ev[1]: type[%d]\n",(ev[1].type));
-      // printf("ev[1]: kvalue[%d]\n",(ev[1].kvalue));
-      // printf ("ev[1]: Code[%d]\n", (ev[1].code));
+      // __printf("ev[0]: type[%d]\n",(ev[0].type));
+      // __printf("ev[0]: kvalue[%d]\n",(ev[0].kvalue));
+      // __printf ("ev[0]: Code[%d]\n", (ev[0].code));
+      // __printf("ev[1]: type[%d]\n",(ev[1].type));
+      // __printf("ev[1]: kvalue[%d]\n",(ev[1].kvalue));
+      // _printf ("ev[1]: Code[%d]\n", (ev[1].code));
 
 
     // if (ev[0].kvalue == 1 && ev[0].type == EV_KEY){ // Only read the key press event
-     // printf("keys?\n");
-    //   printf (“Code[%d]n”, (ev[0].code));
+     // _printf("keys?\n");
+    //   _printf (“Code[%d]n”, (ev[0].code));
       //if (kvalue != ' ' && ev[1].kvalue == 1 && ev[1].type == 1){ // Only read the key press event
      // }
       //}
 }
 }
 disconnectLED();
+
 return 0;
 } 

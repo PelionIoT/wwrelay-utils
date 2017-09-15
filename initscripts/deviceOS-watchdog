@@ -4,7 +4,7 @@
 # 
 ### BEGIN INIT INFO
 # Provides:             deviceOSwatchdog
-# Required-Start:       $remote_fs $time
+# Required-Start:       $remote_fs $time wwrelay
 # Required-Stop:        
 # Should-Start:         $network
 # Should-Stop:          
@@ -12,18 +12,19 @@
 # Default-Stop:         0 1 
 # Short-Description:    watchdog timer for the relay
 ### END INIT INFO
-
+WIGWAGROOT="/wigwag"
 PROG_PATH="/wigwag/system/bin"
 PROG="deviceOSWD"
 #PROG="deviceOSWD_a10_debug"
 KEEPALIVE="/var/deviceOSkeepalive"
-PID_PATH="/var/run"
-
+PIDROOT="/var/run"
+maestroOK=$PIDROOT"/maestroOK"
 #this is fixed by the binary... you cannot change it, so go with it.
 FIXED_PID_FILE="deviceOSWD.pid"
-START_DEVICEOSWD_CMD="$PROG_PATH/$PROG -w 300 -m 90 -s $KEEPALIVE -d -p $PID_PATH/"
+START_DEVICEOSWD_CMD="$PROG_PATH/$PROG -w 300 -m 90 -s $KEEPALIVE -d -p $PIDROOT/"
 STOP_DEVICEOSWD_CMD="echo -e \"stop\" | socat unix-sendto:$KEEPALIVE STDIO"
-
+RUNNER_LOG="${WIGWAGROOT}/log/runner.log"
+WWRELAY_LOG=${WIGWAGLOGROOT}"/wwrelay.log"
 
 #this script includes a test program that will crash the kernel on purpose, enabling you test out the entire watchdog system.  To run the test, simply set set the PANICLOOP_TIME to the amount of time you want the kernel up and running After the allotted time, the PANICLOOP_TESTPROGRAM will cause a kernel panic.   The panic loop test program also logs the number of reboots to a file at /wigwag/log/panic.log to count the number of reboots.  It also turns the led "white" just before a panic.  This lets you visually know about a panic coming. A PANICLOOP_TIME of 45 seconds should be enough time for you to login  and set the the loop time to 0 seconds, (which prevents the panic loop test from running.)  Anything less you will have to use other tools to stop the loop test.
 PANICLOOP_TESTPROGRAM="/wigwag/wwrelay-utils/dev-tools/bin/panic.sh"
@@ -34,9 +35,11 @@ PANICLOOP_TESTPROGRAM="/wigwag/wwrelay-utils/dev-tools/bin/panic.sh"
 PANICLOOP_TIME=0;
 
 start() {
-    if [ -e "$PID_PATH/$PROG.pid" ]; then
+    if [[ -e $maestroOK ]]; then
+    if [ -e "$PIDROOT/$PROG.pid" ]; then
         ## Program is running, exit with error.
-        echo "Error! $PROG is currently running!" 1>&2
+        pd=$(pgrep $PROG)
+        echo "Error! $PROG is currently running! ($pd)" 1>&2
         exit 1
     else
         ## Change from /dev/null to something like /var/log/$PROG if you want to save output.
@@ -47,15 +50,27 @@ start() {
             $PANICLOOP_TESTPROGRAM $PANICLOOP_TIME &
         fi
     fi
+    else
+        #When the relay doesn't have its keys in the right places, we dont autostart devicejs or the watchdog...
+        echo "did not start $0 deviceOS-watchdog because wwrelay said not to" >> $RUNNER_LOG
+        echo "did not start $0 deviceOS-watchdog because wwrelay said not to" >> $WWRELAY_LOG
+        #you must stop the middle boot deviceOSWD, otherwise you will bootloop in 300 seconds
+        #this seems strange here, but the only way to stop the internal hardware timer is to take over the heartbeat, then stop the heartbeat
+        pkill $PROG
+         $START_DEVICEOSWD_CMD
+        eval "$STOP_DEVICEOSWD_CMD"
+        pkill $PROG
+        rm "$PIDROOT/$FIXED_PID_FILE"
+        exit 7
+    fi
 }
-
 humanhalt() {
-    if [ -e "$PID_PATH/$FIXED_PID_FILE" ]; then
+    if [ -e "$PIDROOT/$FIXED_PID_FILE" ]; then
         ## Program is running, so stop it
-        pid=`cat $PID_PATH/$FIXED_PID_FILE`
+        pid=`cat $PIDROOT/$FIXED_PID_FILE`
         eval "$STOP_DEVICEOSWD_CMD"
         kill -9 $pid
-        rm "$PID_PATH/$FIXED_PID_FILE"
+        rm "$PIDROOT/$FIXED_PID_FILE"
         echo "$PROG stopped ($pid)"
     else
         ## Program is not running, exit with error.
@@ -81,8 +96,8 @@ panic(){
 }
 
 status(){
-    if [[ -e $PID_PATH/$FIXED_PID_FILE ]]; then
-        pid=`cat $PID_PATH/$FIXED_PID_FILE`
+    if [[ -e $PIDROOT/$FIXED_PID_FILE ]]; then
+        pid=`cat $PIDROOT/$FIXED_PID_FILE`
         echo "$PROG (pid $pid) is running... logging to /var/log/syslog"
     else
         echo "$PROG not running."

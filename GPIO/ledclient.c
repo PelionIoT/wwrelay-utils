@@ -20,7 +20,6 @@ void strip(char *s) {
     }
     *p2 = '\0';
 }
-
 int externalconnect(void){
     //char *socket_path="\0led";
     int s, t, len;
@@ -79,7 +78,7 @@ int externalconnect(void){
 int main(void)
 {
 #if 1
-   externalconnect();
+ externalconnect();
  #else
     int s, t, len;
     struct sockaddr_un remote;
@@ -132,5 +131,5 @@ int main(void)
     close(s);
     #endif
 
-   return 0;
+ return 0;
 }

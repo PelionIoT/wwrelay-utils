@@ -1,29 +1,30 @@
 #include <stdio.h>
 #include <stdlib.h>
-#include <string.h>
+#include <stdarg.h>
 #include <unistd.h>
+#include <string.h>
 #include <errno.h>
 #include <fcntl.h>
+#include <pthread.h>
 #include <dirent.h>
+#include <termios.h>
+#include <regex.h>
+#include <signal.h>
 //https://git.kernel.org/pub/scm/linux/kernel/git/torvalds/linux.git/tree/include/uapi/linux/input.h
 #include <linux/input.h>
-#include <sys/types.h>
-#include <sys/stat.h>
 #include <sys/select.h>
-#include <sys/time.h>
-#include <termios.h>
-#include <signal.h>
-#include <regex.h>
 #include <sys/socket.h>
+#include <sys/stat.h>
+#include <sys/time.h>
+#include <sys/types.h>
 #include <sys/un.h>
-#include <pthread.h>
 
 //#define debugLED
 //define debugechoback
 
 //#define SOCK_PATH "\0led"
 char *socket_path="\0led";
-
+FILE *logfile;
 // unsigned long GPIO_SLCK = 38;  // gpio1
 // unsigned long GPIO_SDATA = 37; // gpio2
 char SLCK[100]="/sys/class/gpio/gpio38/value";
@@ -44,6 +45,18 @@ struct blink_struct {
 	unsigned int B2;
 	unsigned int D2;
 }blink;
+
+int pprintf(const char *fmt,...){
+	int n;
+	va_list ap;
+
+	va_start(ap, fmt);
+	n = fprintf(logfile, fmt, ap);
+	va_end(ap);
+
+	return n;
+}
+
 
 static int wigwagled(unsigned long R, unsigned long G, unsigned long B);
 void *blink_thread_run (void *arguments);
@@ -284,10 +297,6 @@ static int wigwagled(unsigned long R, unsigned long G, unsigned long B){
 	#endif
 	return 0;
 }
-
-
-
-
 void *blink_thread_run (void *arguments) {
 	struct arg_struct *args = (struct arg_struct *)arguments;
 	while(1)
@@ -313,12 +322,61 @@ void *blink_thread_run (void *arguments) {
 	return NULL;
 }
 
-
-
+int daemonize(void){
+	pid_t process_id = 0;
+	pid_t sid = 0;
+// Create child process
+	process_id = fork();
+// Indication of fork() failure
+	if (process_id < 0)
+	{
+		printf("fork failed!\n");
+// Return failure in exit status
+		return 1;
+	}
+// PARENT PROCESS. Need to kill it.
+	if (process_id > 0)
+	{
+		printf("process_id of child process %d \n", process_id);
+// return success in exit status
+		exit(0);
+	}
+//unmask the file mode
+	umask(0);
+//set new session
+	sid = setsid();
+	if(sid < 0)
+	{
+// Return failure
+		return 1;
+	}
+// Change the current working directory to root.
+	chdir("/");
+// Close stdin. stdout and stderr
+	close(STDIN_FILENO);
+	close(STDOUT_FILENO);
+	close(STDERR_FILENO);
+	sleep(1);
+	return 0;
+}
 int main (int argc, char *argv[]) {
+	printf("ok did you overide\n");
+	char *logfilename = "/wigwag/log/leddaemon.log";
+	sleep(1);
+	if (daemonize()){
+		printf("failed to daemonize \n");
+		exit(1);
+	}
+	logfile = fopen(logfilename, "w");
+	if (logfile == NULL) {
+		fprintf(stderr, "Can't open log file %s\n", logfilename);
+		return 1;
+	}
 	init_LED();
 	wigwagled(0,0,0);
 	while(1){
 		init_socket();
 	}
+	fclose(logfile);
+	return (0);
 }

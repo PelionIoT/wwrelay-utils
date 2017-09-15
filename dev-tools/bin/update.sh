@@ -686,7 +686,7 @@ J)	setting_U_boot_force=1; setting_U_boot_force_SET=1; ;;
 k)	setting_U_boot_wipe=1; setting_U_boot_wipe_SET=1; ;;
 m)	manifesturl=$OPTARG; ;;
 N)	setting_factory_force=1;setting_upgrade_force=1;setting_boot_force=1;setting_boot_wipe=1;setting_factory_wipe=1;setting_upgrade_wipe=1;setting_user_wipe=1;setting_userdata_wipe=1;setting_U_boot_wipe=1;setting_U_boot_force=1; setting_factory_force_SET=1;setting_upgrade_force_SET=1;setting_boot_force_SET=1;setting_boot_wipe_SET=1;setting_factory_wipe_SET=1;setting_upgrade_wipe_SET=1;setting_user_wipe_SET=1;setting_userdata_wipe_SET=1;setting_U_boot_wipe_SET=1;setting_U_boot_force_SET=1; ;;
-O)	setting_factory_force=1;setting_upgrade_force=1;setting_boot_force=1;setting_boot_wipe=1;setting_factory_wipe=1;setting_upgrade_wipe=1;setting_U_boot_wipe=1;setting_U_boot_force=1; setting_factory_force_SET=1;setting_upgrade_force_SET=1;setting_boot_force_SET=1;setting_boot_wipe_SET=1;setting_factory_wipe_SET=1;setting_upgrade_wipe_SET=1;setting_U_boot_wipe_SET=1;setting_U_boot_force_SET=1;;;	
+O)	setting_factory_force=1;setting_upgrade_force=1;setting_boot_force=1;setting_boot_wipe=1;setting_factory_wipe=1;setting_upgrade_wipe=1;setting_U_boot_wipe=1;setting_U_boot_force=1; setting_factory_force_SET=1;setting_upgrade_force_SET=1;setting_boot_force_SET=1;setting_boot_wipe_SET=1;setting_factory_wipe_SET=1;setting_upgrade_wipe_SET=1;setting_U_boot_wipe_SET=1;setting_U_boot_force_SET=1; ;;	
 p)	protect_switches=1; ;;
 r)	rebootit=1; ;;
 R)	setting_repartition_emmc=0; setting_repartition_emmc_SET=1; ;;

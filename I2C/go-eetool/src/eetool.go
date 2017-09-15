@@ -1,10 +1,15 @@
 package main
 
-import "log"
-import "fmt"
-import I2C "golang.org/x/exp/io/i2c"
-import "regexp"
-import "encoding/hex"
+import (
+    "fmt"
+    I2C "golang.org/x/exp/io/i2c"
+    "regexp"
+    "encoding/hex"
+    "os/exec"
+    "log"
+    "syscall"
+    "io/ioutil"
+)
 
 func check(err error) {
     if err != nil { 
@@ -22,6 +27,23 @@ type eeprom_anatomy struct {
 type eeData struct {
     name string
     data string
+}
+
+//Need to define two file names because one cert needs to be concatenated
+type certs_anatomy struct {
+    metavariable string
+    fname1 string
+    fname2 string
+}
+
+var sslCerts = []certs_anatomy {
+    certs_anatomy { "ARCH_CLIENT_KEY_PEM", "/mnt/.boot/.ssl/client.key.pem", ""},
+    certs_anatomy { "ARCH_CLIENT_CERT_PEM", "/mnt/.boot/.ssl/client.cert.pem", ""},
+    certs_anatomy { "ARCH_SERVER_KEY_PEM", "/mnt/.boot/.ssl/server.key.pem", ""},
+    certs_anatomy { "ARCH_SERVER_CERT_PEM", "/mnt/.boot/.ssl/server.cert.pem", ""},
+    certs_anatomy { "ARCH_CA_CERT_PEM", "/mnt/.boot/.ssl/ca.cert.pem", ""},
+    certs_anatomy { "ARCH_INTERMEDIATE_CERT_PEM", "/mnt/.boot/.ssl/intermediate.cert.pem", ""},
+    certs_anatomy { "ARCH_CA_CHAIN_CERT_PEM", "/mnt/.boot/.ssl/ca.cert.pem", "/mnt/.boot/.ssl/intermediate.cert.pem"},
 }
 
 var metadata = []eeprom_anatomy {
@@ -88,13 +110,56 @@ func get_eeprom(prop eeprom_anatomy) eeData {
 
     return eeData{prop.name, dataStr}
 }
-             
+
+func read_file(cert certs_anatomy) eeData {
+
+    data, err1 := ioutil.ReadFile(cert.fname1)
+    check(err1)
+
+    dataStr := string(data)
+
+    if cert.fname2 != "" {
+        data2, err2 := ioutil.ReadFile(cert.fname2)
+        check(err2)
+
+        dataStr = dataStr + string(data2)
+    }
+
+    return eeData{cert.metavariable, dataStr}
+}
+
 func main() {
-    eepromData := make([]eeData, len(metadata))
+    eepromData := make([]eeData, len(metadata) + len(sslCerts))
 
     for i := 0; i < len(metadata); i++ {  
         eepromData[i] = get_eeprom(metadata[i])  
 
         fmt.Printf("%s --> %s\n", eepromData[i].name, eepromData[i].data)
     }
+    
+    cmd := exec.Command("mount", "/dev/mmcblk0p1", "/mnt/.boot/")
+
+    err := cmd.Run()
+    exitCode := 0
+    if err != nil {
+        if exitError, ok := err.(*exec.ExitError); ok {
+            ws := exitError.Sys().(syscall.WaitStatus)
+            exitCode = ws.ExitStatus()
+        }
+        log.Printf("command result, exitCode: %v", exitCode) 
+        //if exitCode is 32 that means it is already mounted
+        if exitCode == 32 {
+            log.Printf("Already mounted... continuing reading certs")
+        } else {
+            panic(err)
+        }
+    }
+
+
+    for i := len(metadata); i < (len(metadata) + len(sslCerts)); i++ {
+        eepromData[i] = read_file(sslCerts[i - len(metadata)])
+
+        fmt.Printf("%s --> %s\n", eepromData[i].name, eepromData[i].data)
+    }
+
 }  

@@ -235,32 +235,32 @@ math_ascii2hex(){
 #/	$3:		<ignore> special for a depricated function function call
 #/	Out:	debug info on your screen
 #/	Expl:	log "debug" "oh snarks, i got a problem"
-	THISTERM=$(tty)
+THISTERM=$(tty)
 	#echo "hi this term is $THISTERM"
 	LogToTerm=1
 	LogToSerial=0
 	LogToecho=0
 	LogToFile=""
 	loglevel=info;
-  	NORM="$(tput sgr0)"
-  	BOLD="$(tput bold)"
-  	REV="$(tput smso)"
-  	UND="$(tput smul)"
-  	BLACK="$(tput setaf 0)"
-  	RED="$(tput setaf 1)"
-  	GREEN="$(tput setaf 2)"
-  	YELLOW="$(tput setaf 3)"
-  	BLUE="$(tput setaf 4)"
-  	MAGENTA="$(tput setaf 5)"
-  	CYAN="$(tput setaf 6)"
-  	WHITE="$(tput setaf 7)"
-  	ERROR="${REV}Error:${NORM}"
-log(){
-	level=$1
-	message=$2
-	lineinfo=$3
-	devK=/dev/kmesg
-	devS0=/dev/ttyS0
+	NORM="$(tput sgr0)"
+	BOLD="$(tput bold)"
+	REV="$(tput smso)"
+	UND="$(tput smul)"
+	BLACK="$(tput setaf 0)"
+	RED="$(tput setaf 1)"
+	GREEN="$(tput setaf 2)"
+	YELLOW="$(tput setaf 3)"
+	BLUE="$(tput setaf 4)"
+	MAGENTA="$(tput setaf 5)"
+	CYAN="$(tput setaf 6)"
+	WHITE="$(tput setaf 7)"
+	ERROR="${REV}Error:${NORM}"
+	log(){
+		level=$1
+		message=$2
+		lineinfo=$3
+		devK=/dev/kmesg
+		devS0=/dev/ttyS0
 	#echo -e "LogToEcho=$LogToecho\nLogToTerm=$LogToTerm\nLogToSerial=$LogToSerial\nLogtoFile=$LogToFile\n"
 	#echo "log called: $level $message $lineinfo"
 	if [[ "$THISTERM" = "not a tty" ]]; then
@@ -275,66 +275,66 @@ log(){
 	if [[ "$LogToecho" -eq 1 ]]; then
 		case $level in
 			"none") ;;
-			"error") 		if [[ $loglevelid -ge 1 ]]; then echo -e "${RED}error:${NORM}\t$message"; fi; ;;
-			"warn")  		if [[ $loglevelid -ge 2 ]]; then echo -e "${YELLOW}warn:${NORM}\t$message"; fi ;;
-			"info")  		if [[ $loglevelid -ge 3 ]]; then echo -e "${WHITE}info:${NORM}\t$message"; fi ;;
-			"verbose")  	if [[ $loglevelid -ge 4 ]]; then echo -e "${CYAN}verbose:${NORM}\t$message"; fi ;;
-			"debug")  		if [[ $loglevelid -ge 5 ]]; then echo -e "${MAGENTA}debug [${BASH_SOURCE[1]}:${BASH_LINENO[0]}]:${NORM}\t$message"; fi ;;
-			"silly")  		if [[ $loglevelid -ge 6 ]]; then echo -e "${GREEN}silly [${BASH_SOURCE[1]}:${BASH_LINENO[0]}]:${NORM}\t$message"; fi ;;	
-			"function")		if [[ $loglevelid -ge 7 ]]; then echo -e "${BLUE}func [${BASH_SOURCE[1]}:${BASH_LINENO[0]}]:${NORM}\t$message"; fi ;;	
-			"function2")	if [[ $loglevelid -ge 7 ]]; then echo -e "${BLUE}func2 $lineinfo:${NORM}\t$message"; fi ;;	
-			esac
-	fi
-	if [[ "$LogToTerm" -eq 1 ]]; then
-		case $level in
-			"none") ;;
-			"error")		if [[ $loglevelid -ge 1 ]]; then echo -e "${RED}error:${NORM}\t$message" > "$THISTERM"; fi; ;;
-			"warn")  		if [[ $loglevelid -ge 2 ]]; then echo -e "${YELLOW}warn:${NORM}\t$message" > "$THISTERM"; fi ;;
-			"info")  		if [[ $loglevelid -ge 3 ]]; then echo -e "${WHITE}info:${NORM}\t$message" > "$THISTERM"; fi ;;
-			"verbose")  	if [[ $loglevelid -ge 4 ]]; then echo -e "${CYAN}verbose:${NORM}\t$message" > "$THISTERM"; fi ;;
-			"debug")  		if [[ $loglevelid -ge 5 ]]; then echo -e "${MAGENTA}debug [${BASH_SOURCE[1]}:${BASH_LINENO[0]}]:${NORM}\t$message" > "$THISTERM"; fi ;;
-			"silly")  		if [[ $loglevelid -ge 6 ]]; then echo -e "${GREEN}silly [${BASH_SOURCE[1]}:${BASH_LINENO[0]}]:${NORM}\t$message" > "$THISTERM"; fi ;;	
-			"function")  	if [[ $loglevelid -ge 7 ]]; then echo -e "${BLUE}func [${BASH_SOURCE[1]}:${BASH_LINENO[0]}]:${NORM}\t$message" > "$THISTERM"; fi ;;	
-			"function2") 	if [[ $loglevelid -ge 7 ]]; then echo -e "${BLUE}func2 $lineinfo:${NORM}\t$message" > "$THISTERM"; fi ;;	
-		esac
-	fi
-	if [[ "$LogToSerial" -eq 1 ]]; then
-		case $level in
-			"none") ;;
-			"error")		if [[ $loglevelid -ge 1 ]]; then echo -e "${RED}error:${NORM}\t$message" > "$devK"; fi; ;;
-			"warn")  		if [[ $loglevelid -ge 2 ]]; then echo -e "${YELLOW}warn:${NORM}\t$message" > "$devK"; fi ;;
-			"info")  		if [[ $loglevelid -ge 3 ]]; then echo -e "${WHITE}info:${NORM}\t$message" > "$devK"; fi ;;
-			"verbose")  	if [[ $loglevelid -ge 4 ]]; then echo -e "${CYAN}verbose:${NORM}\t$message" > "$devK"; fi ;;
-			"debug")  		if [[ $loglevelid -ge 5 ]]; then echo -e "${MAGENTA}debug [${BASH_SOURCE[1]}:${BASH_LINENO[0]}]:${NORM}\t$message" > "$devK"; fi ;;
-			"silly")  		if [[ $loglevelid -ge 6 ]]; then echo -e "${GREEN}silly [${BASH_SOURCE[1]}:${BASH_LINENO[0]}]:${NORM}\t$message" > "$devK"; fi ;;	
-			"function")  	if [[ $loglevelid -ge 7 ]]; then echo -e "${BLUE}func [${BASH_SOURCE[1]}:${BASH_LINENO[0]}]:${NORM}\t$message" > "$devK"; fi ;;	
-			"function2") 	if [[ $loglevelid -ge 7 ]]; then echo -e "${BLUE}func2 $lineinfo:${NORM}\t$message" > "$devK"; fi ;;	
-		esac
-		case $level in
-			"none") ;;
-			"error")		if [[ $loglevelid -ge 1 ]]; then echo -e "${RED}error:${NORM}\t$message" > "$devS0"; fi; ;;
-			"warn")  		if [[ $loglevelid -ge 2 ]]; then echo -e "${YELLOW}warn:${NORM}\t$message" > "$devS0"; fi ;;
-			"info")  		if [[ $loglevelid -ge 3 ]]; then echo -e "${WHITE}info:${NORM}\t$message" > "$devS0"; fi ;;
-			"verbose")  	if [[ $loglevelid -ge 4 ]]; then echo -e "${CYAN}verbose:${NORM}\t$message" > "$devS0"; fi ;;
-			"debug")  		if [[ $loglevelid -ge 5 ]]; then echo -e "${MAGENTA}debug [${BASH_SOURCE[1]}:${BASH_LINENO[0]}]:${NORM}\t$message" > "$devS0"; fi ;;
-			"silly")  		if [[ $loglevelid -ge 6 ]]; then echo -e "${GREEN}silly [${BASH_SOURCE[1]}:${BASH_LINENO[0]}]:${NORM}\t$message" > "$devS0"; fi ;;	
-			"function")  	if [[ $loglevelid -ge 7 ]]; then echo -e "${BLUE}func [${BASH_SOURCE[1]}:${BASH_LINENO[0]}]:${NORM}\t$message" > "$devS0"; fi ;;	
-			"function2") 	if [[ $loglevelid -ge 7 ]]; then echo -e "${BLUE}func2 $lineinfo:${NORM}\t$message" > "$devS0"; fi ;;	
-		esac
-	fi
-	if [[ "$LogToFile" != "" ]]; then
-		case $level in
-			"none") ;;
-			"error")		if [[ $loglevelid -ge 1 ]]; then echo -e "${RED}error:${NORM}\t$message" >> "$LogToFile"; fi; ;;
-			"warn")  		if [[ $loglevelid -ge 2 ]]; then echo -e "${YELLOW}warn:${NORM}\t$message" >> "$LogToFile"; fi ;;
-			"info")  		if [[ $loglevelid -ge 3 ]]; then echo -e "${WHITE}info:${NORM}\t$message" >> "$LogToFile"; fi ;;
-			"verbose")  	if [[ $loglevelid -ge 4 ]]; then echo -e "${CYAN}verbose:${NORM}\t$message" >> "$LogToFile"; fi ;;
-			"debug")  		if [[ $loglevelid -ge 5 ]]; then echo -e "5${MAGENTA}debug [${BASH_SOURCE[1]}:${BASH_LINENO[0]}]:${NORM}\t$message" >> "$LogToFile"; fi ;;
-			"silly")  		if [[ $loglevelid -ge 6 ]]; then echo -e "${GREEN}silly [${BASH_SOURCE[1]}:${BASH_LINENO[0]}]:${NORM}\t$message" >> "$LogToFile"; fi ;;	
-			"function")  	if [[ $loglevelid -ge 7 ]]; then echo -e "${BLUE}func [${BASH_SOURCE[1]}:${BASH_LINENO[0]}]:${NORM}\t$message" >> "$LogToFile"; fi ;;	
-			"function2") 	if [[ $loglevelid -ge 7 ]]; then echo -e "${BLUE}func2 $lineinfo:${NORM}\t$message" >> "$LogToFile"; fi ;;	
-		esac
-	fi
+"error") 		if [[ $loglevelid -ge 1 ]]; then echo -e "${RED}error:${NORM}\t$message"; fi; ;;
+"warn")  		if [[ $loglevelid -ge 2 ]]; then echo -e "${YELLOW}warn:${NORM}\t$message"; fi ;;
+"info")  		if [[ $loglevelid -ge 3 ]]; then echo -e "${WHITE}info:${NORM}\t$message"; fi ;;
+"verbose")  	if [[ $loglevelid -ge 4 ]]; then echo -e "${CYAN}verbose:${NORM}\t$message"; fi ;;
+"debug")  		if [[ $loglevelid -ge 5 ]]; then echo -e "${MAGENTA}debug [${BASH_SOURCE[1]}:${BASH_LINENO[0]}]:${NORM}\t$message"; fi ;;
+"silly")  		if [[ $loglevelid -ge 6 ]]; then echo -e "${GREEN}silly [${BASH_SOURCE[1]}:${BASH_LINENO[0]}]:${NORM}\t$message"; fi ;;	
+"function")		if [[ $loglevelid -ge 7 ]]; then echo -e "${BLUE}func [${BASH_SOURCE[1]}:${BASH_LINENO[0]}]:${NORM}\t$message"; fi ;;	
+"function2")	if [[ $loglevelid -ge 7 ]]; then echo -e "${BLUE}func2 $lineinfo:${NORM}\t$message"; fi ;;	
+esac
+fi
+if [[ "$LogToTerm" -eq 1 ]]; then
+	case $level in
+		"none") ;;
+"error")		if [[ $loglevelid -ge 1 ]]; then echo -e "${RED}error:${NORM}\t$message" > "$THISTERM"; fi; ;;
+"warn")  		if [[ $loglevelid -ge 2 ]]; then echo -e "${YELLOW}warn:${NORM}\t$message" > "$THISTERM"; fi ;;
+"info")  		if [[ $loglevelid -ge 3 ]]; then echo -e "${WHITE}info:${NORM}\t$message" > "$THISTERM"; fi ;;
+"verbose")  	if [[ $loglevelid -ge 4 ]]; then echo -e "${CYAN}verbose:${NORM}\t$message" > "$THISTERM"; fi ;;
+"debug")  		if [[ $loglevelid -ge 5 ]]; then echo -e "${MAGENTA}debug [${BASH_SOURCE[1]}:${BASH_LINENO[0]}]:${NORM}\t$message" > "$THISTERM"; fi ;;
+"silly")  		if [[ $loglevelid -ge 6 ]]; then echo -e "${GREEN}silly [${BASH_SOURCE[1]}:${BASH_LINENO[0]}]:${NORM}\t$message" > "$THISTERM"; fi ;;	
+"function")  	if [[ $loglevelid -ge 7 ]]; then echo -e "${BLUE}func [${BASH_SOURCE[1]}:${BASH_LINENO[0]}]:${NORM}\t$message" > "$THISTERM"; fi ;;	
+"function2") 	if [[ $loglevelid -ge 7 ]]; then echo -e "${BLUE}func2 $lineinfo:${NORM}\t$message" > "$THISTERM"; fi ;;	
+esac
+fi
+if [[ "$LogToSerial" -eq 1 ]]; then
+	case $level in
+		"none") ;;
+"error")		if [[ $loglevelid -ge 1 ]]; then echo -e "${RED}error:${NORM}\t$message" > "$devK"; fi; ;;
+"warn")  		if [[ $loglevelid -ge 2 ]]; then echo -e "${YELLOW}warn:${NORM}\t$message" > "$devK"; fi ;;
+"info")  		if [[ $loglevelid -ge 3 ]]; then echo -e "${WHITE}info:${NORM}\t$message" > "$devK"; fi ;;
+"verbose")  	if [[ $loglevelid -ge 4 ]]; then echo -e "${CYAN}verbose:${NORM}\t$message" > "$devK"; fi ;;
+"debug")  		if [[ $loglevelid -ge 5 ]]; then echo -e "${MAGENTA}debug [${BASH_SOURCE[1]}:${BASH_LINENO[0]}]:${NORM}\t$message" > "$devK"; fi ;;
+"silly")  		if [[ $loglevelid -ge 6 ]]; then echo -e "${GREEN}silly [${BASH_SOURCE[1]}:${BASH_LINENO[0]}]:${NORM}\t$message" > "$devK"; fi ;;	
+"function")  	if [[ $loglevelid -ge 7 ]]; then echo -e "${BLUE}func [${BASH_SOURCE[1]}:${BASH_LINENO[0]}]:${NORM}\t$message" > "$devK"; fi ;;	
+"function2") 	if [[ $loglevelid -ge 7 ]]; then echo -e "${BLUE}func2 $lineinfo:${NORM}\t$message" > "$devK"; fi ;;	
+esac
+case $level in
+	"none") ;;
+"error")		if [[ $loglevelid -ge 1 ]]; then echo -e "${RED}error:${NORM}\t$message" > "$devS0"; fi; ;;
+"warn")  		if [[ $loglevelid -ge 2 ]]; then echo -e "${YELLOW}warn:${NORM}\t$message" > "$devS0"; fi ;;
+"info")  		if [[ $loglevelid -ge 3 ]]; then echo -e "${WHITE}info:${NORM}\t$message" > "$devS0"; fi ;;
+"verbose")  	if [[ $loglevelid -ge 4 ]]; then echo -e "${CYAN}verbose:${NORM}\t$message" > "$devS0"; fi ;;
+"debug")  		if [[ $loglevelid -ge 5 ]]; then echo -e "${MAGENTA}debug [${BASH_SOURCE[1]}:${BASH_LINENO[0]}]:${NORM}\t$message" > "$devS0"; fi ;;
+"silly")  		if [[ $loglevelid -ge 6 ]]; then echo -e "${GREEN}silly [${BASH_SOURCE[1]}:${BASH_LINENO[0]}]:${NORM}\t$message" > "$devS0"; fi ;;	
+"function")  	if [[ $loglevelid -ge 7 ]]; then echo -e "${BLUE}func [${BASH_SOURCE[1]}:${BASH_LINENO[0]}]:${NORM}\t$message" > "$devS0"; fi ;;	
+"function2") 	if [[ $loglevelid -ge 7 ]]; then echo -e "${BLUE}func2 $lineinfo:${NORM}\t$message" > "$devS0"; fi ;;	
+esac
+fi
+if [[ "$LogToFile" != "" ]]; then
+	case $level in
+		"none") ;;
+"error")		if [[ $loglevelid -ge 1 ]]; then echo -e "${RED}error:${NORM}\t$message" >> "$LogToFile"; fi; ;;
+"warn")  		if [[ $loglevelid -ge 2 ]]; then echo -e "${YELLOW}warn:${NORM}\t$message" >> "$LogToFile"; fi ;;
+"info")  		if [[ $loglevelid -ge 3 ]]; then echo -e "${WHITE}info:${NORM}\t$message" >> "$LogToFile"; fi ;;
+"verbose")  	if [[ $loglevelid -ge 4 ]]; then echo -e "${CYAN}verbose:${NORM}\t$message" >> "$LogToFile"; fi ;;
+"debug")  		if [[ $loglevelid -ge 5 ]]; then echo -e "5${MAGENTA}debug [${BASH_SOURCE[1]}:${BASH_LINENO[0]}]:${NORM}\t$message" >> "$LogToFile"; fi ;;
+"silly")  		if [[ $loglevelid -ge 6 ]]; then echo -e "${GREEN}silly [${BASH_SOURCE[1]}:${BASH_LINENO[0]}]:${NORM}\t$message" >> "$LogToFile"; fi ;;	
+"function")  	if [[ $loglevelid -ge 7 ]]; then echo -e "${BLUE}func [${BASH_SOURCE[1]}:${BASH_LINENO[0]}]:${NORM}\t$message" >> "$LogToFile"; fi ;;	
+"function2") 	if [[ $loglevelid -ge 7 ]]; then echo -e "${BLUE}func2 $lineinfo:${NORM}\t$message" >> "$LogToFile"; fi ;;	
+esac
+fi
 } #end_log
 
 #---------------------------------------------------------------------------------------------------------------------------
@@ -363,29 +363,29 @@ PRIVATE_JSON_parse_array() {
 
 		case "$current_scope" in
 			"root") # Waiting for new object or value
-				case "$c" in
-					'{')
-						PRIVATE_JSON_parse_object "$current_path" "$current_index"
-						current_scope="entry_separator"
-						;;
-					']')
-						return
-						;;
-					[\"tfTF\-0-9])
+case "$c" in
+	'{')
+PRIVATE_JSON_parse_object "$current_path" "$current_index"
+current_scope="entry_separator"
+;;
+']')
+return
+;;
+[\"tfTF\-0-9])
 						preserve_current_char=1 # Let the parse value function decide what kind of value this is
 						PRIVATE_JSON_parse_value "$current_path" "$current_index"
 						preserve_current_char=1 # Parse value has terminated with a separator or an array end, but we can handle this only in the next while iteration
 						current_scope="entry_separator"
 						;;
 						
-				esac
-				;;
-			"entry_separator")
-				[ "$c" == "," ] && current_index=$((current_index+1)) && current_scope="root"
-				[ "$c" == "]" ] && return
-				;;
-		esac
-	done
+					esac
+					;;
+					"entry_separator")
+[ "$c" == "," ] && current_index=$((current_index+1)) && current_scope="root"
+[ "$c" == "]" ] && return
+;;
+esac
+done
 }
 
 PRIVATE_JSON_parse_value() {
@@ -399,72 +399,72 @@ PRIVATE_JSON_parse_value() {
 
 		case "$current_scope" in
 			"root") # Waiting for new string, number or boolean
-				case "$c" in
+case "$c" in
 					'"') # String begin
-						current_scope="string"
-						current_varvalue=""
-						;;
+current_scope="string"
+current_varvalue=""
+;;
 					[\-0-9]) # Number begin
-						current_scope="number"
-						current_varvalue="$c"
-						;;
+current_scope="number"
+current_varvalue="$c"
+;;
 					[tfTF]) # True or false begin
-						current_scope="boolean"
-						current_varvalue="$c"
-						;;
+current_scope="boolean"
+current_varvalue="$c"
+;;
 					"[") # Array begin
-						PRIVATE_JSON_parse_array "" "$current_path"
-						return
-						;;
+PRIVATE_JSON_parse_array "" "$current_path"
+return
+;;
 					"{") # Object begin
-						PRIVATE_JSON_parse_object "" "$current_path"
-						return
-				esac
-				;;
+PRIVATE_JSON_parse_object "" "$current_path"
+return
+esac
+;;
 			"string") # Waiting for string end
-				case "$c" in
+case "$c" in
 					'"') # String end if not in escape mode, normal character otherwise
-						[ "$current_escaping" == "0" ] && PRIVATE_JSON_output_entry "$current_path" "$current_varvalue" && return
-						[ "$current_escaping" == "1" ] && current_varvalue="$current_varvalue$c"
-						;;
+[ "$current_escaping" == "0" ] && PRIVATE_JSON_output_entry "$current_path" "$current_varvalue" && return
+[ "$current_escaping" == "1" ] && current_varvalue="$current_varvalue$c"
+;;
 					'\') # Escape character, entering or leaving escape mode
-						current_escaping=$((1-current_escaping))
-						current_varvalue="$current_varvalue$c"
-						;;
+current_escaping=$((1-current_escaping))
+current_varvalue="$current_varvalue$c"
+;;
 					*) # Any other string character
-						current_escaping=0
-						current_varvalue="$current_varvalue$c"
-						;;
-				esac
-				;;
+current_escaping=0
+current_varvalue="$current_varvalue$c"
+;;
+esac
+;;
 			"number") # Waiting for number end
-				case "$c" in
+case "$c" in
 					[,\]}]) # Separator or array end or object end
-						PRIVATE_JSON_output_entry "$current_path" "$current_varvalue"
+PRIVATE_JSON_output_entry "$current_path" "$current_varvalue"
 						preserve_current_char=1 # The caller needs to handle this char
 						return
 						;;
 					[\-0-9.]) # Number can only contain digits, dots and a sign
-						current_varvalue="$current_varvalue$c"
-						;;
+current_varvalue="$current_varvalue$c"
+;;
 					# Ignore everything else
 				esac
 				;;
 			"boolean") # Waiting for boolean to end
-				case "$c" in
+case "$c" in
 					[,\]}]) # Separator or array end or object end
-						PRIVATE_JSON_output_entry "$current_path" "$current_varvalue"
+PRIVATE_JSON_output_entry "$current_path" "$current_varvalue"
 						preserve_current_char=1 # The caller needs to handle this char
 						return
 						;;
 					[a-zA-Z]) # No need to do some strict checking, we do not want to validate the incoming json data
-						current_varvalue="$current_varvalue$c"
-						;;
+current_varvalue="$current_varvalue$c"
+;;
 					# Ignore everything else
 				esac
 				;;
-		esac
-	done
+			esac
+		done
 } #end_PRIVATE_JSON_parse_value
 
 PRIVATE_JSON_parse_object() {
@@ -478,34 +478,34 @@ PRIVATE_JSON_parse_object() {
 
 		case "$current_scope" in
 			"root") # Waiting for new field or object end
-				[ "$c" == "}" ]  && return
-				[ "$c" == "\"" ] && current_scope="varname" && current_varname="" && current_escaping=0
-				;;
+[ "$c" == "}" ]  && return
+[ "$c" == "\"" ] && current_scope="varname" && current_varname="" && current_escaping=0
+;;
 			"varname") # Reading the field name
-				case "$c" in
+case "$c" in
 					'"') # String end if not in escape mode, normal character otherwise
-						[ "$current_escaping" == "0" ] && current_scope="key_value_separator"
-						[ "$current_escaping" == "1" ] && current_varname="$current_varname$c"
-						;;
+[ "$current_escaping" == "0" ] && current_scope="key_value_separator"
+[ "$current_escaping" == "1" ] && current_varname="$current_varname$c"
+;;
 					'\') # Escape character, entering or leaving escape mode
-						current_escaping=$((1-current_escaping))
-						current_varname="$current_varname$c"
-						;;
+current_escaping=$((1-current_escaping))
+current_varname="$current_varname$c"
+;;
 					*) # Any other string character
-						current_escaping=0
-						current_varname="$current_varname$c"
-						;;
-				esac
-				;;
+current_escaping=0
+current_varname="$current_varname$c"
+;;
+esac
+;;
 			"key_value_separator") # Waiting for the key value separator (:)
-				[ "$c" == ":" ] && PRIVATE_JSON_parse_value "$current_path" "$current_varname" && current_scope="field_separator"
-				;;
+[ "$c" == ":" ] && PRIVATE_JSON_parse_value "$current_path" "$current_varname" && current_scope="field_separator"
+;;
 			"field_separator") # Waiting for the field separator (,)
-				[ "$c" == ',' ] && current_scope="root"
-				[ "$c" == '}' ] && return
-				;;
-		esac
-	done
+[ "$c" == ',' ] && current_scope="root"
+[ "$c" == '}' ] && return
+;;
+esac
+done
 } #end_PRIVATE_JSON_parse_object
 
 PRIVATE_JSON_STARTparse() {
@@ -523,7 +523,7 @@ PRIVATE_JSON_STARTparse() {
         # ... or one array
         [ "$c" == "[" ] && PRIVATE_JSON_parse_array "" "" && return
         
-	done
+   done
 }
 
 
@@ -538,7 +538,7 @@ json_toShFile(){
 	echo "" > $JSON_OUTFILE
 	#log "debug" "myoutfile is $JSON_OUTFILE"
 	JSON_INPUT=$(cat "$1")
-    JSON_INPUT_LENGTH="${#JSON_INPUT}"
+	JSON_INPUT_LENGTH="${#JSON_INPUT}"
 	PRIVATE_JSON_STARTparse "" "" <<< "${JSON_INPUT}"
 } #end_json_toShFile
 
@@ -572,13 +572,13 @@ echo $in
 #/	Out:	globally the named to array (no output)
 #/	Expl:	array_copy from to
 array_copy(){
-    fromname="$1"
-    toname="$2"
-    local array="$fromname[@]"
-    eval "$toname=()"
-    for element in "${!array}"; do
-      eval "$toname+=(\"$element\")"
-    done
+	fromname="$1"
+	toname="$2"
+	local array="$fromname[@]"
+	eval "$toname=()"
+	for element in "${!array}"; do
+		eval "$toname+=(\"$element\")"
+	done
 } #end_array_copy
 
 #/	Desc:	private function that creates arrays from delimted list
@@ -592,7 +592,7 @@ PRIVATE_array_createFromGeneric(){
 	namearray="$1"
 	local list="$2"
 	local delimeter="$3"
-	 IFS="$delimeter" read -r -a $namearray <<< "$list"
+	IFS="$delimeter" read -r -a $namearray <<< "$list"
 } #end_PRIVATE_array_createFromGeneric
 
 #/	Desc:	creates array from a space list
@@ -626,13 +626,13 @@ array_createFromCommaList(){
 #/	Out:	globally the named to array (no output)
 #/	Expl:	associativeArray_copy from to
 associativeArray_copy(){
-  fromname="$1"
-  toname="$2"
-  declare -n from="${fromname}"
-  eval declare -g -A "${toname}"
-  for key in "${!from[@]}"; do
-      eval $toname["$key"]="${from["$key"]}"
-  done
+	fromname="$1"
+	toname="$2"
+	declare -n from="${fromname}"
+	eval declare -g -A "${toname}"
+	for key in "${!from[@]}"; do
+		eval $toname["$key"]="${from["$key"]}"
+	done
 }
 
 #/	Desc:	prints an assoicative array out to the screen
@@ -717,8 +717,8 @@ i2c_erasePage(){
 	local page="$1"
 	local erasei
 	for erasei in {0..255}; do 
-		i2cset -y 1 $page $erasei 0xff b; 
-	done
+	i2cset -y 1 $page $erasei 0xff b; 
+done
 } #end_i2c_erasePage
 
 #/	Desc:	erases one character with 0xFF
@@ -744,7 +744,7 @@ i2c_getOne(){
 	local page="$1"
 	local position="$2"
 	log silly "i2cget -y 1 $page $position b"
-		a=$(i2cget -y 1 $page $position b) 
+	a=$(i2cget -y 1 $page $position b) 
 	echo $a
 } #end_i2c_getOne
 
@@ -760,7 +760,7 @@ i2c_setOne(){
 	local position="$2"
 	local hexvalue="$3"
 	log silly "i2cset -y 1 $page $position $hexvalue"
-		a=$(i2cset -y 1 $page $position $hexvalue)
+	a=$(i2cset -y 1 $page $position $hexvalue)
 	#echo $a
 } #end_i2c_setOne
 
@@ -854,24 +854,62 @@ buildreturn(){
 	local RET="$2"
 	local output="$3"
 	local delimeter="$4"
-		if [[ $output == "decimal" ]]; then
-			var=$(math_hex2dec $hex)
-		elif [[ $output == "ascii" ]]; then
-			var=$(math_hex2ascii $hex)
-		elif [[ $output == "hex-stripped" ]]; then
-			var=`expr "$hex" : '^0x\([0-9a-zA-Z]*\)'`	
-		elif [[ $output == "dec" ]]; then
-			var=$(math_hex2dec $hex);		
-		else
-			var=$hex
-		fi
-		if [[ $RET == "" ]]; then
-			RET="$var"
-		else
-			RET+=$delimeter"$var"
-		fi
-		echo "$RET"
+	if [[ $output == "decimal" ]]; then
+		var=$(math_hex2dec $hex)
+	elif [[ $output == "ascii" ]]; then
+		var=$(math_hex2ascii $hex)
+	elif [[ $output == "hex-stripped" ]]; then
+		var=`expr "$hex" : '^0x\([0-9a-zA-Z]*\)'`	
+	elif [[ $output == "dec" ]]; then
+		var=$(math_hex2dec $hex);		
+	else
+		var=$hex
+	fi
+	if [[ $RET == "" ]]; then
+		RET="$var"
+	else
+		RET+=$delimeter"$var"
+	fi
+	echo "$RET"
 }
+
+getRangeQuickTemp(){
+	getRange $@
+}
+
+getRangeQuick(){
+	#eeprog /dev/i2c-1 0x50 -r 0x0:64 -f
+	local page=$1
+	local start=$2
+	local end=$3
+	local output=$4
+	local delimeter=$5
+	local RET=""
+	local pnum;
+	local dev="/dev/i2c-1"
+	local oldend=$end;
+	end=$(($end -$start + 1));
+	#echo -e "getRAnge\npage: $page\nstart: $start\noldend: $oldend\nend: $end\noutput: $output\ndelimeter: $delimeter\n"
+	if [[ "$platform" != "softRelay" ]]; then
+		RET=$(eeprog -q -f -r $start:$end $dev $page) 
+		RET=$(echo "$RET" | tr -cd "[:print:]")
+	else
+		datapull=$(database_get $fetchfield)
+		datapullc=0;
+		log silly "$start $end $datapull"
+		for ((pnum = $start ; pnum <= $end ; pnum++)); do
+			hex=$(echo ${datapull:$datapullc:4})
+			log silly "'$hex'"
+			if [[ "$hex" = "" ]]; then
+				break;
+			fi
+			datapullc=$(( $datapullc + 4 ))
+			RET=$(buildreturn "$hex" "$RET" $output $delimeter)
+		done
+	fi
+	echo "$RET"
+} #end_getRange
+
 
 #/	Desc:	pulls a range from the eeprom
 #/	$1:		start (using position, e.g. 2=2nd character in eeprom)
@@ -950,33 +988,33 @@ setRange() {
 	fieldDatasize=${#fieldData}
 	case $fieldDataInputType in
 		"ascii") 
-			for (( pnum = 0 ; pnum < $fieldDatasize ; pnum++ )); do
-				letter=$(echo ${fieldData:$pnum:1})
-				letterhex="0x"$(math_ascii2hex $letter)
-				newstring="$newstring$letterhex"
-			done
-			;;
-		"hex-stripped")
-			newstring="0x"$(echo "$fieldData" | sed 's/.\{2\}/&0x/g')
-			;;
-		"hex-colon")
-			newstring="0x"$(echo "$fieldData" | sed 's/:/0x/g')
-			;;
-		"dec-comma")
-			IFS="," read -r -a commaray <<< "$fieldData"
-			for c in ${commaray[@]}; do
-				newstring="$newstring""0x"$(math_dec2hex $c);
-			done
-			;;
-		"decimal")
-			newstring="0x"$(math_dec2hex $fieldData);
-			;;
-		"hex")
-			newstring=$fieldData;
-			;;
-	esac
-	fieldDataInputType="hex";
-	thenewstringsize=${#newstring}
+for (( pnum = 0 ; pnum < $fieldDatasize ; pnum++ )); do
+	letter=$(echo ${fieldData:$pnum:1})
+	letterhex="0x"$(math_ascii2hex $letter)
+	newstring="$newstring$letterhex"
+done
+;;
+"hex-stripped")
+newstring="0x"$(echo "$fieldData" | sed 's/.\{2\}/&0x/g')
+;;
+"hex-colon")
+newstring="0x"$(echo "$fieldData" | sed 's/:/0x/g')
+;;
+"dec-comma")
+IFS="," read -r -a commaray <<< "$fieldData"
+for c in ${commaray[@]}; do
+	newstring="$newstring""0x"$(math_dec2hex $c);
+done
+;;
+"decimal")
+newstring="0x"$(math_dec2hex $fieldData);
+;;
+"hex")
+newstring=$fieldData;
+;;
+esac
+fieldDataInputType="hex";
+thenewstringsize=${#newstring}
 	#log debug "$newstring $fieldDataInputType"
 	fieldDatasize=$(( $thenewstringsize / 4 ))
 	fieldlengthsize=$(( $end + 1 - $start ))
@@ -1054,7 +1092,11 @@ getField(){
 			retdata="$data"
 		fi
 	else
+		if [[ ${fields_storetype[$fetchfield]} != "ascii" || $thisfieldtype != "ascii" ]]; then
 			data=$(getRange ${fields_page[$fetchfield]} ${fields_start[$fetchfield]} ${fields_end[$fetchfield]} $thisfieldtype "$delimeterchar")
+		else
+			data=$(getRangeQuick ${fields_page[$fetchfield]} ${fields_start[$fetchfield]} ${fields_end[$fetchfield]} $thisfieldtype "$delimeterchar")
+		fi
 		if [[ $dojsonout -eq 1 ]]; then
 
 			retdata="{ \"$fetchfield\":\"$data\" }"
@@ -1084,110 +1126,110 @@ setField(){
 	else
 			#log debug "${fields_page[$setfield]} ${fields_start[$setfield]} ${fields_end[$setfield]} ignoreme $thestring $fieldDataInputType"
 			setRange ${fields_page[$setfield]} ${fields_start[$setfield]} ${fields_end[$setfield]} "ignoreme" "$thestring" "$fieldDataInputType" "$setfield"
-	fi
-	local len=${#thestring}
-	if [[ $len -gt 25 ]]; then
-		thestring="-omitted len > 25"
-	fi
-	log info "set field:\t$setfield\t$thestring ($fieldDataInputType)"
-}
-
-
-mountFileStorage(){
-	mount "$1" "$2" > /dev/null 2>&1
-}
-
-createSoftStoragePath(){
-	local path="$1"
-	if [[ ! -d "$path" ]]; then
-		mkdir -p "$path" >> /dev/null
-	fi
-}
-
-eraseSoftStoragePath(){
-	local path="$softstoragepath"
-	if [[  -d "$path" && "$path" != "" && "$path" != "/" ]]; then
-		rm -rf "$path"
-		createSoftStoragePath "$path"
-	fi
-}
-
-setJson(){
-	local infile="$1"
-	local outfile="/tmp/jsonout.sh"
-	local outfileMU="/tmp/jsonoutMU.sh"
-	local outfileMO="/tmp/jsonoutMO.sh"
-	local f;
-	if [[ $donterase -ne 1 ]]; then
-		log warn "erasing all data stores to prevent errors"
-		eraseit all
-	fi
-	json_toShFile "$infile" "$outfile"
-	if [[ "$automunge" != "" ]]; then
-		ssl_ca_ca="${clouds_ssl_ca_ca[$automunge]}"
-		ssl_ca_intermediate="${clouds_ssl_ca_intermediate[$automunge]}"
-		cloudURL="${clouds_cloudURL[$automunge]}"
-		devicejsCloudURL="${clouds_devicejsCloudURL[$automunge]}"
-		devicedbCloudURL="${clouds_devicedbCloudURL[$automunge]}"
-	fi
-
-	if [[ "$mundgeUnderrideFile" != "" ]]; then
-		if [[ "$mundgeUnderrideFile" = *".sh" ]]; then
-			source "$mundgeUnderrideFile"
-		else
-			json_toShFile "$mundgeUnderrideFile" "$outfileMU"
-			source "$outfileMU"
 		fi
-	fi
+		local len=${#thestring}
+		if [[ $len -gt 25 ]]; then
+			thestring="-omitted len > 25"
+		fi
+		log info "set field:\t$setfield\t$thestring ($fieldDataInputType)"
+	}
+
+
+	mountFileStorage(){
+		mount "$1" "$2" > /dev/null 2>&1
+	}
+
+	createSoftStoragePath(){
+		local path="$1"
+		if [[ ! -d "$path" ]]; then
+			mkdir -p "$path" >> /dev/null
+		fi
+	}
+
+	eraseSoftStoragePath(){
+		local path="$softstoragepath"
+		if [[  -d "$path" && "$path" != "" && "$path" != "/" ]]; then
+			rm -rf "$path"
+			createSoftStoragePath "$path"
+		fi
+	}
+
+	setJson(){
+		local infile="$1"
+		local outfile="/tmp/jsonout.sh"
+		local outfileMU="/tmp/jsonoutMU.sh"
+		local outfileMO="/tmp/jsonoutMO.sh"
+		local f;
+		if [[ $donterase -ne 1 ]]; then
+			log warn "erasing all data stores to prevent errors"
+			eraseit all
+		fi
+		json_toShFile "$infile" "$outfile"
+		if [[ "$automunge" != "" ]]; then
+			ssl_ca_ca="${clouds_ssl_ca_ca[$automunge]}"
+			ssl_ca_intermediate="${clouds_ssl_ca_intermediate[$automunge]}"
+			cloudURL="${clouds_cloudURL[$automunge]}"
+			devicejsCloudURL="${clouds_devicejsCloudURL[$automunge]}"
+			devicedbCloudURL="${clouds_devicedbCloudURL[$automunge]}"
+		fi
+
+		if [[ "$mundgeUnderrideFile" != "" ]]; then
+			if [[ "$mundgeUnderrideFile" = *".sh" ]]; then
+				source "$mundgeUnderrideFile"
+			else
+				json_toShFile "$mundgeUnderrideFile" "$outfileMU"
+				source "$outfileMU"
+			fi
+		fi
 		if [[ "$mundgeUndertext" != "" ]]; then
-		IFS="," read -r -a MOray <<< "$mundgeUndertext"
-		for mungepair in ${MOray[@]}; do
-			IFS="=" read -r -a MK <<< "$mungepair"
+			IFS="," read -r -a MOray <<< "$mundgeUndertext"
+			for mungepair in ${MOray[@]}; do
+				IFS="=" read -r -a MK <<< "$mungepair"
 				eval "${MK[0]}=${MK[1]}"
 			done
-	fi
-	source "$outfile"
-	if [[ "$ethernetMAC_0" != "" ]]; then
-		ethernetMAC=""
-		for qi in {0..5}; do
-			val="ethernetMAC_$qi"
-			val=${!val}
-			if [[ $qi -eq 0 ]]; then
-				ethernetMAC="$val"
-			else
-				ethernetMAC="$ethernetMAC,$val"
-			fi
-		done
-	fi
-	if [[ "$sixBMAC_0" != "" ]]; then
-		sixBMAC=""
-		for qi in {0..7}; do
-			val="sixBMAC_$qi"
-			val=${!val}
-			if [[ $qi -eq 0 ]]; then
-				sixBMAC="$val"
-			else
-				sixBMAC="$sixBMAC,$val"
-			fi
-		done
-	fi
-	if [[ "$mundgeOveridefile" != "" ]]; then
-		if [[ "$mundgeOveridefile" = *".sh" ]]; then
-			source "$mundgeOveridefile"
-		else
-		 	json_toShFile "$mundgeOveridefile" "$outfileMO"
-			source "$outfileMO"
 		fi
-	fi
-	if [[ "$mundgeOvertext" != "" ]]; then
-		IFS="," read -r -a MOray <<< "$mundgeOvertext"
-		for mungepair in ${MOray[@]}; do
-			IFS="=" read -r -a MK <<< "$mungepair"
+		source "$outfile"
+		if [[ "$ethernetMAC_0" != "" ]]; then
+			ethernetMAC=""
+			for qi in {0..5}; do
+				val="ethernetMAC_$qi"
+				val=${!val}
+				if [[ $qi -eq 0 ]]; then
+					ethernetMAC="$val"
+				else
+					ethernetMAC="$ethernetMAC,$val"
+				fi
+			done
+		fi
+		if [[ "$sixBMAC_0" != "" ]]; then
+			sixBMAC=""
+			for qi in {0..7}; do
+				val="sixBMAC_$qi"
+				val=${!val}
+				if [[ $qi -eq 0 ]]; then
+					sixBMAC="$val"
+				else
+					sixBMAC="$sixBMAC,$val"
+				fi
+			done
+		fi
+		if [[ "$mundgeOveridefile" != "" ]]; then
+			if [[ "$mundgeOveridefile" = *".sh" ]]; then
+				source "$mundgeOveridefile"
+			else
+				json_toShFile "$mundgeOveridefile" "$outfileMO"
+				source "$outfileMO"
+			fi
+		fi
+		if [[ "$mundgeOvertext" != "" ]]; then
+			IFS="," read -r -a MOray <<< "$mundgeOvertext"
+			for mungepair in ${MOray[@]}; do
+				IFS="=" read -r -a MK <<< "$mungepair"
 				eval "${MK[0]}=${MK[1]}"
 			done
-	fi
-	for field in "${fields[@]}"; do
-		f=("${!field}")
+		fi
+		for field in "${fields[@]}"; do
+			f=("${!field}")
 		#echo "our $field ($f)"
 		if [[ "$f" != "" ]]; then
 			#echo "$field ($f)"
@@ -1233,6 +1275,7 @@ getit(){
 	elif [[ "$fetchfield" = "some" ]]; then
 		dumpall "$thesome"
 	elif [[ $(array_contains fields $fetchfield ) -eq 1 ]]; then
+		#echo "getit called $1 $fieldtype"
 		getField "$1" "$fieldtype" "$jsonoutput"
 	else
 		clihelp_displayHelp "field: $fetchfield is not valid"
@@ -1274,7 +1317,7 @@ eraseit(){
 		fi
 	fi
 	if [[ $eSSP -eq 1 ]]; then
-		 eraseSoftStoragePath
+		eraseSoftStoragePath
 	fi
 }
 
@@ -1313,7 +1356,7 @@ builddumpout(){
 	tag="$1"
 	strin="$2"
 	if [[ $jsonoutput -eq 0 ]]; then
-			dumpout="$dumpout$tag=$strin\n"
+		dumpout="$dumpout$tag=$strin\n"
 			# echo "$dumpout"
 		else
 			if [[ $ssl -ne 1 ]]; then
@@ -1326,30 +1369,30 @@ builddumpout(){
 				fi
 			fi
 		fi
-}
+	}
 
-dumpall(){
-	q='"'
-	qssl='"ssl'
-	qssl2='"sslnonewline'
-	qclient='"client'
-	qserver='"server'
-	qkey='"key'
-	qcertificate='"certificate'
-	qintermediate='"intermediate'
-	qca='"ca'
-	ssltemplate="\"\$qssl\"\$q: { \"\$qclient\"\$q: {\"\$qkey\"\$q: \"\$q\$ssl_client_key\"\$q,\"\$qcertificate\"\$q: \"\$q\$ssl_client_certificate\"\$q},\"\$qserver\"\$q: {\"\$qkey\"\$q: \"\$q\$ssl_server_key\"\$q,\"\$qcertificate\"\$q: \"\$q\$ssl_server_certificate\"\$q},\"\$qca\"\$q: {\"\$qca\"\$q: \"\$q\$ssl_ca_ca\"\$q,\"\$qintermediate\"\$q: \"\$q\$ssl_ca_intermediate\"\$q}}"
-	ssltemplate2="\"\$qssl2\"\$q: { \"\$qclient\"\$q: {\"\$qkey\"\$q: \"\$q\$ssl_client_key_2\"\$q,\"\$qcertificate\"\$q: \"\$q\$ssl_client_certificate_2\"\$q},\"\$qserver\"\$q: {\"\$qkey\"\$q: \"\$q\$ssl_server_key_2\"\$q,\"\$qcertificate\"\$q: \"\$q\$ssl_server_certificate_2\"\$q},\"\$qca\"\$q: {\"\$qca\"\$q: \"\$q\$ssl_ca_ca_2\"\$q,\"\$qintermediate\"\$q: \"\$q\$ssl_ca_intermediate_2\"\$q}}"
-	secondtrip=0;
-	if [[ "$1" = "" ]]; then
-		array_copy fields loopfields
-	else
-		array_createFromCommaList loopfields "$1"
-	fi
-	for field in ${loopfields[@]}; do
-		ssl=0
-		if [[ "$field" = "ssl_client_certificate" || "$field" = "ssl_client_key" || "$field" = "ssl_server_certificate" || "$field" = "ssl_server_key" || "$field" = "ssl_ca_ca" || "$field" = "ssl_ca_intermediate" ]]; then
-			temp=$(getFile "$field");
+	dumpall(){
+		q='"'
+		qssl='"ssl'
+		qssl2='"sslnonewline'
+		qclient='"client'
+		qserver='"server'
+		qkey='"key'
+		qcertificate='"certificate'
+		qintermediate='"intermediate'
+		qca='"ca'
+		ssltemplate="\"\$qssl\"\$q: { \"\$qclient\"\$q: {\"\$qkey\"\$q: \"\$q\$ssl_client_key\"\$q,\"\$qcertificate\"\$q: \"\$q\$ssl_client_certificate\"\$q},\"\$qserver\"\$q: {\"\$qkey\"\$q: \"\$q\$ssl_server_key\"\$q,\"\$qcertificate\"\$q: \"\$q\$ssl_server_certificate\"\$q},\"\$qca\"\$q: {\"\$qca\"\$q: \"\$q\$ssl_ca_ca\"\$q,\"\$qintermediate\"\$q: \"\$q\$ssl_ca_intermediate\"\$q}}"
+		ssltemplate2="\"\$qssl2\"\$q: { \"\$qclient\"\$q: {\"\$qkey\"\$q: \"\$q\$ssl_client_key_2\"\$q,\"\$qcertificate\"\$q: \"\$q\$ssl_client_certificate_2\"\$q},\"\$qserver\"\$q: {\"\$qkey\"\$q: \"\$q\$ssl_server_key_2\"\$q,\"\$qcertificate\"\$q: \"\$q\$ssl_server_certificate_2\"\$q},\"\$qca\"\$q: {\"\$qca\"\$q: \"\$q\$ssl_ca_ca_2\"\$q,\"\$qintermediate\"\$q: \"\$q\$ssl_ca_intermediate_2\"\$q}}"
+		secondtrip=0;
+		if [[ "$1" = "" ]]; then
+			array_copy fields loopfields
+		else
+			array_createFromCommaList loopfields "$1"
+		fi
+		for field in ${loopfields[@]}; do
+			ssl=0
+			if [[ "$field" = "ssl_client_certificate" || "$field" = "ssl_client_key" || "$field" = "ssl_server_certificate" || "$field" = "ssl_server_key" || "$field" = "ssl_ca_ca" || "$field" = "ssl_ca_intermediate" ]]; then
+				temp=$(getFile "$field");
 			#log debug "my $temp"
 			output34=$(string_removeAllNewlines "$temp")
 			eval "$field=\$temp"
@@ -1409,23 +1452,25 @@ platform=""
 haveRealEEprom=1
 platfromDetectAndSetup(){
 	hasi2c=$(which i2cdump)
-	wwrelaydetectstring="     0  1  2  3  4  5  6  7  8  9  a  b  c  d  e  f
-00:          -- -- -- -- -- -- -- -- -- -- -- -- -- 
-10: -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- 
-20: -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- 
-30: -- -- -- -- UU -- -- -- -- -- -- -- -- -- -- -- 
-40: -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- 
-50: -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- 
-60: -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- 
-70: -- -- -- -- -- -- -- --                              0  1  2  3  4  5  6  7  8  9  a  b  c  d  e  f
-00:          -- -- -- -- -- -- -- -- -- -- -- -- -- 
-10: -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- 
-20: -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- 
-30: -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- 
-40: -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- 
-50: 50 51 52 53 54 55 56 57 -- -- -- -- -- -- -- -- 
-60: -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- 
-70: -- -- -- -- -- -- -- --                         "
+	wwrelaydetectstring="     0  1  2  3  4  5  6  7  8  9  a  b  c  d  e  f\n00:          -- -- -- -- -- -- -- -- -- -- -- -- -- \n10: -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- \n20: -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- \n30: -- -- -- -- UU -- -- -- -- -- -- -- -- -- -- -- \n40: -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- \n50: -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- \n60: -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- \n70: -- -- -- -- -- -- -- --                              0  1  2  3  4  5  6  7  8  9  a  b  c  d  e  f\n00:          -- -- -- -- -- -- -- -- -- -- -- -- -- \n10: -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- \n20: -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- \n30: -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- \n40: -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- \n50: 50 51 52 53 54 55 56 57 -- -- -- -- -- -- -- -- \n60: -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- \n70: -- -- -- -- -- -- -- --                         "
+	# wwrelaydetectstring="0  1  2  3  4  5  6  7  8  9  a  b  c  d  e  f
+	# 00:          -- -- -- -- -- -- -- -- -- -- -- -- -- 
+	# 10: -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- 
+	# 20: -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- 
+	# 30: -- -- -- -- UU -- -- -- -- -- -- -- -- -- -- -- 
+	# 40: -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- 
+	# 50: -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- 
+	# 60: -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- 
+	# 70: -- -- -- -- -- -- -- --                              0  1  2  3  4  5  6  7  8  9  a  b  c  d  e  f
+	# 00:          -- -- -- -- -- -- -- -- -- -- -- -- -- 
+	# 10: -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- 
+	# 20: -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- 
+	# 30: -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- 
+	# 40: -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- 
+	# 50: 50 51 52 53 54 55 56 57 -- -- -- -- -- -- -- -- 
+	# 60: -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- 
+	# 70: -- -- -- -- -- -- -- --                         "
+	wwrelaydetectstring=$(echo -e "$wwrelaydetectstring") 
 	if [[ $hasi2c != "" ]]; then
 		out0=$(i2cdetect -y 0);
 		out1=$(i2cdetect -y 1);
@@ -1433,6 +1478,9 @@ platfromDetectAndSetup(){
 		#i had to meld to figure out the difference... note for future
 		# echo "'$sawWWdetectstring'" >o1
 		# echo "'$wwrelaydetectstring'" >02
+		# echo "'$sawWWdetectstring'"
+		# echo "what I have saved: "
+		# echo "'$wwrelaydetectstring'"
 		if [[ "$wwrelaydetectstring" = "$sawWWdetectstring" ]]; then
 			platform="WWRelay01"
 			softstoragepath="/mnt/.boot/.ssl"
@@ -1445,7 +1493,7 @@ platfromDetectAndSetup(){
 			iccpages["devicejsURL"]=0x52
 			iccpages["devicedbURL"]=0x53
 		else
-			platform="couldn't match"
+			platform="couldn't match a platform. check platform detection code."
 			echo "$platform"
 			exit
 		fi
@@ -1464,17 +1512,17 @@ platfromDetectAndSetup(){
 # main and cli Processing
 #---------------------------------------------------------------------------------------------------------------------------
 prettyprintfields(){
-			printf "  %-35s %-50s\n" "field:" "any field used in the eeprom or keystore database from the following list"
-			for fielddescKey in "${!fields_description[@]}"; do
-				c1="$fielddescKey:"
-				 c2="${fields_description[$fielddescKey]}"
-				printf "       %-30s %-50s\n" "$c1" "$c2"
-			done
+	printf "  %-35s %-50s\n" "field:" "any field used in the eeprom or keystore database from the following list"
+	for fielddescKey in "${!fields_description[@]}"; do
+		c1="$fielddescKey:"
+		c2="${fields_description[$fielddescKey]}"
+		printf "       %-30s %-50s\n" "$c1" "$c2"
+	done
 }
 
 
 getuseage(){
-echo -e "Useage: $0 get <help | field | all | some > where:"
+	echo -e "Useage: $0 get <help | field | all | some > where:"
 	printf "  %-35s %-50s\n" "help:" "this help"
 	printf "  %-35s %-50s\n" "all:" "dump everything to standard out (set -j flag for json)"
 	printf "  %-35s %-50s\n" "some:" "dump all fields noted in a comma seperated list, eg. get some relayID,ssl_ca_ca to standard out (set -j flag for json)"
@@ -1581,7 +1629,7 @@ argprocessor(){
 	switch_conditions=$(clihelp_switchBuilder)
 	while getopts "$switch_conditions" flag; do
 		case $flag in
-a) automunge=$OPTARG; ;;
+			a) automunge=$OPTARG; ;;
 b) ;;
 a) ;;
 d) dumpallset=1; ;;

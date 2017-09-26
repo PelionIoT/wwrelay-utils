@@ -1,14 +1,13 @@
 #!/bin/bash
-#
 
 timing=10
 fsize=48M;
 
-/etc/init.d/wdogreporter.sh &
+#/etc/init.d/wdogreporter.sh &
 
 
 echo -e "-----\nstarting a new session\n" 
-echo -e "   sleeping 90"
+echo -e "   sleeping 10"
 sleep 90
 for i in {1..5}; do
 	echo -e "  fake$i created"

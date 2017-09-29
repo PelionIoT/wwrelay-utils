@@ -1,2 +1,19 @@
 ACTION=="add",KERNEL=="sd*1",ENV{DEVTYPE}=="partition",SYMLINK+="WWUPDATEp%n", RUN+="/wigwag/wwrelay-utils/initscripts/UDEV/WWUPDATE.sh"
 ACTION=="remove",KERNEL=="sd*1",ENV{DEVTYPE}=="partition", RUN+="/wigwag/wwrelay-utils/initscripts/UDEV/WWUPDATE.sh remove"
+#A20 notes: 	this is the A20:  soc@01c00000
+#			this is probably the port1:	1c14000.usb
+#lets name the physcial ports
+KERNELS=="4-1:1.0",SYMLINK+="wwUSBP2"
+KERNELS=="3-1:1.0",SYMLINK+="wwUSBP1"
+#ttys
+KERNELS=="4-1:1.0",SUBSYSTEM=="tty",SYMLINK+="wwUSBP2_TTY"
+KERNELS=="3-1:1.0",SUBSYSTEM=="tty",SYMLINK+="wwUSBP1_TTY"
+#lets just do this for all usb-serial
+KERNELS=="4-1",SUBSYSTEMS=="usb-serial",SYMLINK+="wwUSBP2_USBSERIAL"
+KERNELS=="3-1",SUBSYSTEMS=="usb-serial",SYMLINK+="wwUSBP1_USBSERIAL"
+#specific for FTD
+KERNELS=="4-1",SUBSYSTEM=="tty", ATTRS{idVendor}=="0403", ATTRS{idProduct}=="6001",SYMLINK+="wwUSBP2_TTY_FTDI"
+KERNELS=="3-1",SUBSYSTEM=="tty", ATTRS{idVendor}=="0403", ATTRS{idProduct}=="6001",SYMLINK+="wwUSBP1_TTY_FTDI"
+#specific for PROLIFIC
+KERNELS=="4-1",SUBSYSTEM=="tty", ATTRS{idVendor}=="067b", ATTRS{idProduct}=="2303",SYMLINK+="wwUSBP2_TTY_PROLIFIC"
+KERNELS=="3-1",SUBSYSTEM=="tty", ATTRS{idVendor}=="067b", ATTRS{idProduct}=="2303",SYMLINK+="wwUSBP1_TTY_PROLIFIC"

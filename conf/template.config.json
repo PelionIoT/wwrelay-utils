@@ -171,37 +171,6 @@
                     }
                 },
                 {
-                    "path":"${thisdir}/../../wigwag-core-modules/RelayStatsSender",
-                    "config":{
-                        "cloudAddress":"{{cloudurl}}",
-                        "relayID":"{{apikey}}",
-                        "ssl":{
-                            "key":"{{sslCertsPath}}/client.key.pem",
-                            "cert":"{{sslCertsPath}}/client.cert.pem",
-                            "ca":[
-                                "{{sslCertsPath}}/ca.cert.pem",
-                                "{{sslCertsPath}}/intermediate.cert.pem"
-                            ]
-                        },
-                        "versionsFile":"{{relayFirmwareVersionFile}}",
-                        "factoryVersionsFile": "{{factoryFirmwareVersionFile}}",
-                        "userVersionsFile": "{{userFirmwareVersionFile}}",
-                        "upgradeVersionsFile": "{{upgradeFirmwareVersionFile}}",
-                        "relayInfo": {
-                            "pairingCode": "{{pairingCode}}",
-                            "serialNumber": "{{apikey}}",
-                            "hardwareVersion": "{{hardwareVersion}}",
-                            "radioConfig": "{{radioConfig}}",
-                            "ledConfig": "{{ledConfig}}",
-                            "cloudServer": "{{cloudurl}}",
-                            "devicejsServer": "{{clouddevicejsurl}}",
-                            "devicedbServer": "{{cloudddburl}}",
-                            "partitionScheme": "{{partitionScheme}}",
-                            "ethernetMac": "{{ethernetmac}}"   
-                        }
-                    }
-                },
-                {
                     "path":"${thisdir}/../ww-zwave",
                     "config":{
                         "serialInterfaceOptions":{
@@ -339,6 +308,37 @@
                                 "{{sslCertsPath}}/ca.cert.pem",
                                 "{{sslCertsPath}}/intermediate.cert.pem"
                             ]
+                        }
+                    }
+                },
+                {
+                    "path":"${thisdir}/../../wigwag-core-modules/RelayStatsSender",
+                    "config":{
+                        "cloudAddress":"{{cloudurl}}",
+                        "relayID":"{{apikey}}",
+                        "ssl":{
+                            "key":"{{sslCertsPath}}/client.key.pem",
+                            "cert":"{{sslCertsPath}}/client.cert.pem",
+                            "ca":[
+                                "{{sslCertsPath}}/ca.cert.pem",
+                                "{{sslCertsPath}}/intermediate.cert.pem"
+                            ]
+                        },
+                        "versionsFile":"{{relayFirmwareVersionFile}}",
+                        "factoryVersionsFile": "{{factoryFirmwareVersionFile}}",
+                        "userVersionsFile": "{{userFirmwareVersionFile}}",
+                        "upgradeVersionsFile": "{{upgradeFirmwareVersionFile}}",
+                        "relayInfo": {
+                            "pairingCode": "{{pairingCode}}",
+                            "serialNumber": "{{apikey}}",
+                            "hardwareVersion": "{{hardwareVersion}}",
+                            "radioConfig": "{{radioConfig}}",
+                            "ledConfig": "{{ledConfig}}",
+                            "cloudServer": "{{cloudurl}}",
+                            "devicejsServer": "{{clouddevicejsurl}}",
+                            "devicedbServer": "{{cloudddburl}}",
+                            "partitionScheme": "{{partitionScheme}}",
+                            "ethernetMac": "{{ethernetmac}}"   
                         }
                     }
                 },

@@ -171,37 +171,6 @@
                     }
                 },
                 {
-                    "path":"${thisdir}/../../wigwag-core-modules/RelayStatsSender",
-                    "config":{
-                        "cloudAddress":"{{cloudurl}}",
-                        "relayID":"{{apikey}}",
-                        "ssl":{
-                            "key":"{{sslCertsPath}}/client.key.pem",
-                            "cert":"{{sslCertsPath}}/client.cert.pem",
-                            "ca":[
-                                "{{sslCertsPath}}/ca.cert.pem",
-                                "{{sslCertsPath}}/intermediate.cert.pem"
-                            ]
-                        },
-                        "versionsFile":"{{relayFirmwareVersionFile}}",
-                        "factoryVersionsFile": "{{factoryFirmwareVersionFile}}",
-                        "userVersionsFile": "{{userFirmwareVersionFile}}",
-                        "upgradeVersionsFile": "{{upgradeFirmwareVersionFile}}",
-                        "relayInfo": {
-                            "pairingCode": "{{pairingCode}}",
-                            "serialNumber": "{{apikey}}",
-                            "hardwareVersion": "{{hardwareVersion}}",
-                            "radioConfig": "{{radioConfig}}",
-                            "ledConfig": "{{ledConfig}}",
-                            "cloudServer": "{{cloudurl}}",
-                            "devicejsServer": "{{clouddevicejsurl}}",
-                            "devicedbServer": "{{cloudddburl}}",
-                            "partitionScheme": "{{partitionScheme}}",
-                            "ethernetMac": "{{ethernetmac}}"   
-                        }
-                    }
-                },
-                {
                     "path":"${thisdir}/../ww-zwave",
                     "config":{
                         "serialInterfaceOptions":{
@@ -211,6 +180,25 @@
                             "stopBits":1
                         },
                         "platform":"{{wwplatform}}"
+                    }
+                },
+                {
+                    "path":"${thisdir}/../Enocean",
+                    "config":{
+                        "serialInterfaceOptions": { 
+                            "siodev": "/dev/wwUSBP2_TTY",
+                            "baudrate": 57600,
+                            "dataBits": 8,
+                            "stopBits": 1,
+                            "parity": "none"
+                        },
+                        "logLevel": 2, //Available- info- 2, debug- 3, trace- 4, error- 0, warn- 1
+                        "relayId": "{{apikey}}",
+                        "platform": "{{wwplatform}}", //Used to identify platform so that module can adapt and run automagically
+                        "server-eep": "a5-38-08", //Representing as Central Command Gateway
+                        "requestAckTimeout": 500, //Timeout if no data received on request (in ms)
+                        "supportedEEPDirectory": "controllers/supportedEEPControllers", //Relative path to directory where all the resouce recipes are or will be defined,
+                        "resourceTypePrefix": "Core/Devices/Enocean"
                     }
                 },
                 {
@@ -268,7 +256,7 @@
                     "path":"${thisdir}/../ModbusRTU",
                     "config":{
                         "serialInterfaceOptions":{ //Serial communication setup parameters
-                            "siodev":"/dev/ttyUSB0",
+                            "siodev":"/dev/wwUSBP1_TTY",
                             "baudrate":19200,
                             "dataBits":8,
                             "stopBits":1,
@@ -320,6 +308,37 @@
                                 "{{sslCertsPath}}/ca.cert.pem",
                                 "{{sslCertsPath}}/intermediate.cert.pem"
                             ]
+                        }
+                    }
+                },
+                {
+                    "path":"${thisdir}/../../wigwag-core-modules/RelayStatsSender",
+                    "config":{
+                        "cloudAddress":"{{cloudurl}}",
+                        "relayID":"{{apikey}}",
+                        "ssl":{
+                            "key":"{{sslCertsPath}}/client.key.pem",
+                            "cert":"{{sslCertsPath}}/client.cert.pem",
+                            "ca":[
+                                "{{sslCertsPath}}/ca.cert.pem",
+                                "{{sslCertsPath}}/intermediate.cert.pem"
+                            ]
+                        },
+                        "versionsFile":"{{relayFirmwareVersionFile}}",
+                        "factoryVersionsFile": "{{factoryFirmwareVersionFile}}",
+                        "userVersionsFile": "{{userFirmwareVersionFile}}",
+                        "upgradeVersionsFile": "{{upgradeFirmwareVersionFile}}",
+                        "relayInfo": {
+                            "pairingCode": "{{pairingCode}}",
+                            "serialNumber": "{{apikey}}",
+                            "hardwareVersion": "{{hardwareVersion}}",
+                            "radioConfig": "{{radioConfig}}",
+                            "ledConfig": "{{ledConfig}}",
+                            "cloudServer": "{{cloudurl}}",
+                            "devicejsServer": "{{clouddevicejsurl}}",
+                            "devicedbServer": "{{cloudddburl}}",
+                            "partitionScheme": "{{partitionScheme}}",
+                            "ethernetMac": "{{ethernetmac}}"   
                         }
                     }
                 },

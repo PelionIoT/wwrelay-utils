@@ -214,8 +214,8 @@
                         "socketInterfaceOptions": {
                             "sockPort": 7871,
                             "sockAddr": "127.0.0.1",
-                            "lib": "../deps/bacnet-stack-0.8.3",
-                            "program": "demo/portal",
+                            "lib": "/wigwag/system",
+                            "program": "bin",
                             "exe": "bacportal"
                         },
                         "logLevel": 2, //Available- info- 2, debug- 3, trace- 4, error- 0, warn- 1
@@ -258,7 +258,7 @@
                         "deviceControllersDirectory": "templates",
                         "logLevel": 2
                     }
-                },
+                }
             ]
         },
         "modbus":{

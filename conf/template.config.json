@@ -313,7 +313,7 @@
                             "program": "bin",
                             "exe": "bacportal"
                         },
-                        "logLevel": 1, //Available- info- 2, debug- 3, trace- 4, error- 0, warn- 1
+                        "logLevel": 2, //Available- info- 2, debug- 3, trace- 4, error- 0, warn- 1
                         "relayId": "{{apikey}}",
                         "platform": "{{wwplatform}}", //Used to identify platform so that module can adapt and run automagically
                         "requestAckTimeout": 300, //ms

@@ -55,6 +55,10 @@ _doPrepDb() {
 		mkdir -p ${DBDIR}
 	fi
 }
+
+_doUDEVreload(){
+	udevadm control --reload-rules && udevadm trigger
+}
 _doGenerateSupportCertificates() {
 	if [ ! -e $SUPPORTCERTROOT ]; then
 		mkdir -p $SUPPORTCERTROOT
@@ -96,6 +100,7 @@ start(){
 	_doPostUpgrade
 	_doPrepDb
 	_doGenerateSupportCertificates
+	_doUDEVreload
 	good=$(_eepromBurned);
 	_log "Results from the eepromBurn check $good"
 

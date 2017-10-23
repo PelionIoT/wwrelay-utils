@@ -304,7 +304,8 @@
                             "baudrate": 76800,
                             "dataBits": 8,
                             "parity": "none",
-                            "stopBits": 1
+                            "stopBits": 1,
+                            "macAddr": 126
                         },
                         "socketInterfaceOptions": {
                             "sockPort": 7871,

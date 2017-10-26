@@ -57,7 +57,7 @@
                 "opts":[
 
                 ],
-                "execWaitTimeMS":15000                // I need this to wait this long for now
+                "execWaitTimeMS":30000                // I need this to wait this long for now
             }
         },
         "db":{

@@ -66,29 +66,27 @@ _percentage(){
 MEM=$(grep MemTotal /proc/meminfo | awk '{print $2}')
 MEM=$(_div1000b "$MEM")
 AVAILABLE=$(free -m | awk 'NR==2{printf $7}')
-	#USED=$(free -m | awk 'NR==2{printf $3}')
-	USED=$(bc <<< "scale=1; $MEM - $AVAILABLE");
-	#remainder=$(bc <<< "scale=1; $volatilePSS + $PSSTOT + $r2")
-	UMP=$(_percentage $USED $MEM)
-	#UMP=$(bc <<< "scale=2; $USED*100/$MEM")
-	
-	volatilePSS=$(df -h | grep volatile | awk '{print $3}');
-	if [[ $volatilePSS = *"K" ]]; then
-		volatilePSS=1
-	else
-		volatilePSS=${volatilePSS::-1}
-	fi
-	system(){	
-	let upSeconds=$(cat /proc/uptime | cut -d ' ' -f1 | cut -d '.' -f1);
-	let secs=$((${upSeconds}%60))
-	let mins=$((${upSeconds}/60%60))
-	let hours=$((${upSeconds}/3600%24))
-	let days=$((${upSeconds}/86400))
-	if [[ "${days}" -ne "0" ]]; then
-		UPTIME="${days}d ";
-	fi
-	
-	UPTIME="$UPTIME${hours}h ${mins}m ${secs}s"
+#USED=$(free -m | awk 'NR==2{printf $3}')
+USED=$(bc <<< "scale=1; $MEM - $AVAILABLE");
+#remainder=$(bc <<< "scale=1; $volatilePSS + $PSSTOT + $r2")
+UMP=$(_percentage $USED $MEM)
+#UMP=$(bc <<< "scale=2; $USED*100/$MEM")
+volatilePSS=$(df -h | grep volatile | awk '{print $3}');
+if [[ $volatilePSS = *"K" ]]; then
+	volatilePSS=1
+else
+	volatilePSS=${volatilePSS::-1}
+fi
+system() {	
+let upSeconds=$(cat /proc/uptime | cut -d ' ' -f1 | cut -d '.' -f1);
+let secs=$((${upSeconds}%60))
+let mins=$((${upSeconds}/60%60))
+let hours=$((${upSeconds}/3600%24))
+let days=$((${upSeconds}/86400))
+if [[ "${days}" -ne "0" ]]; then
+	UPTIME="${days}d ";
+fi
+UPTIME="$UPTIME${hours}h ${mins}m ${secs}s"
 	#let upSeconds=$(cat /proc/uptime | cut -d ' ' -f1 | cut -d '.' -f1);let secs=$((${upSeconds}%60));let mins=$((${upSeconds}/60%60));let hours=$((${upSeconds}/3600%24));let days=$((${upSeconds}/86400));UPTIME="${days}d ";UPTIME="$UPTIME${hours}h ${mins}m ${secs}s";echo $UPTIME
 	USERS="$(who | cut -d ' ' -f1 | sort | uniq | wc -l) users"
 	LOAD="$(cat /proc/loadavg)"
@@ -108,8 +106,31 @@ AVAILABLE=$(free -m | awk 'NR==2{printf $7}')
 	_placeLine "  - Users:" "$USERS"
 	_placeLine "  - Load (1,5,15-min avg):" "$MIN1, $MIN5, $MIN15"
 	_placeLine "  - Queued Tasks:" "$TASKS"
-	_placeLine "  - IP Address:" "$IPADDRESS"
 	_placeLine "  - Watdog:" "$WDOGPID"
+	_placeLine "  - IP Address:" "$IPADDRESS"
+}
+
+geo(){
+	_placeTitle "Geographic Information"
+	out=$(curl -m 1 -s ipinfo.io)
+	if [[ "$out" != *"timed"* ]]; then
+		PUBIP=$(echo "$out" | grep ip | awk '{print $2}' | sed -e 's/^"//' -e 's/",$//' -e 's/"$//')
+		CITY=$(echo "$out" | grep city | awk '{print $2}' | sed -e 's/^"//' -e 's/",$//' -e 's/"$//')
+		REGION=$(echo "$out" | grep region | awk '{print $2}' | sed -e 's/^"//' -e 's/",$//' -e 's/"$//')
+		COUNTRY=$(echo "$out" | grep country | awk '{print $2}' | sed -e 's/^"//' -e 's/",$//' -e 's/"$//')
+		ZIP=$(echo "$out" | grep postal | awk '{print $2}' | sed -e 's/^"//' -e 's/",$//' -e 's/"$//')
+		LL=$(echo "$out" | grep loc | awk '{print $2}' | sed -e 's/^"//' -e 's/",$//' -e 's/"$//')
+		ORG=$(echo "$out" | grep org | sed -e 's/"org"://'| sed -e 's/^   "//' -e 's/",$//' -e 's/"$//')
+		_placeLine "  - Public IP:" "$PUBIP"
+		_placeLine "  - City:" "$CITY"
+		_placeLine "  - Region:" "$REGION"
+		_placeLine "  - Country:" "$COUNTRY"
+		_placeLine "  - Postal:" "$ZIP"
+		_placeLine "  - Lat/Long:" "$LL"
+		_placeLine "  - organization:" "$ORG"
+	else
+		_placeLine "  - timed out reaching ipinfo.io"
+	fi
 }
 
 firmware(){
@@ -222,6 +243,23 @@ manufacturing(){
 # done
 # exit
 
+_pad(){
+	pad="$1"
+	str="$2"
+	size=${#str}
+	out="";
+	if [[ "$size" -eq 1 ]]; then
+		for (( i = 0; i < $pad; i++ )); do
+			out=" $out"
+		done
+	elif [[ "$size" -eq 2 ]]; then
+		for (( i = 0; i < $(( $pad - 2 )); i++ )); do
+	out=" $out"
+done
+fi
+echo "$out$str"
+}
+
 let PSSTOT=0;
 _memperf(){
 	name="$1"
@@ -245,9 +283,11 @@ _memperf(){
 		let days=$((${upSeconds}/86400))
 		UPTIME=""
 		if [[ "${days}" -ne "0" ]]; then
-			UPTIME="${days}d ";
+			UPTIME="$(_pad 1 $days)d ";
+		else
+			UPTIME="$(_pad 1 0)d ";
 		fi
-		UPTIME="$UPTIME${hours}h ${mins}m ${secs}s"
+		UPTIME="$UPTIME$(_pad 1 $hours)h $(_pad 1 $mins)m "
 		Share=$(_div1024 $(echo 0 $(awk '/Shared/ {print "+", $2}' /proc/$pid/smaps) | bc) )
 		Priv=$(_div1024 $(echo 0 $(awk '/Private/ {print "+", $2}' /proc/$pid/smaps) | bc) )
 		Swap=$(_div1024 $(echo 0 $(awk '/Swap/ {print "+", $2}' /proc/$pid/smaps) | bc) )
@@ -261,7 +301,6 @@ _memperf(){
 	fi
 }
 
-
 performance(){
 	_placeTitle "Key Process Memory Infomation"
 	_placeLine "  Stats in MB and time" "Uptime\t\tPss\tRss\tShared\tVirtual"
@@ -271,6 +310,7 @@ performance(){
 	_memperf "devicejs-user" "=user"
 	_memperf "devicejs-modbus" "=modbus"
 	_memperf "devicejs-modules" "=all-modules"
+	_memperf "devicejs-bacnet" "=bacnet"
 	_memperf "support-node" "support/index"
 	_memperf "relay-term" "relay-term/src"
 	_memperf "Watchdog" "deviceOS"
@@ -325,6 +365,7 @@ main(){
 	else
 		Stats
 		system
+		geo
 		firmware
 		hardware
 		account

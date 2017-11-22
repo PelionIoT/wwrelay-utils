@@ -1,6 +1,6 @@
 {
-	"hardwareVersion": "{{hardwareVersion}}",
-	"radioConfig": "{{radioConfig}}",
+	"hardwareVersion": "{{ARCH_HARDWARE_VERSION}}",
+	"radioConfig": "{{ARCH_RADIO_CONFIG}}",
 	"radioModuleMap": {
 		"0.0.1": {
 			"01": {

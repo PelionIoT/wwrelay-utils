@@ -12,14 +12,14 @@
 # Short-Description:    System logger
 ### END INIT INFO
 WIGWAGROOT="/wigwag"
-RUNNER_DIR="${WIGWAGROOT}/devicejs-core-modules/Runner"
-RUNNER_START_CMD="./start -c ./relay.config.json"
-RUNNER_STOP_CMD="echo Need_Stop_Command"
+MAESTRO_DIR="${WIGWAGROOT}/system/bin"
+MAESTRO_CONFIG="${WIGWAGROOT}/wwrelay-utils/maestro-conf/wwrelay-config.yaml"
+MAESTRO_START_CMD="./maestro -config ${MAESTRO_CONFIG}"
+MAESTRO_STOP_CMD="echo Need_Stop_Command"
 
 export NODE_PATH=${WIGWAGROOT}/devicejs-core-modules/node_modules 
 
-RUNNER_LOG="${WIGWAGROOT}/log/runner.log"
-WWRELAY_LOG=${WIGWAGLOGROOT}"/wwrelay.log"
+MAESTRO_RUNTIME_LOG="${WIGWAGROOT}/log/maestro-runtime.log"
 PIDROOT="/var/run"
 maestroOK=$PIDROOT"/maestroOK"
 
@@ -33,8 +33,8 @@ config_cpu_scaling() {
 }
 
 stop_devjs() {
-	pushd $RUNNER_DIR
-	$RUNNER_STOP_CMD > $RUNNER_LOG 2>&1
+	pushd $MAESTRO_DIR
+	$MAESTRO_STOP_CMD > $MAESTRO_RUNTIME_LOG 2>&1
 	popd
 }
 START() {
@@ -42,18 +42,18 @@ START() {
 		eval $COLOR_BOLD
 		eval $COLOR_NORMAL
 		config_cpu_scaling
-		if [ -e $RUNNER_LOG ]; then
-			mv $RUNNER_LOG $RUNNER_LOG.1
-		fi
+		# do we need to store maestro runtime? maestro log is stored somewhere else (check maestro config file)
+		# if [ -e $MAESTRO_RUNTIME_LOG ]; then
+		# 	mv $MAESTRO_RUNTIME_LOG $MAESTRO_RUNTIME_LOG.1
+		# fi
 
 		ulimit -c unlimited
-		pushd $RUNNER_DIR
-		$RUNNER_START_CMD > $RUNNER_LOG 2>&1 &
+		pushd $MAESTRO_DIR
+		$MAESTRO_START_CMD > $MAESTRO_RUNTIME_LOG 2>&1 &
 		popd
 	else
 	 #When the relay doesn't have its keys in the right places, we dont autostart devicejs or the watchdog...
-	 echo "did not start devicejs because wwrelay said not to" >> $RUNNER_LOG
-	 echo "did not start devicejs because wwrelay said not to" >> $WWRELAY_LOG
+	 echo "did not start devicejs because wwrelay said not to" >> $MAESTRO_RUNTIME_LOG
 	 exit 7
 	fi
 }

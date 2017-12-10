@@ -496,6 +496,7 @@ jobs:
               "exe": "bacportal"
           },
           "macAddr": 126,
+          "activityLength": 100,
           "logLevel": 1, //Available- info- 2, debug- 3, trace- 4, error- 0, warn- 1
           "nativeLogLevel": "WARN", //FATAL : 0, ERROR : 10, WARN : 20, ROUTING : 30, INFO : 40, DEBUG : 50, PACKET : 60, DUMP : 70, TRACE : 80, ALL :127
           "relayId": "{{ARCH_RELAYID}}",

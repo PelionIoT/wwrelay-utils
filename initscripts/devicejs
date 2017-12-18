@@ -12,12 +12,23 @@
 # Short-Description:    System logger
 ### END INIT INFO
 WIGWAGROOT="/wigwag"
+
+START_SOFTWARE="runner" # runner or maestro
+
 MAESTRO_DIR="${WIGWAGROOT}/system/bin"
 MAESTRO_CONFIG="${WIGWAGROOT}/wwrelay-utils/maestro-conf/wwrelay-config.yaml"
 MAESTRO_START_CMD="./maestro -config ${MAESTRO_CONFIG}"
 MAESTRO_STOP_CMD="echo Need_Stop_Command"
 
+
+RUNNER_DIR="${WIGWAGROOT}/devicejs-core-modules/Runner"
+RUNNER_START_CMD="./start -c ./relay.config.json"
+RUNNER_STOP_CMD="echo Need_Stop_Command"
+
 export NODE_PATH=${WIGWAGROOT}/devicejs-core-modules/node_modules 
+
+RUNNER_LOG="${WIGWAGROOT}/log/runner.log"
+WWRELAY_LOG=${WIGWAGLOGROOT}"/wwrelay.log"
 
 MAESTRO_RUNTIME_LOG="${WIGWAGROOT}/log/maestro-runtime.log"
 PIDROOT="/var/run"
@@ -33,9 +44,15 @@ config_cpu_scaling() {
 }
 
 stop_devjs() {
-	pushd $MAESTRO_DIR
-	$MAESTRO_STOP_CMD > $MAESTRO_RUNTIME_LOG 2>&1
-	popd
+	if [ $START_SOFTWARE -eq "maestro" ]; then
+		pushd $MAESTRO_DIR
+		$MAESTRO_STOP_CMD > $MAESTRO_RUNTIME_LOG 2>&1
+		popd
+	else
+	    pushd $RUNNER_DIR
+	    $RUNNER_STOP_CMD > $RUNNER_LOG 2>&1
+	    popd
+	fi
 }
 START() {
 	if [[ -e $maestroOK ]]; then
@@ -46,15 +63,31 @@ START() {
 		# if [ -e $MAESTRO_RUNTIME_LOG ]; then
 		# 	mv $MAESTRO_RUNTIME_LOG $MAESTRO_RUNTIME_LOG.1
 		# fi
+		if [ $START_SOFTWARE -eq "maestro" ]; then
+			ulimit -c unlimited
+			pushd $MAESTRO_DIR
+			$MAESTRO_START_CMD > $MAESTRO_RUNTIME_LOG 2>&1 &
+			popd
 
-		ulimit -c unlimited
-		pushd $MAESTRO_DIR
-		$MAESTRO_START_CMD > $MAESTRO_RUNTIME_LOG 2>&1 &
-		popd
+    	else
+			if [ -e $RUNNER_LOG ]; then
+	            mv $RUNNER_LOG $RUNNER_LOG.1
+	        fi
+
+			ulimit -c unlimited
+	        pushd $RUNNER_DIR
+	        $RUNNER_START_CMD > $RUNNER_LOG 2>&1 &
+	        popd
+    	fi 
 	else
-	 #When the relay doesn't have its keys in the right places, we dont autostart devicejs or the watchdog...
-	 echo "did not start devicejs because wwrelay said not to" >> $MAESTRO_RUNTIME_LOG
-	 exit 7
+	 	#When the relay doesn't have its keys in the right places, we dont autostart devicejs or the watchdog...
+		if [ $START_SOFTWARE -eq "maestro" ]; then
+		 	echo "did not start devicejs because wwrelay said not to" >> $MAESTRO_RUNTIME_LOG
+		else
+			echo "did not start devicejs because wwrelay said not to" >> $RUNNER_LOG
+			echo "did not start devicejs because wwrelay said not to" >> $WWRELAY_LOG
+		fi
+	 	exit 7
 	fi
 }
 

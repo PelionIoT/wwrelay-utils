@@ -8,3 +8,4 @@ dev-tools/bin/script-emailer-actual.py
 slip-radio/node_modules
 */node_modules
 .DS_Store
+*/.tags

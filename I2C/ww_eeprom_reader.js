@@ -202,50 +202,49 @@ function define_hardware(res) {
 		return hw;
 	}
 
-	function createHandlebarsData(eeprom, platform) {
-		var data = {};
+function createHandlebarsData(eeprom, platform) {
+	var data = {};
 
-		data.apikey = eeprom.relayID;
-		data.apisecret = eeprom.relaySecret;
-		data.cloudurl = eeprom.cloudURL;
-		data.pairingCode = eeprom.pairingCode;
-		data.cloudddburl = cloudDdbURL;
-		data.clouddevicejsurl = cloudDevicejsURL;
-		data.hardwareVersion = eeprom.hardwareVersion;
-		data.radioConfig = eeprom.radioConfig;
-		data.zwavetty = eeprom.hardware.radioProfile.ZWAVE_TTY;
-		data.zigbeehatty = eeprom.hardware.radioProfile.ZIGBEEHA_TTY;
-		data.sixlbrtty = eeprom.hardware.radioProfile.SBMC_TTY.split("/")[2];
-		data.sixlbrreset = eeprom.hardware.radioProfile.SBMC_RESET;
-		data.sixbmac = eeprom.sixBMAC.string;
-		data.ethernetmac = eeprom.ethernetMAC.string;
-		data.wwplatform = platform;
-		data.cloudddburl = cloudDdbURL;
-		data.databasePort = databasePort;
-		data.sslCertsPath = sslPathDefault;
-		data.relayFirmwareVersionFile = relayFirmwareVersionFile;
-		data.factoryFirmwareVersionFile = factoryFirmwareVersionFile;
-		data.upgradeFirmwareVersionFile = upgradeFirmwareVersionFile;
-		data.userFirmwareVersionFile = userFirmwareVersionFile;
-		data.devicejsConfFile = devicejs_conf_file;
-		data.devicedbConfFile = devicedb_conf_file;
-		var _temps = null;
-		try {
-			_temps = execSync('fdisk -l /dev/mmcblk0p1 | xargs | awk \'{print $3}\'');
-		}
-		catch (e) {
-			console.error("FAILED to run check for MMC", e);
-		}
-		if (_temps) {
-			if (Buffer.isBuffer(_temps)) _temps = _temps.toString()
-				data.partitionScheme = (_temps === '50\n') ? '8Gb' : '4Gb';
-		}
-		if (typeof eeprom.ledConfig !== 'undefined' &&
-			((eeprom.ledConfig == '01') || (eeprom.ledConfig == '00') ||
-				(eeprom.ledConfig == '--') || (eeprom.ledConfig == 'xx'))) {
-			data.ledconfig = 'RGB';
+	data.apikey = eeprom.relayID;
+	data.apisecret = eeprom.relaySecret;
+	data.cloudurl = eeprom.cloudURL;
+	data.pairingCode = eeprom.pairingCode;
+	data.cloudddburl = cloudDdbURL;
+	data.clouddevicejsurl = cloudDevicejsURL;
+	data.hardwareVersion = eeprom.hardwareVersion;
+	data.radioConfig = eeprom.radioConfig;
+	data.zwavetty = eeprom.hardware.radioProfile.ZWAVE_TTY;
+	data.zigbeehatty = eeprom.hardware.radioProfile.ZIGBEEHA_TTY;
+	data.sixlbrtty = eeprom.hardware.radioProfile.SBMC_TTY.split("/")[2];
+	data.sixlbrreset = eeprom.hardware.radioProfile.SBMC_RESET;
+	data.sixbmac = eeprom.sixBMAC.string;
+	data.ethernetmac = eeprom.ethernetMAC.string;
+	data.wwplatform = platform;
+	data.cloudddburl = cloudDdbURL;
+	data.databasePort = databasePort;
+	data.sslCertsPath = sslPathDefault;
+	data.relayFirmwareVersionFile = relayFirmwareVersionFile;
+	data.factoryFirmwareVersionFile = factoryFirmwareVersionFile;
+	data.upgradeFirmwareVersionFile = upgradeFirmwareVersionFile;
+	data.userFirmwareVersionFile = userFirmwareVersionFile;
+	data.devicejsConfFile = devicejs_conf_file;
+	data.devicedbConfFile = devicedb_conf_file;
+	var _temps = null;
+	try {
+		_temps = execSync('fdisk -l /dev/mmcblk0p1 | xargs | awk \'{print $3}\'');
 	}
-	else {
+	catch (e) {
+		console.error("FAILED to run check for MMC", e);
+	}
+	if (_temps) {
+		if (Buffer.isBuffer(_temps)) _temps = _temps.toString();
+			data.partitionScheme = (_temps === '50\n') ? '8Gb' : '4Gb';
+	}
+	if (typeof eeprom.ledConfig !== 'undefined' &&
+		((eeprom.ledConfig == '01') || (eeprom.ledConfig == '00') ||
+			(eeprom.ledConfig == '--') || (eeprom.ledConfig == 'xx'))) {
+		data.ledconfig = 'RGB';
+	} else {
 		data.ledconfig = 'RBG';
 	}
 	if (eeprom && eeprom.ledConfig)

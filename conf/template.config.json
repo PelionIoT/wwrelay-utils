@@ -40,7 +40,7 @@
                 }
             },
             "node_args":[
-                "--max-executable-size=96",
+                // "--max-executable-size=96",
                 "--max-old-space-size=128",
                 "--max-semi-space-size=1",
                 "--nouse-idle-notification"
@@ -73,7 +73,7 @@
                 "limit_group":""                // cgroup limits here - TBD
             },
             "node_args":[
-                "--max-executable-size=96",
+                // "--max-executable-size=96",
                 "--max-old-space-size=128",
                 "--max-semi-space-size=1"
             ],
@@ -155,22 +155,6 @@
                     }
                 },
                 {
-                    "path":"${thisdir}/../zigbeeHA",
-                    "config":{
-                        "siodev":"/dev/ttyZigbee",
-                        "devType":0,
-                        "newNwk":false,
-                        "channelMask":25,
-                        "baudRate":115200,
-                        "log_level":1,
-                        "networkRefreshDuration":17000,
-                        "panIdSelection":"randomInRange",
-                        "panId":23,
-                        "platform":"{{wwplatform}}",
-                        "logLevel": 2 //Available- info- 2, debug- 3, trace- 4, error- 0, warn- 1
-                    }
-                },
-                {
                     "path":"${thisdir}/../ww-zwave",
                     "config":{
                         "serialInterfaceOptions":{
@@ -235,12 +219,12 @@
                 }
             ]
         },
-        "modbus":{
+        "zigbee":{
             "limits":{
                 "limit_group":""                // cgroup limits here - TBD
             },
             "node_args":[
-                "--max-executable-size=96",
+                // "--max-executable-size=96",
                 "--max-old-space-size=128",
                 "--max-semi-space-size=1"
             ],
@@ -249,7 +233,42 @@
                 "limit":5000
             },
             "env":{
-                "NODE_PATH":"${NODE_PATH}:${thisdir}/../node_modules:/wigwag/devicejs-core-modules/IPStack/node_modules"
+                "NODE_PATH":"${NODE_PATH}:${thisdir}/../node_modules"
+            },
+            "modules":[
+                {
+                    "path":"${thisdir}/../zigbeeHA",
+                    "config":{
+                        "siodev":"/dev/ttyZigbee",
+                        "devType":0,
+                        "newNwk":false,
+                        "channelMask":25,
+                        "baudRate":115200,
+                        "log_level":1,
+                        "networkRefreshDuration":17000,
+                        "panIdSelection":"randomInRange",
+                        "panId":23,
+                        "platform":"{{wwplatform}}",
+                        "logLevel": 2 //Available- info- 2, debug- 3, trace- 4, error- 0, warn- 1
+                    }
+                }
+            ]
+        },
+        "modbus":{
+            "limits":{
+                "limit_group":""                // cgroup limits here - TBD
+            },
+            "node_args":[
+                // "--max-executable-size=96",
+                "--max-old-space-size=128",
+                "--max-semi-space-size=1"
+            ],
+            "restart":{ // not required,but options are:
+                "timeout":90000, // the timeout between restarts will still take affect
+                "limit":5000
+            },
+            "env":{
+                "NODE_PATH":"${NODE_PATH}:${thisdir}/../node_modules"
             },
             "modules":[
                 {
@@ -284,7 +303,7 @@
                 "limit_group":""                // cgroup limits here - TBD
             },
             "node_args":[
-                "--max-executable-size=96",
+                // "--max-executable-size=96",
                 "--max-old-space-size=128",
                 "--max-semi-space-size=1"
             ],
@@ -293,7 +312,7 @@
                 "limit":5000
             },
             "env":{
-                "NODE_PATH":"${NODE_PATH}:${thisdir}/../node_modules:/wigwag/devicejs-core-modules/IPStack/node_modules"
+                "NODE_PATH":"${NODE_PATH}:${thisdir}/../node_modules"
             },
             "modules":[
                 {
@@ -314,6 +333,7 @@
                             "exe": "bacportal"
                         },
                         "macAddr": 126,
+                        "activityLength": 100,
                         "logLevel": 1, //Available- info- 2, debug- 3, trace- 4, error- 0, warn- 1
                         "nativeLogLevel": "WARN", //FATAL : 0, ERROR : 10, WARN : 20, ROUTING : 30, INFO : 40, DEBUG : 50, PACKET : 60, DUMP : 70, TRACE : 80, ALL :127
                         "relayId": "{{apikey}}",
@@ -331,7 +351,7 @@
                 "limit_group":""
             },
             "node_args":[
-                "--max-executable-size=96",
+                // "--max-executable-size=96",
                 "--max-old-space-size=128",
                 "--max-semi-space-size=1"
             ],
@@ -340,7 +360,7 @@
                 "timeout":90000
             },
             "env":{
-                "NODE_PATH":"${NODE_PATH}:${thisdir}/../node_modules"
+                "NODE_PATH":"${NODE_PATH}:${thisdir}/../../devicejs-core-modules/node_modules"
             },
             "modules":[
                 {

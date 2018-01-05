@@ -1,7 +1,6 @@
 var serialport = require('serialport');
 var SerialPort = serialport.SerialPort;
 var EventEmitter = require('events').EventEmitter;
-var _ = require('lodash');
 
 //Default options
 var _options = {

@@ -12,13 +12,13 @@
     "repository": {},
     "private": true,
     "dependencies": {
-        "devjs-configurator":"https://github.com/WigWagCo/devjs-configurator.git#devicejs2.0-compatibility",
+        "devjs-configurator": "https://github.com/WigWagCo/devjs-configurator.git#devicejs2.0-compatibility",
         "node-hotplug": "https://github.com/WigWagCo/node-hotplug.git",
-        "jsonminify" : "^0.2.3",
+        "jsonminify": "^0.2.3",
         "serialport": "3.1.2",
         "es6-promise": "^3.0.2",
-    	"mkdirp": "^0.5.1",
-    	"promise": "^7.0.4",
+        "mkdirp": "^0.5.1",
+        "promise": "^7.0.4",
         "handlebars": "4.0.5",
         "colors": "1.1.2",
         "underscore": "*",
@@ -26,7 +26,7 @@
         "lodash": "4.17.4",
         "progress": "*"
     },
-    "devDependencies": { },
+    "devDependencies": {},
     "devicejs": {
         "interfaces": [
             "./ModbusRTUInterface.json"
@@ -34,7 +34,9 @@
         "resourceTypes": [
             "./ModbusRTUResource.json"
         ],
-        "engines": { "devicejs": ">=0.0.1" },
-        "dependencies": { }
+        "engines": {
+            "devicejs": ">=0.0.1"
+        },
+        "dependencies": {}
     }
 }

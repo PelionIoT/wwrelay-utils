@@ -40,7 +40,7 @@
                 }
             },
             "node_args":[
-                "--max-executable-size=96",
+                // "--max-executable-size=96",
                 "--max-old-space-size=128",
                 "--max-semi-space-size=1",
                 "--nouse-idle-notification"
@@ -73,7 +73,7 @@
                 "limit_group":""                // cgroup limits here - TBD
             },
             "node_args":[
-                "--max-executable-size=96",
+                // "--max-executable-size=96",
                 "--max-old-space-size=128",
                 "--max-semi-space-size=1"
             ],
@@ -224,7 +224,7 @@
                 "limit_group":""                // cgroup limits here - TBD
             },
             "node_args":[
-                "--max-executable-size=96",
+                // "--max-executable-size=96",
                 "--max-old-space-size=128",
                 "--max-semi-space-size=1"
             ],
@@ -233,7 +233,7 @@
                 "limit":5000
             },
             "env":{
-                "NODE_PATH":"${NODE_PATH}:${thisdir}/../node_modules:/wigwag/devicejs-core-modules/IPStack/node_modules"
+                "NODE_PATH":"${NODE_PATH}:${thisdir}/../node_modules"
             },
             "modules":[
                 {
@@ -259,7 +259,7 @@
                 "limit_group":""                // cgroup limits here - TBD
             },
             "node_args":[
-                "--max-executable-size=96",
+                // "--max-executable-size=96",
                 "--max-old-space-size=128",
                 "--max-semi-space-size=1"
             ],
@@ -268,7 +268,7 @@
                 "limit":5000
             },
             "env":{
-                "NODE_PATH":"${NODE_PATH}:${thisdir}/../node_modules:/wigwag/devicejs-core-modules/IPStack/node_modules"
+                "NODE_PATH":"${NODE_PATH}:${thisdir}/../node_modules"
             },
             "modules":[
                 {
@@ -303,7 +303,7 @@
                 "limit_group":""                // cgroup limits here - TBD
             },
             "node_args":[
-                "--max-executable-size=96",
+                // "--max-executable-size=96",
                 "--max-old-space-size=128",
                 "--max-semi-space-size=1"
             ],
@@ -312,7 +312,7 @@
                 "limit":5000
             },
             "env":{
-                "NODE_PATH":"${NODE_PATH}:${thisdir}/../node_modules:/wigwag/devicejs-core-modules/IPStack/node_modules"
+                "NODE_PATH":"${NODE_PATH}:${thisdir}/../node_modules"
             },
             "modules":[
                 {
@@ -351,7 +351,7 @@
                 "limit_group":""
             },
             "node_args":[
-                "--max-executable-size=96",
+                // "--max-executable-size=96",
                 "--max-old-space-size=128",
                 "--max-semi-space-size=1"
             ],
@@ -360,7 +360,7 @@
                 "timeout":90000
             },
             "env":{
-                "NODE_PATH":"${NODE_PATH}:${thisdir}/../node_modules"
+                "NODE_PATH":"${NODE_PATH}:${thisdir}/../../devicejs-core-modules/node_modules"
             },
             "modules":[
                 {

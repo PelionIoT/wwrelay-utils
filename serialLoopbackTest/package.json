@@ -1,0 +1,42 @@
+{
+    "name": "ModbusRTU",
+    "version": "0.0.1",
+    "description": "Module to interact with Modbus devices",
+    "author": {
+        "name": "Yash",
+        "email": "support@wigwag.com"
+    },
+    "website": {
+        "url": "wigwag.com"
+    },
+    "repository": {},
+    "private": true,
+    "dependencies": {
+        "devjs-configurator": "https://github.com/WigWagCo/devjs-configurator.git#devicejs2.0-compatibility",
+        "node-hotplug": "https://github.com/WigWagCo/node-hotplug.git",
+        "jsonminify": "^0.2.3",
+        "serialport": "3.1.2",
+        "es6-promise": "^3.0.2",
+        "mkdirp": "^0.5.1",
+        "promise": "^7.0.4",
+        "handlebars": "4.0.5",
+        "colors": "1.1.2",
+        "underscore": "*",
+        "jsonschema": "1.0.1",
+        "lodash": "4.17.4",
+        "progress": "*"
+    },
+    "devDependencies": {},
+    "devicejs": {
+        "interfaces": [
+            "./ModbusRTUInterface.json"
+        ],
+        "resourceTypes": [
+            "./ModbusRTUResource.json"
+        ],
+        "engines": {
+            "devicejs": ">=0.0.1"
+        },
+        "dependencies": {}
+    }
+}

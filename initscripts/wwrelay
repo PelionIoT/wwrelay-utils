@@ -104,7 +104,7 @@ start(){
 	good=$(_eepromBurned);
 	_log "Results from the eepromBurn check $good"
 
-	if [[ $(_eepromBurned) -eq 1 ]]; then
+	if [[ $good -eq 1 ]]; then
 		eepromSet=1;
 		cd ${WIGWAGROOT}/wwrelay-utils/I2C
 		/usr/bin/node ./ww_eeprom_reader.js -c $RELAY_SETUP_FILE >> $WWRELAY_LOG 2>&1

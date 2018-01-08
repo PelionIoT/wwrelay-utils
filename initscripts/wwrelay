@@ -80,12 +80,19 @@ _doGenerateSupportCertificates() {
 	fi
 }
 
+EEMESAGE=""
 _eepromBurned(){
-	wwrl=$(eeprog -f -r 0:1 /dev/i2c-1 0x50)
-	h1=$(eeprog -f -r 0:4 /dev/i2c-1 0x51)
-	h2=$(eeprog -f -r 0:4 /dev/i2c-1 0x52)
-	h3=$(eeprog -f -r 0:4 /dev/i2c-1 0x53)
-	if [[ "$wwrl" = "W" && "$h1" = "http" && "$h2" = "http" && "$h3" = "http"  && -s $SSLROOT"/client.cert.pem" && -s $SSLROOT"/ca.cert.pem" && -s $SSLROOT"/client.key.pem" && -s $SSLROOT"/intermediate.cert.pem" && -s $SSLROOT"/server.cert.pem" && -s $SSLROOT"/server.key.pem" ]]; then
+	wwrl=$(eeprog -f -r 0:1 /dev/i2c-1 0x50 2>/dev/null )
+	h1=$(eeprog -f -r 0:4 /dev/i2c-1 0x51 2> /dev/null )
+	h2=$(eeprog -f -r 0:4 /dev/i2c-1 0x52 2> /dev/null )
+	h3=$(eeprog -f -r 0:4 /dev/i2c-1 0x53 2> /dev/null )
+	if [[ ! "$wwrl" = "W" && "$h1" = "http" && "$h2" = "http" && "$h3" = "http" ]]; then
+		EEMESAGE="Actual EEPROM has bad data"
+	fi
+	if [[ ! -s $SSLROOT"/client.cert.pem" && -s $SSLROOT"/ca.cert.pem" && -s $SSLROOT"/client.key.pem" && -s $SSLROOT"/intermediate.cert.pem" && -s $SSLROOT"/server.cert.pem" && -s $SSLROOT"/server.key.pem" ]]; then
+		EEMESAGE="$EEMESAGE and the ssl files are not of proper size at $SSLROOT"
+	fi
+	if [[ $EEMESAGE = "" ]]; then
 		echo 1
 	else
 		echo 0
@@ -101,13 +108,17 @@ start(){
 	_doPrepDb
 	_doGenerateSupportCertificates
 	_doUDEVreload
+	#_eepromBurned
+	#exit
 	good=$(_eepromBurned);
-	_log "Results from the eepromBurn check $good"
+	#_log "Results from the eepromBurn check $good"
 
 	if [[ $good -eq 1 ]]; then
 		eepromSet=1;
 		cd ${WIGWAGROOT}/wwrelay-utils/I2C
-		/usr/bin/node ./ww_eeprom_reader.js -c $RELAY_SETUP_FILE >> $WWRELAY_LOG 2>&1
+		pwd
+		#/usr/bin/node ./ww_eeprom_reader.js -c $RELAY_SETUP_FILE >> $WWRELAY_LOG 2>&1
+		/usr/bin/node ./ww_eeprom_reader.js -c $RELAY_SETUP_FILE 
 		OUT=$?
 		if [ $OUT -eq 0 ]; then
 			success 
@@ -116,12 +127,12 @@ start(){
 			eepromSet=0;
 		fi
 	else
-		_log "EEPROM failed first check"
+		_log "EEPROM failed first check: $EEMESAGE"
 		eepromSet=0;
 	fi
 	if [[ $eepromSet -eq 0 ]]; then
 		failure
-		_log " This relay is not configured with its security keys."
+		_log " Bad config: $EEMESAGE"
 		led 10 10 0
 		udhcpc -n
 		_log "starting leddaemon"

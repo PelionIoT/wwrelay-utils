@@ -18,7 +18,7 @@ WIGWAGROOT="/wigwag"
 WIGWAGLOGROOT="/wigwag/log"
 PIDROOT="/var/run"
 SSLROOT="/mnt/.boot/.ssl"
-OLD_SSLROOT=$WIGWAGROOT"/devicejs-core-modules/Runner/.ssl"
+RunnerSSLROOT=$WIGWAGROOT"/devicejs-core-modules/Runner/.ssl"
 maestroOK=$PIDROOT"/maestroOK"
 GPIO_DIR=${WIGWAGROOT}"/wwrelay-utils/GPIO"
 WWRELAY_LOG=${WIGWAGLOGROOT}"/wwrelay.log"
@@ -86,10 +86,14 @@ _eepromBurned(){
 	h1=$(eeprog -f -r 0:4 /dev/i2c-1 0x51 2> /dev/null )
 	h2=$(eeprog -f -r 0:4 /dev/i2c-1 0x52 2> /dev/null )
 	h3=$(eeprog -f -r 0:4 /dev/i2c-1 0x53 2> /dev/null )
-	if [[ ! "$wwrl" = "W" && "$h1" = "http" && "$h2" = "http" && "$h3" = "http" ]]; then
+	if [[  "$wwrl" = "W" && "$h1" = "http" && "$h2" = "http" && "$h3" = "http" ]]; then
+		:
+	else
 		EEMESAGE="Actual EEPROM has bad data"
 	fi
-	if [[ ! -s $SSLROOT"/client.cert.pem" && -s $SSLROOT"/ca.cert.pem" && -s $SSLROOT"/client.key.pem" && -s $SSLROOT"/intermediate.cert.pem" && -s $SSLROOT"/server.cert.pem" && -s $SSLROOT"/server.key.pem" ]]; then
+	if [[  -s $SSLROOT"/client.cert.pem" && -s $SSLROOT"/ca.cert.pem" && -s $SSLROOT"/client.key.pem" && -s $SSLROOT"/intermediate.cert.pem" && -s $SSLROOT"/server.cert.pem" && -s $SSLROOT"/server.key.pem" ]]; then
+		:
+	else
 		EEMESAGE="$EEMESAGE and the ssl files are not of proper size at $SSLROOT"
 	fi
 	if [[ $EEMESAGE = "" ]]; then
@@ -98,6 +102,16 @@ _eepromBurned(){
 		echo 0
 	fi
 }
+
+_runnerWritten(){
+	if [[ -s $RunnerSSLROOT"/client.cert.pem" && -s $RunnerSSLROOT"/ca.cert.pem" && -s $RunnerSSLROOT"/client.key.pem" && -s $RunnerSSLROOT"/intermediate.cert.pem" && -s $RunnerSSLROOT"/server.cert.pem" && -s $RunnerSSLROOT"/server.key.pem" ]]; then
+		echo 1
+	else
+		echo 0
+	fi
+}
+
+
 start(){
 	_logrotate
 	rm -rf $maestroOK
@@ -117,14 +131,24 @@ start(){
 		eepromSet=1;
 		cd ${WIGWAGROOT}/wwrelay-utils/I2C
 		pwd
-		#/usr/bin/node ./ww_eeprom_reader.js -c $RELAY_SETUP_FILE >> $WWRELAY_LOG 2>&1
-		/usr/bin/node ./ww_eeprom_reader.js -c $RELAY_SETUP_FILE 
+		/usr/bin/node ./ww_eeprom_reader.js -c $RELAY_SETUP_FILE >> $WWRELAY_LOG 2>&1
+		#/usr/bin/node ./ww_eeprom_reader.js -c $RELAY_SETUP_FILE 
 		OUT=$?
 		if [ $OUT -eq 0 ]; then
-			success 
-			_log "ww_eeprom_reader generated relay.config.json successfully"
+
+			stillgood=$(_runnerWritten)
+			if [[ $stillgood -eq 1 ]]; then
+				success 
+				_log "ww_eeprom_reader generated relay.config.json successfully"
+			else
+				failure
+				_log "ssl files are not of proper size at $RunnerSSLROOT"
+				eepromSet=0;
+			fi
 		else
 			eepromSet=0;
+			failure
+			_log "something is wrong with ww_eeprom_reader.js"
 		fi
 	else
 		_log "EEPROM failed first check: $EEMESAGE"
@@ -132,7 +156,7 @@ start(){
 	fi
 	if [[ $eepromSet -eq 0 ]]; then
 		failure
-		_log " Bad config: $EEMESAGE"
+		_log " Bad config, not starting, lets run the scanner"
 		led 10 10 0
 		udhcpc -n
 		_log "starting leddaemon"

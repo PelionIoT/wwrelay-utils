@@ -30,7 +30,13 @@ var ssl_ca_chain = "ca-chain.cert.pem";
 
 var certsMountPoint = "/mnt/.boot/";
 var certsSourcePoint = ".ssl";
+if (fs.existsSync("/dev/mmcblk0p1")) {
 var certsMemoryBlock = "/dev/mmcblk0p1";
+}
+else {
+var certsMemoryBlock = "/dev/mmcblk1p1";
+}
+var certsMemoryBlock_fixed=certsMemoryBlock;
 var certsOutputDirectory = sslPathDefault;
 var localDatabaseDirectory = "/userdata/etc/devicejs/db";
 var relayFirmwareVersionFile = "/wigwag/etc/versions.json";
@@ -231,7 +237,7 @@ function createHandlebarsData(eeprom, platform) {
 	data.devicedbConfFile = devicedb_conf_file;
 	var _temps = null;
 	try {
-		_temps = execSync('fdisk -l /dev/mmcblk0p1 | xargs | awk \'{print $3}\'');
+		_temps = execSync('fdisk -l '+certsMemoryBlock+' | xargs | awk \'{print $3}\'');
 	}
 	catch (e) {
 		console.error("FAILED to run check for MMC", e);
@@ -798,7 +804,7 @@ if (program.config) {
 		program.eepromFile = relaySetupFile.eepromFile;
 		program.overwriteSSL = (relaySetupFile.overwriteSSL || false) ? 'overwrite' : 'dontoverwrite';
 		program.overwrite = relaySetupFile.overwriteConfig || false;
-		program.certsMemoryBlock = relaySetupFile.certsMemoryBlock;
+		program.certsMemoryBlock = certsMemoryBlock_fixed;
 		program.certsMountPoint = relaySetupFile.certsMountPoint;
 		program.certsSourcePoint = relaySetupFile.certsSourcePoint;
 		program.certsOutputDirectory = relaySetupFile.certsOutputDirectory;

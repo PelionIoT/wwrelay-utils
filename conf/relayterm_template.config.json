@@ -1,5 +1,5 @@
 {
-	"cloud": "{{cloudurl}}/relay-term",
+	"cloud": "{{cloudurl_relays}}/relay-term",
 	"noValidate": true,
 	"certificate": "{{sslCertsPath}}/client.cert.pem",
 	"key": "{{sslCertsPath}}/client.key.pem"

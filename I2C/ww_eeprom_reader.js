@@ -214,6 +214,7 @@ function createHandlebarsData(eeprom, platform) {
 	data.apikey = eeprom.relayID;
 	data.apisecret = eeprom.relaySecret;
 	data.cloudurl = eeprom.cloudURL;
+	data.cloudurl_relays = eeprom.cloudURL.substring(0, eeprom.cloudURL.indexOf('.')) + '-relays' + eeprom.cloudURL.substring(eeprom.cloudURL.indexOf('.'));
 	data.pairingCode = eeprom.pairingCode;
 	data.cloudddburl = cloudDdbURL;
 	data.clouddevicejsurl = cloudDevicejsURL;

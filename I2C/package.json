@@ -18,6 +18,7 @@
     "jsonminify": "^0.2.3",
     "linux-mountutils": "^1.0.0",
     "mkdirp": "^0.5.1",
-    "serialport": "^2.0.5"
+    "serialport": "^2.0.5",
+    "underscore": "*"
   }
 }

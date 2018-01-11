@@ -42,6 +42,16 @@ class at24c16EepromHandler {
 			else {
 				try {
 					let ee = JSON.parse(jsonminify(fs.readFileSync(program.args[0], 'utf8')));
+					//Add sixBMAC as it is removed from the relay eeprom from provisiong server
+					//Make it compatible with existing requirement on eeprom writer
+					if(typeof ee.sixBMAC == 'undefined') {
+						ee.sixBMAC = JSON.parse(JSON.stringify(ee.ethernetMAC));
+						ee.sixBMAC.splice(3, 0, 0);
+						ee.sixBMAC.splice(4, 0, 1);
+					}
+					ee.batch = ee.batch || '1';
+					ee.month = ee.month || 'F';
+					ee.year = ee.year || '5';
 					resolve(ee);
 				}
 				catch (e) {

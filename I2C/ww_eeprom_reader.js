@@ -212,7 +212,7 @@ function createHandlebarsData(eeprom, platform) {
     var data = {};
 
     data.apikey = eeprom.relayID;
-    data.apisecret = eeprom.relaySecret;
+    data.apisecret = eeprom.relaySecret || "17c0c7bd1c7f8a360288ef56b4230ede";  //not used by any service, just random data
     data.cloudurl = eeprom.cloudURL;
     data.cloudurl_relays = eeprom.cloudURL.substring(0, eeprom.cloudURL.indexOf('.')) + '-relays' + eeprom.cloudURL.substring(eeprom.cloudURL.indexOf('.'));
     data.pairingCode = eeprom.pairingCode;
@@ -224,8 +224,19 @@ function createHandlebarsData(eeprom, platform) {
     data.zigbeehatty = eeprom.hardware.radioProfile.ZIGBEEHA_TTY;
     data.sixlbrtty = eeprom.hardware.radioProfile.SBMC_TTY.split("/")[2];
     data.sixlbrreset = eeprom.hardware.radioProfile.SBMC_RESET;
-    data.sixbmac = eeprom.sixBMAC.string;
     data.ethernetmac = eeprom.ethernetMAC.string;
+
+    if(typeof eeprom.sixBMAC === 'undefined') { //Generate sixBMAC from ethernet MAC by inserting 0,1 in middle 
+    	var sixBMAC = {};
+    	eeprom.sixBMAC = JSON.parse(JSON.stringify(eeprom.ethernetMAC.array));
+    	eeprom.sixBMAC.splice(3, 0, 0);
+    	eeprom.sixBMAC.splice(4, 0, 1);
+	    sixBMAC.string = MACarray2string(eeprom.sixBMAC);
+	    sixBMAC.array = eeprom.sixBMAC;
+	    eeprom.sixBMAC = sixBMAC;
+    }
+
+    data.sixbmac = eeprom.sixBMAC.string;
     data.wwplatform = platform;
     data.cloudddburl = cloudDdbURL;
     data.databasePort = databasePort;
@@ -382,11 +393,16 @@ function eeprom2relay(uuid_eeprom, callback) {
     R.batch = CI.batch;
     ethernetMAC.string = MACarray2string(CI.ethernetMAC);
     ethernetMAC.array = CI.ethernetMAC;
+    if(typeof CI.sixBMAC === 'undefined') { //Generate sixBMAC from ethernet MAC by inserting 0,1 in middle 
+    	CI.sixBMAC = JSON.parse(JSON.stringify(CI.ethernetMAC.array));
+    	CI.sixBMAC.splice(3, 0, 0);
+    	CI.sixBMAC.splice(4, 0, 1);
+    }
     sixBMAC.string = MACarray2string(CI.sixBMAC);
     sixBMAC.array = CI.sixBMAC;
     R.ethernetMAC = ethernetMAC;
     R.sixBMAC = sixBMAC;
-    R.relaySecret = CI.relaySecret;
+    R.relaySecret = CI.relaySecret || "17c0c7bd1c7f8a360288ef56b4230ede"; //not used by any service, just random data
     R.pairingCode = CI.pairingCode;
     R.relayID = CI.relayID;
     R.ssl = CI.ssl;
@@ -753,7 +769,7 @@ function read_at24c256() {
 	console.log('Reading EEPROM...');
 	return new Promise(function(resolve, reject) {
 		var readEeprom = fs.readFileSync(at24c256EepromFilePath, 'utf8');
-		console.log('Read- ', readEeprom);
+		// console.log('Read- ', readEeprom);
 		try {
 			readEeprom = JSON.parse(readEeprom);
 		} catch(err) {
@@ -774,6 +790,11 @@ function parseReadEeprom(ee) {
 	    ee.UUID = ee.relayID.substring(4, 10);
 	    ethernetMAC.string = MACarray2string(ee.ethernetMAC);
 	    ethernetMAC.array = ee.ethernetMAC;
+	    if(typeof ee.sixBMAC === 'undefined') { //Generate sixBMAC from ethernet MAC by inserting 0,1 in middle 
+	    	ee.sixBMAC = JSON.parse(JSON.stringify(ethernetMAC.array));
+	    	ee.sixBMAC.splice(3, 0, 0);
+	    	ee.sixBMAC.splice(4, 0, 1);
+	    }
 	    sixBMAC.string = MACarray2string(ee.sixBMAC);
 	    sixBMAC.array = ee.sixBMAC;
 	    ee.ethernetMAC = ethernetMAC;
@@ -798,28 +819,33 @@ function main_at24c256() {
             //this checks if the eeprom had valid data.  I may want to add a different check, perhaps a eeprom_version number, so this file never need to change
             console.log('Read EEPROM- ' + JSON.stringify(result));
 
-            hw = define_hardware(result);
-            result.hardware = hw;
+            try {
+	            hw = define_hardware(result);
+	            result.hardware = hw;
 
-            var p = [];
+	            var p = [];
 
-            p.push(generateSSL(result.ssl));
-            p.push(generateDevicedbConf(result));
-            p.push(generateDevicejsConf(result));
-            p.push(generateRelayConf(result, "wwrelay_v"));
-            p.push(generateRelayTermConf(result));
-            p.push(generateHardwareConf(result));
+	            p.push(generateSSL(result.ssl));
+	            p.push(generateDevicedbConf(result));
+	            p.push(generateDevicejsConf(result));
+	            p.push(generateRelayConf(result, "wwrelay_v"));
+	            p.push(generateRelayTermConf(result));
+	            p.push(generateHardwareConf(result));
 
-            if (radioProfile_template_conf_file) {
-                p.push(generateRadioProfileConf(result));
-            }
+	            if (radioProfile_template_conf_file) {
+	                p.push(generateRadioProfileConf(result));
+	            }
 
-            Promise.all(p).then(function(result) {
-                console.log('EEPROM reader successful');
-                resolve();
-            }, function(err) {
-                reject(err);
-            });
+	            Promise.all(p).then(function(result) {
+	                console.log('EEPROM reader successful');
+	                resolve();
+	            }, function(err) {
+	                reject(err);
+	            });
+	        } catch(e) {
+	        	console.error("Failed to generate ", e , e.stack);
+	        	reject(e);
+	        }
     	}, function(err) {
     		reject(err);
     	});

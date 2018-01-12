@@ -238,7 +238,6 @@ function createHandlebarsData(eeprom, platform) {
 
     data.sixbmac = eeprom.sixBMAC.string;
     data.wwplatform = platform;
-    data.cloudddburl = cloudDdbURL;
     data.databasePort = databasePort;
     data.sslCertsPath = sslPathDefault;
     data.relayFirmwareVersionFile = relayFirmwareVersionFile;
@@ -291,7 +290,9 @@ function createHandlebarsDevicejsConf(eeprom) {
 function createHandlebarsDevicedbConf(eeprom) {
     var data = {};
 
+    data.clouddbid = '*' + cloudDdbURL.slice(cloudDdbURL.indexOf('.'));
     data.cloudddburl = cloudDdbURL.slice('https://'.length);
+    data.cloudhistoryhosturl = data.cloudddburl.replace('devicedb', 'history');
     data.databasePort = databasePort;
     data.sslCertsPath = sslPathDefault;
     data.localDatabaseDirectory = localDatabaseDirectory;

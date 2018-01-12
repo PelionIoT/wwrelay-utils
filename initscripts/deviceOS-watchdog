@@ -12,46 +12,68 @@
 # Default-Stop:         0 1 
 # Short-Description:    watchdog timer for the relay
 ### END INIT INFO
+source /etc/init.d/functions
 WIGWAGROOT="/wigwag"
+WIGWAGLOGROOT="/wigwag/log"
+PIDROOT="/var/run"
+SSLROOT="/mnt/.boot/.ssl"
+maestroOK=$PIDROOT"/maestroOK"
 PROG_PATH="/wigwag/system/bin"
 PROG="deviceOSWD"
-#PROG="deviceOSWD_a10_debug"
 KEEPALIVE="/var/deviceOSkeepalive"
-PIDROOT="/var/run"
-maestroOK=$PIDROOT"/maestroOK"
 #this is fixed by the binary... you cannot change it, so go with it.
 FIXED_PID_FILE="deviceOSWD.pid"
 START_DEVICEOSWD_CMD="$PROG_PATH/$PROG -w 300 -m 90 -s $KEEPALIVE -d -p $PIDROOT/"
 STOP_DEVICEOSWD_CMD="echo -e \"stop\" | socat unix-sendto:$KEEPALIVE STDIO"
+THISLOG=$WIGWAGLOGROOT/"deviceOSWD.log"
 RUNNER_LOG="${WIGWAGROOT}/log/runner.log"
 WWRELAY_LOG=${WIGWAGLOGROOT}"/wwrelay.log"
 
-#this script includes a test program that will crash the kernel on purpose, enabling you test out the entire watchdog system.  To run the test, simply set set the PANICLOOP_TIME to the amount of time you want the kernel up and running After the allotted time, the PANICLOOP_TESTPROGRAM will cause a kernel panic.   The panic loop test program also logs the number of reboots to a file at /wigwag/log/panic.log to count the number of reboots.  It also turns the led "white" just before a panic.  This lets you visually know about a panic coming. A PANICLOOP_TIME of 45 seconds should be enough time for you to login  and set the the loop time to 0 seconds, (which prevents the panic loop test from running.)  Anything less you will have to use other tools to stop the loop test.
-PANICLOOP_TESTPROGRAM="/wigwag/wwrelay-utils/dev-tools/bin/panic.sh"
+_log() {
+    echo -e "$(date -u): $1" >> $THISLOG
+    echo -e "$1"
+}
 
+_throw_warning(){
+    warning
+    _log " $PROG $1" 1>&2
+}
 
-#zero will not panic.  Anything above a 0 will panic the system after (x) seconds
-#dont set this above 0 unless you know what your doing and your testing something
-PANICLOOP_TIME=0;
+_throw_success(){
+    success
+    _log " $PROG $1" 1>&2
+}
+
+_throw_failure(){
+    failure
+    _log " $PROG $1" 1>&2
+}
+
+_throw_passed(){
+    passed
+    _log " $PROG $1" 1>&2
+}
 
 start() {
-    if [[ -e $maestroOK ]]; then
+    _log "deviceOSWD start called"
+    if [[ -e $maestroOK || 0 -eq 0 ]]; then
+        _log "maestroOK"
     if [ -e "$PIDROOT/$PROG.pid" ]; then
-        ## Program is running, exit with error.
-        pd=$(pgrep $PROG)
-        echo "Error! $PROG is currently running! ($pd)" 1>&2
+        _log "Program is running, exit with error."
+        pid=$(pgrep $PROG)
+        _throw_warning "currently running ($pid)"
         exit 1
     else
         ## Change from /dev/null to something like /var/log/$PROG if you want to save output.
         pgrep $PROG
         pkill $PROG
         $START_DEVICEOSWD_CMD
-        if [[ $PANICLOOP_TIME -ne 0 ]]; then
-            $PANICLOOP_TESTPROGRAM $PANICLOOP_TIME &
-        fi
+        pid=$(pgrep $PROG)
+        _throw_success "started ($pid)"
     fi
     else
         #When the relay doesn't have its keys in the right places, we dont autostart devicejs or the watchdog...
+        _throw_failure "maestro flag is not OK"
         echo "did not start $0 deviceOS-watchdog because wwrelay said not to" >> $RUNNER_LOG
         echo "did not start $0 deviceOS-watchdog because wwrelay said not to" >> $WWRELAY_LOG
         #you must stop the middle boot deviceOSWD, otherwise you will bootloop in 300 seconds
@@ -71,10 +93,10 @@ humanhalt() {
         eval "$STOP_DEVICEOSWD_CMD"
         kill -9 $pid
         rm "$PIDROOT/$FIXED_PID_FILE"
-        echo "$PROG stopped ($pid)"
+        _throw_success "stopped ($pid)"
     else
         ## Program is not running, exit with error.
-        echo "Error! $PROG not started!" 1>&2
+        _throw_warning "not started!" 1>&2
         exit 1
     fi
 }
@@ -86,9 +108,9 @@ update(){
     echo "$SOCATCMD"
     eval "$SOCATCMD"
     if [[ $? -eq 0 ]]; then
-        echo "update successful"
+        _throw_success "update successful"
     else
-        echo "update failed"
+        _throw_failure "update failed"
     fi
 }
 panic(){
@@ -97,10 +119,10 @@ panic(){
 
 status(){
     if [[ -e $PIDROOT/$FIXED_PID_FILE ]]; then
-        pid=`cat $PIDROOT/$FIXED_PID_FILE`
-        echo "$PROG (pid $pid) is running... logging to /var/log/syslog"
+        pid=$(pgrep $PROG)
+        _throw_success "(pid $pid) is running... logging to /var/log/syslog"
     else
-        echo "$PROG not running."
+        _throw_warning "not running."
     fi
 }
 

@@ -12,6 +12,7 @@
 # Short-Description:    remote terminal for the relay through cloud
 ### END INIT INFO
 
+
 #initscripts need to be made aware of the path
 
 #You can receive messages via papertrail, on the status of the SQA test. To enable, you must fill out the follwoing three varribles

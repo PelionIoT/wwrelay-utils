@@ -1,5 +1,6 @@
 #!/bin/bash
 # /etc/init.d/devicejs: starts DeviceJS & WigWag runtime
+# good article on runlevel info: http://www.thegeekstuff.com/2012/03/lsbinit-script/
 
 ### BEGIN INIT INFO
 # Provides:             devicejs
@@ -56,6 +57,7 @@ stop_devjs() {
 }
 START() {
 	if [[ -e $maestroOK ]]; then
+		echo "hey my maestro is ok (devicejs)" >> /wigwag/log/deviceOSWD.log
 		eval $COLOR_BOLD
 		eval $COLOR_NORMAL
 		config_cpu_scaling

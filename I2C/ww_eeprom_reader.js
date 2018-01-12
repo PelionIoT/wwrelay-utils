@@ -700,7 +700,7 @@ function main() {
                         p.push(writeSecurity());
                         p.push(generateDevicedbConf(result));
                         p.push(generateDevicejsConf(result));
-                        p.push(generateRelayConf(result, "wwrelay_v"));
+                        p.push(generateRelayConf(result, "wwgateway_v"));
                         p.push(generateRelayTermConf(result));
                         p.push(generateHardwareConf(result));
 
@@ -829,7 +829,7 @@ function main_at24c256() {
 	            p.push(generateSSL(result.ssl));
 	            p.push(generateDevicedbConf(result));
 	            p.push(generateDevicejsConf(result));
-	            p.push(generateRelayConf(result, "wwrelay_v"));
+	            p.push(generateRelayConf(result, "wwgateway_v"));
 	            p.push(generateRelayTermConf(result));
 	            p.push(generateHardwareConf(result));
 

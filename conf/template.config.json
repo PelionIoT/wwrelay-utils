@@ -170,7 +170,7 @@
                 //     "path":"${thisdir}/../Enocean",
                 //     "config":{
                 //         "serialInterfaceOptions": { 
-                //             "siodev": "/dev/ttyEnocean",
+                //             "siodev": "/dev/wwUSBP1_TTY",
                 //             "baudrate": 57600,
                 //             "dataBits": 8,
                 //             "stopBits": 1,
@@ -275,7 +275,7 @@
                     "path":"${thisdir}/../ModbusRTU",
                     "config":{
                         "serialInterfaceOptions":{ //Serial communication setup parameters
-                            "siodev":"/dev/wwUSBP1_TTY",
+                            "siodev":"/dev/ttymodbus",
                             "baudrate":19200,
                             "dataBits":8,
                             "stopBits":1,
@@ -319,7 +319,7 @@
                     "path":"${thisdir}/../BACnet",
                     "config":{
                         "serialInterfaceOptions": { //Used to setup comms with BACnet device
-                            "siodev": "/dev/wwUSBP2_TTY",
+                            "siodev": "/dev/ttybacnet",
                             "baudrate": 76800,
                             "dataBits": 8,
                             "parity": "none",

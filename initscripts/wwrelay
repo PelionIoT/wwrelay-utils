@@ -172,6 +172,7 @@ start(){
 	else
 		echo 1 > $maestroOK
 		_log "maestro is OK"
+		echo "I am saying maestro is ok (wwrelay)" >> /wigwag/log/deviceOSWD.log
 		sleep 2
 		sync
 		exit 0

@@ -238,7 +238,6 @@ function createHandlebarsData(eeprom, platform) {
 
     data.sixbmac = eeprom.sixBMAC.string;
     data.wwplatform = platform;
-    data.cloudddburl = cloudDdbURL;
     data.databasePort = databasePort;
     data.sslCertsPath = sslPathDefault;
     data.relayFirmwareVersionFile = relayFirmwareVersionFile;
@@ -291,7 +290,9 @@ function createHandlebarsDevicejsConf(eeprom) {
 function createHandlebarsDevicedbConf(eeprom) {
     var data = {};
 
+    data.clouddbid = '*' + cloudDdbURL.slice(cloudDdbURL.indexOf('.'));
     data.cloudddburl = cloudDdbURL.slice('https://'.length);
+    data.cloudhistoryhosturl = data.cloudddburl.replace('devicedb', 'history');
     data.databasePort = databasePort;
     data.sslCertsPath = sslPathDefault;
     data.localDatabaseDirectory = localDatabaseDirectory;
@@ -394,7 +395,7 @@ function eeprom2relay(uuid_eeprom, callback) {
     ethernetMAC.string = MACarray2string(CI.ethernetMAC);
     ethernetMAC.array = CI.ethernetMAC;
     if(typeof CI.sixBMAC === 'undefined') { //Generate sixBMAC from ethernet MAC by inserting 0,1 in middle 
-    	CI.sixBMAC = JSON.parse(JSON.stringify(CI.ethernetMAC.array));
+    	CI.sixBMAC = JSON.parse(JSON.stringify(ethernetMAC.array));
     	CI.sixBMAC.splice(3, 0, 0);
     	CI.sixBMAC.splice(4, 0, 1);
     }
@@ -699,7 +700,7 @@ function main() {
                         p.push(writeSecurity());
                         p.push(generateDevicedbConf(result));
                         p.push(generateDevicejsConf(result));
-                        p.push(generateRelayConf(result, "wwrelay_v"));
+                        p.push(generateRelayConf(result, "wwgateway_v"));
                         p.push(generateRelayTermConf(result));
                         p.push(generateHardwareConf(result));
 
@@ -828,7 +829,7 @@ function main_at24c256() {
 	            p.push(generateSSL(result.ssl));
 	            p.push(generateDevicedbConf(result));
 	            p.push(generateDevicejsConf(result));
-	            p.push(generateRelayConf(result, "wwrelay_v"));
+	            p.push(generateRelayConf(result, "wwgateway_v"));
 	            p.push(generateRelayTermConf(result));
 	            p.push(generateHardwareConf(result));
 

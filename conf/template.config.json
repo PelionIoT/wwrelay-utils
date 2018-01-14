@@ -202,14 +202,14 @@
                         "ethernetMAC":"{{ethernetmac}}"
                     }
                 },
-                {
-                    "path":"${thisdir}/../../wigwag-core-modules/MDNS",
-                    "config":{
-                        "id":"{{apikey}}",
-                        "waitForIPStack":true,
-                        "port":443
-                    }
-                },
+                // {
+                //     "path":"${thisdir}/../../wigwag-core-modules/MDNS",
+                //     "config":{
+                //         "id":"{{apikey}}",
+                //         "waitForIPStack":true,
+                //         "port":443
+                //     }
+                // },
                 {
                     "path":"${thisdir}/../../wigwag-core-modules/VirtualDeviceDriver",
                     "config": {

@@ -137,9 +137,7 @@ start(){
 	rm -rf $maestroOK
 	_log "Starting WWRELAY"
 	good=$(_eepromBurned);
-
 	_led 10 0 10
-	_log "led is now purple"
 	_doPostUpgrade
 	_doPrepDb
 	_doGenerateSupportCertificates

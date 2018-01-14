@@ -395,7 +395,7 @@ function eeprom2relay(uuid_eeprom, callback) {
     ethernetMAC.string = MACarray2string(CI.ethernetMAC);
     ethernetMAC.array = CI.ethernetMAC;
     if(typeof CI.sixBMAC === 'undefined') { //Generate sixBMAC from ethernet MAC by inserting 0,1 in middle 
-    	CI.sixBMAC = JSON.parse(JSON.stringify(CI.ethernetMAC.array));
+    	CI.sixBMAC = JSON.parse(JSON.stringify(ethernetMAC.array));
     	CI.sixBMAC.splice(3, 0, 0);
     	CI.sixBMAC.splice(4, 0, 1);
     }

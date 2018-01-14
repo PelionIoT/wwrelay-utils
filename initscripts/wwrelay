@@ -30,6 +30,14 @@ RELAYTERM=${WIGWAGROOT}"/wigwag-core-modules/relay-term/src/index.js"
 RELAYTERMCONF=${WIGWAGROOT}"/wigwag-core-modules/relay-term/config/config.json"
 SUPPORTCERTROOT=${WIGWAGROOT}"/devicejs-core-modules/AppServer/Certs"
 echo "tempnuke" > $WWRELAY_LOG
+eeprog /dev/i2c-1 0x55 -f -r 0:10 2> /dev/null
+	if [[ $? -eq 0 ]]; then
+		hardwareversion="relay"
+	else
+		hardwareversion="RP200"
+	fi
+
+
 _log() {
 	echo -e "$1" >> $WWRELAY_LOG
 	echo -e "$1"
@@ -42,6 +50,13 @@ _logrotate() {
 		mv $GPIO_LOG $GPIO_LOG.1
 	fi
 }
+
+_led(){
+	if [[ $hardwareversion = "relay" ]]; then
+		led $1 $2 $3
+	fi
+}
+
 _doPostUpgrade() {
 	if [ -e /userdata/postUpgrade.sh ] ; then
 		_log "Running postUpgrade script"
@@ -82,24 +97,29 @@ _doGenerateSupportCertificates() {
 
 EEMESAGE=""
 _eepromBurned(){
-	wwrl=$(eeprog -f -r 0:1 /dev/i2c-1 0x50 2>/dev/null )
-	h1=$(eeprog -f -r 0:4 /dev/i2c-1 0x51 2> /dev/null )
-	h2=$(eeprog -f -r 0:4 /dev/i2c-1 0x52 2> /dev/null )
-	h3=$(eeprog -f -r 0:4 /dev/i2c-1 0x53 2> /dev/null )
-	if [[  "$wwrl" = "W" && "$h1" = "http" && "$h2" = "http" && "$h3" = "http" ]]; then
-		:
+if [[ $hardwareversion = "relay" ]]; then
+		wwrl=$(eeprog -f -r 0:1 /dev/i2c-1 0x50 2>/dev/null )
+		h1=$(eeprog -f -r 0:4 /dev/i2c-1 0x51 2> /dev/null )
+		h2=$(eeprog -f -r 0:4 /dev/i2c-1 0x52 2> /dev/null )
+		h3=$(eeprog -f -r 0:4 /dev/i2c-1 0x53 2> /dev/null )
+		if [[  "$wwrl" = "W" && "$h1" = "http" && "$h2" = "http" && "$h3" = "http" ]]; then
+			:
+		else
+			EEMESAGE="Actual EEPROM has bad data"
+		fi
+		if [[  -s $SSLROOT"/client.cert.pem" && -s $SSLROOT"/ca.cert.pem" && -s $SSLROOT"/client.key.pem" && -s $SSLROOT"/intermediate.cert.pem" && -s $SSLROOT"/server.cert.pem" && -s $SSLROOT"/server.key.pem" ]]; then
+			:
+		else
+			EEMESAGE="$EEMESAGE and the ssl files are not of proper size at $SSLROOT"
+		fi
+		if [[ $EEMESAGE = "" ]]; then
+			echo 1
+		else
+			echo 0
+		fi
 	else
-		EEMESAGE="Actual EEPROM has bad data"
-	fi
-	if [[  -s $SSLROOT"/client.cert.pem" && -s $SSLROOT"/ca.cert.pem" && -s $SSLROOT"/client.key.pem" && -s $SSLROOT"/intermediate.cert.pem" && -s $SSLROOT"/server.cert.pem" && -s $SSLROOT"/server.key.pem" ]]; then
-		:
-	else
-		EEMESAGE="$EEMESAGE and the ssl files are not of proper size at $SSLROOT"
-	fi
-	if [[ $EEMESAGE = "" ]]; then
+		#need to read the eeporom at24 here, but lets just skip until I can see what burned one looks like
 		echo 1
-	else
-		echo 0
 	fi
 }
 
@@ -116,7 +136,9 @@ start(){
 	_logrotate
 	rm -rf $maestroOK
 	_log "Starting WWRELAY"
-	led 10 0 10
+	good=$(_eepromBurned);
+
+	_led 10 0 10
 	_log "led is now purple"
 	_doPostUpgrade
 	_doPrepDb
@@ -124,7 +146,6 @@ start(){
 	_doUDEVreload
 	#_eepromBurned
 	#exit
-	good=$(_eepromBurned);
 	#_log "Results from the eepromBurn check $good"
 
 	if [[ $good -eq 1 ]]; then
@@ -157,10 +178,13 @@ start(){
 	if [[ $eepromSet -eq 0 ]]; then
 		failure
 		_log " Bad config, not starting, lets run the scanner"
-		led 10 10 0
+		_led 10 10 0
 		udhcpc -n
+		#stop the watchdog here with a humanhalt
+		if [[ $hardwareversion = "relay" ]]; then
 		_log "starting leddaemon"
 		/wigwag/system/bin/leddaemon 
+	fi
 		sleep 1
 		_log "$(ps ax | grep ledda)"
 		_log "starting scanner"

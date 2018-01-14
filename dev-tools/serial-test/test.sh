@@ -1,10 +1,11 @@
 #!/bin/bash
 BAUD_BASE=1500000
-DEV=/dev/ttyS2
+DEV=$1
 DIVISOR=10
 UART=16550A
 #UART=16450
 CUSTOMBAUD=38400
+#CUSTOMBAUD=115200
 # https://github.com/cbrake/linux-serial-test
 
 
@@ -15,7 +16,7 @@ function custom {
 	setserial -a $DEV
 	stty -F $DEV -a
 	echo "now sending a U"
-	echo -n "U" > /dev/ttyS2
+	echo -n "U" > $DEV
 }
 
 function regular_set {
@@ -25,19 +26,22 @@ function regular_set {
 	setserial -a $DEV
 	stty -F $DEV -a
 	echo "now sending a U"
-	echo -n "U" > /dev/ttyS2
+	echo -n "U" > $DEV
 }
 
 function longsend {
-	./linux-serial-test -s -p /dev/ttyS2 -b 115200
+	./linux-serial-test -s -p $DEV -b 115200
 }
 
 function shortsend {
-	linux-serial-test -y 0x55 -z 0x0 -p /dev/ttyS2 -b 115200
+	linux-serial-test -y 0x55 -z 0x0 -p $DEV -b 115200
 }
 
-if [[ "$1" = "regular" ]]; then
-	regular_set
-else
-	longsend
-fi
+regular_set
+./linux-serial-test -s -p $DEV -b 115200
+
+#if [[ "$1" = "regular" ]]; then
+#	regular_set
+#else
+#	longsend
+#fi

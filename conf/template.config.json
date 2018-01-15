@@ -416,35 +416,35 @@
                         "logLevel": 2 //Available- error- 0, warn- 1, info- 2, debug- 3, trace- 4
                     }
                 },
-                // {
-                //     "path":"${thisdir}/../AppServer",
-                //     "config":{
-                //         "authentication":{
-                //             "enabled":true,
-                //             "cloudAPISecret":"{{apisecret}}",
-                //             "redirectURL":"/wigwag-ui/s/login/",
-                //             "cloudRedirectURL":"{{cloudurl}}/s/login"
-                //         },
-                //         "port":443,
-                //         "ssl":{
-                //             "key":"{{sslCertsPath}}/client.key.pem",
-                //             "cert":"{{sslCertsPath}}/client.cert.pem",
-                //             "ca":[
-                //                 "{{sslCertsPath}}/ca.cert.pem",
-                //                 "{{sslCertsPath}}/intermediate.cert.pem"
-                //             ]
-                //         },
-                //         "relayID":"{{apikey}}"
-                //     }
-                // },
-                // {
-                //     "path":"${thisdir}/../APIProxy",
-                //     "config":{
-                //         "cloudAPISecret":"{{apisecret}}",
-                //         "apiKey":"hello",
-                //         "apiSecret":"asdfdsfa"
-                //     }
-                // },
+                {
+                    "path":"${thisdir}/../AppServer",
+                    "config":{
+                        "authentication":{
+                            "enabled":true,
+                            "cloudAPISecret":"{{apisecret}}",
+                            "redirectURL":"/wigwag-ui/s/login/",
+                            "cloudRedirectURL":"{{cloudurl}}/s/login"
+                        },
+                        "port":443,
+                        "ssl":{
+                            "key":"{{sslCertsPath}}/client.key.pem",
+                            "cert":"{{sslCertsPath}}/client.cert.pem",
+                            "ca":[
+                                "{{sslCertsPath}}/ca.cert.pem",
+                                "{{sslCertsPath}}/intermediate.cert.pem"
+                            ]
+                        },
+                        "relayID":"{{apikey}}"
+                    }
+                },
+                {
+                    "path":"${thisdir}/../APIProxy",
+                    "config":{
+                        "cloudAPISecret":"{{apisecret}}",
+                        "apiKey":"hello",
+                        "apiSecret":"asdfdsfa"
+                    }
+                },
                 // {
                 //     "path":"${thisdir}/../../wigwag-core-modules/WigWagMobileUI",
                 //     "config":{

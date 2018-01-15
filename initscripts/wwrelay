@@ -186,10 +186,11 @@ start(){
 		_led 10 10 0
 		udhcpc -n
 		#stop the watchdog here with a humanhalt
+		/etc/init.d/deviceOS-watchdog humanhalt
 		if [[ $hardwareversion = "relay" ]]; then
-		_log "starting leddaemon"
-		/wigwag/system/bin/leddaemon 
-	fi
+			_log "starting leddaemon"
+			/wigwag/system/bin/leddaemon
+		fi
 		sleep 1
 		_log "$(ps ax | grep ledda)"
 		_log "starting scanner"

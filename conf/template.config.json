@@ -26,7 +26,7 @@
             "config":{
                 "ledBrightness":5,
                 "ledColorProfile":"{{ledconfig}}",
-                "ledDriverSocketPath": "/var/deviceOSkeepalive",
+                "ledDriverSocketPath": "/var/deviceOSkeepalive"
             }
         }
     },

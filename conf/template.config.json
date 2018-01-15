@@ -25,7 +25,8 @@
             "startWithRunner":true,
             "config":{
                 "ledBrightness":5,
-                "ledColorProfile":"{{ledconfig}}"
+                "ledColorProfile":"{{ledconfig}}",
+                "ledDriverSocketPath": "/var/deviceOSkeepalive",
             }
         }
     },
@@ -363,21 +364,21 @@
                 "NODE_PATH":"${NODE_PATH}:${thisdir}/../../devicejs-core-modules/node_modules"
             },
             "modules":[
-                {
-                    "path":"${thisdir}/../../wigwag-core-modules/RuleEngine",
-                    "config":{
-                        "cloudAddress":"{{cloudurl}}",
-                        "relayID":"{{apikey}}",
-                        "ssl":{
-                            "key":"{{sslCertsPath}}/client.key.pem",
-                            "cert":"{{sslCertsPath}}/client.cert.pem",
-                            "ca":[
-                                "{{sslCertsPath}}/ca.cert.pem",
-                                "{{sslCertsPath}}/intermediate.cert.pem"
-                            ]
-                        }
-                    }
-                },
+                // {
+                //     "path":"${thisdir}/../../wigwag-core-modules/RuleEngine",
+                //     "config":{
+                //         "cloudAddress":"{{cloudurl}}",
+                //         "relayID":"{{apikey}}",
+                //         "ssl":{
+                //             "key":"{{sslCertsPath}}/client.key.pem",
+                //             "cert":"{{sslCertsPath}}/client.cert.pem",
+                //             "ca":[
+                //                 "{{sslCertsPath}}/ca.cert.pem",
+                //                 "{{sslCertsPath}}/intermediate.cert.pem"
+                //             ]
+                //         }
+                //     }
+                // },
                 {
                     "path":"${thisdir}/../../wigwag-core-modules/RelayStatsSender",
                     "config":{
@@ -415,79 +416,79 @@
                         "logLevel": 2 //Available- error- 0, warn- 1, info- 2, debug- 3, trace- 4
                     }
                 },
-                {
-                    "path":"${thisdir}/../AppServer",
-                    "config":{
-                        "authentication":{
-                            "enabled":true,
-                            "cloudAPISecret":"{{apisecret}}",
-                            "redirectURL":"/wigwag-ui/s/login/",
-                            "cloudRedirectURL":"{{cloudurl}}/s/login"
-                        },
-                        "port":443,
-                        "ssl":{
-                            "key":"{{sslCertsPath}}/client.key.pem",
-                            "cert":"{{sslCertsPath}}/client.cert.pem",
-                            "ca":[
-                                "{{sslCertsPath}}/ca.cert.pem",
-                                "{{sslCertsPath}}/intermediate.cert.pem"
-                            ]
-                        },
-                        "relayID":"{{apikey}}"
-                    }
-                },
-                {
-                    "path":"${thisdir}/../APIProxy",
-                    "config":{
-                        "cloudAPISecret":"{{apisecret}}",
-                        "apiKey":"hello",
-                        "apiSecret":"asdfdsfa"
-                    }
-                },
-                {
-                    "path":"${thisdir}/../../wigwag-core-modules/WigWagMobileUI",
-                    "config":{
+                // {
+                //     "path":"${thisdir}/../AppServer",
+                //     "config":{
+                //         "authentication":{
+                //             "enabled":true,
+                //             "cloudAPISecret":"{{apisecret}}",
+                //             "redirectURL":"/wigwag-ui/s/login/",
+                //             "cloudRedirectURL":"{{cloudurl}}/s/login"
+                //         },
+                //         "port":443,
+                //         "ssl":{
+                //             "key":"{{sslCertsPath}}/client.key.pem",
+                //             "cert":"{{sslCertsPath}}/client.cert.pem",
+                //             "ca":[
+                //                 "{{sslCertsPath}}/ca.cert.pem",
+                //                 "{{sslCertsPath}}/intermediate.cert.pem"
+                //             ]
+                //         },
+                //         "relayID":"{{apikey}}"
+                //     }
+                // },
+                // {
+                //     "path":"${thisdir}/../APIProxy",
+                //     "config":{
+                //         "cloudAPISecret":"{{apisecret}}",
+                //         "apiKey":"hello",
+                //         "apiSecret":"asdfdsfa"
+                //     }
+                // },
+                // {
+                //     "path":"${thisdir}/../../wigwag-core-modules/WigWagMobileUI",
+                //     "config":{
 
-                    }
-                },
-                {
-                    "path":"${thisdir}/../../wigwag-core-modules/wigwag-ui",
-                    "config":{
-                        "cloudAPISecret":"{{apisecret}}"
-                    }
-                },
-                {
-                    "path":"${thisdir}/../../wigwag-core-modules/WWRelayWebUI",
-                    "config":{
+                //     }
+                // },
+                // {
+                //     "path":"${thisdir}/../../wigwag-core-modules/wigwag-ui",
+                //     "config":{
+                //         "cloudAPISecret":"{{apisecret}}"
+                //     }
+                // },
+                // {
+                //     "path":"${thisdir}/../../wigwag-core-modules/WWRelayWebUI",
+                //     "config":{
 
-                    }
-                },
-                {
-                    "path":"${thisdir}/../../wigwag-core-modules/RuleUI",
-                    "config":{
-                        "debug_mode":true,
-                        "debug_level":3,    // goes up to 3, default 1
-                        "RULE_NODE_TYPES_DIRECTORY":[
-                            "${thisdir}/../RuleEngine/src/nodes"
-                        ],
-                        "FORMS_DIR":[
-                            {
-                                "path":"${thisdir}/../../wigwag-core-modules/RuleUI/schemaFormDialogs",
-                                "ignores":[
-                                    "_public"
-                                ]
-                            }
-                        ]
-                    }
-                },
-                {
-                    "path":"${thisdir}/../../wigwag-core-modules/moods",
-                    "config":{
-                        "jwtSecret":"IXPySxxr0f5X2CIqdB45eK",
-                        "apiKey":"{{apikey}}",
-                        "apiSecret":"{{apisecret}}"
-                    }
-                },
+                //     }
+                // },
+                // {
+                //     "path":"${thisdir}/../../wigwag-core-modules/RuleUI",
+                //     "config":{
+                //         "debug_mode":true,
+                //         "debug_level":3,    // goes up to 3, default 1
+                //         "RULE_NODE_TYPES_DIRECTORY":[
+                //             "${thisdir}/../RuleEngine/src/nodes"
+                //         ],
+                //         "FORMS_DIR":[
+                //             {
+                //                 "path":"${thisdir}/../../wigwag-core-modules/RuleUI/schemaFormDialogs",
+                //                 "ignores":[
+                //                     "_public"
+                //                 ]
+                //             }
+                //         ]
+                //     }
+                // },
+                // {
+                //     "path":"${thisdir}/../../wigwag-core-modules/moods",
+                //     "config":{
+                //         "jwtSecret":"IXPySxxr0f5X2CIqdB45eK",
+                //         "apiKey":"{{apikey}}",
+                //         "apiSecret":"{{apisecret}}"
+                //     }
+                // },
                 {
                     "path":"${thisdir}/../../wigwag-core-modules/DevStateManager",
                     "config": {

@@ -137,18 +137,18 @@
                         }
                     }
                 },
-                {
-                    "path":"${thisdir}/../core-lighting",
-                    "config":{
+                // {
+                //     "path":"${thisdir}/../core-lighting",
+                //     "config":{
 
-                    }
-                },
-                {
-                    "path":"${thisdir}/../sonos",
-                    "config":{
+                //     }
+                // },
+                // {
+                //     "path":"${thisdir}/../sonos",
+                //     "config":{
 
-                    }
-                },
+                //     }
+                // },
                 {
                     "path":"${thisdir}/../core-interfaces",
                     "config":{

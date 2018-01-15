@@ -136,7 +136,7 @@
                             }
                         }
                     }
-                },
+                }, 
                 // {
                 //     "path":"${thisdir}/../core-lighting",
                 //     "config":{

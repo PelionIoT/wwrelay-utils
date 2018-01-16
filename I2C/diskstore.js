@@ -168,6 +168,8 @@ diskstorage.prototype.cpFile = function(relativePath, path, overwrite) {
 				//console.log("debug","returning promise errored: "+error);
 				reject(error);
 			});
+		}, function(err) {
+			reject(err);
 		});
 
 	});

@@ -31,8 +31,8 @@ WWRELAY_LOG=${WIGWAGLOGROOT}"/wwrelay.log"
 
 # LED control is integrated with deviceOSWD, tried detecting the hardware inside devcieOSWD, that dint work 
 # Detect the platform and swap the files 
-PROG_RELAY="deviceOSWD-a10-relay"
-PROG_RP200="deviceOSWD-a10-tiny841"
+PROG_RELAY="deviceOSWD_a10_relay"
+PROG_RP200="deviceOSWD_a10_tiny841"
 
 eeprog /dev/i2c-1 0x55 -f -r 0:10 2> /dev/null
 if [[ $? -eq 0 ]]; then

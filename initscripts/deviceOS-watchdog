@@ -29,6 +29,19 @@ THISLOG=$WIGWAGLOGROOT/"deviceOSWD.log"
 RUNNER_LOG="${WIGWAGROOT}/log/runner.log"
 WWRELAY_LOG=${WIGWAGLOGROOT}"/wwrelay.log"
 
+# LED control is integrated with deviceOSWD, tried detecting the hardware inside devcieOSWD, that dint work 
+# Detect the platform and swap the files 
+PROG_RELAY="deviceOSWD-a10-relay"
+PROG_RP200="deviceOSWD-a10-tiny841"
+
+eeprog /dev/i2c-1 0x55 -f -r 0:10 2> /dev/null
+if [[ $? -eq 0 ]]; then
+    # hardwareversion="relay"
+    START_DEVICEOSWD_CMD="$PROG_PATH/$PROG_RELAY -w 300 -m 90 -s $KEEPALIVE -d -p $PIDROOT/"
+else
+    START_DEVICEOSWD_CMD="$PROG_PATH/$PROG_RP200 -w 300 -m 90 -s $KEEPALIVE -d -p $PIDROOT/"
+    # hardwareversion="RP200"
+fi
 _log() {
     echo -e "$(date -u): $1" >> $THISLOG
     echo -e "$1"

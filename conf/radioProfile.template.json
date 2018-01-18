@@ -33,11 +33,11 @@
             },
             "P1": {
                 "description": "USB next to ethernet port",
-                "siodevsubpath": "4-1/4-1:1.0"
+                "siodevsubpath": "3-1/3-1:1.0"
             },
             "P2": {
                 "description": "USB next to power connector",
-                "siodevsubpath": "3-1/3-1:1.0"
+                "siodevsubpath": "4-1/4-1:1.0"
             },
             "usb_hub_1": {
                 "description": "USB next to power connector",
@@ -202,18 +202,25 @@
     			"ModbusRTU": 		[ "usb_hub_1", "usb" ],
     			"Enocean": 			[ "usb_hub_2", "usb" ],
     			"BACnet": 			[ "usb_hub_3", "usb" ]
+    		},
+    		"04": {
+    			"wigwag-devices": 	[ "M1", "wigwag-cc2530" ],
+    			"ww-zwave": 		[ "M2", "ZM5304" ],
+    			"zigbeeHA": 		[ "M4", "wigwag-cc2530" ],
+    			"ModbusRTU": 		[ "P1", "usb" ],
+    			"Enocean": 			[ "P2", "usb" ]
     		}
     	},
-    	"rp202": {
-    		"04": {
+    	"r2002": {
+    		"10": {
     			"ModbusRTU": 		[ "P1", "rs485" ],
     			"BACnet": 			[ "P2", "rs485" ]
     		},
-    		"05": {
+    		"11": {
     			"BACnet": 			[ "P1", "rs485" ],
     			"ModbusRTU": 		[ "P2", "rs485" ]
     		},
-    		"06": {
+    		"12": {
     			"zigbeeHA":			[ "M1", "wigwag-cc2530" ],
     			"ModbusRTU": 		[ "P1", "rs485" ],
     			"BACnet": 			[ "P2", "rs485" ]

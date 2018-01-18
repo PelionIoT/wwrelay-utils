@@ -167,25 +167,25 @@
                         "platform":"{{wwplatform}}"
                     }
                 },
-                // {
-                //     "path":"${thisdir}/../Enocean",
-                //     "config":{
-                //         "serialInterfaceOptions": { 
-                //             "siodev": "/dev/wwUSBP1_TTY",
-                //             "baudrate": 57600,
-                //             "dataBits": 8,
-                //             "stopBits": 1,
-                //             "parity": "none"
-                //         },
-                //         "logLevel": 2, //Available- info- 2, debug- 3, trace- 4, error- 0, warn- 1
-                //         "relayId": "{{apikey}}",
-                //         "platform": "{{wwplatform}}", //Used to identify platform so that module can adapt and run automagically
-                //         "server-eep": "a5-38-08", //Representing as Central Command Gateway
-                //         "requestAckTimeout": 500, //Timeout if no data received on request (in ms)
-                //         "supportedEEPDirectory": "controllers/supportedEEPControllers", //Relative path to directory where all the resouce recipes are or will be defined,
-                //         "resourceTypePrefix": "Core/Devices/Enocean"
-                //     }
-                // },
+                {
+                    "path":"${thisdir}/../Enocean",
+                    "config":{
+                        "serialInterfaceOptions": { 
+                            "siodev": "/dev/ttyEnocean",
+                            "baudrate": 57600,
+                            "dataBits": 8,
+                            "stopBits": 1,
+                            "parity": "none"
+                        },
+                        "logLevel": 2, //Available- info- 2, debug- 3, trace- 4, error- 0, warn- 1
+                        "relayId": "{{apikey}}",
+                        "platform": "{{wwplatform}}", //Used to identify platform so that module can adapt and run automagically
+                        "server-eep": "a5-38-08", //Representing as Central Command Gateway
+                        "requestAckTimeout": 500, //Timeout if no data received on request (in ms)
+                        "supportedEEPDirectory": "controllers/supportedEEPControllers", //Relative path to directory where all the resouce recipes are or will be defined,
+                        "resourceTypePrefix": "Core/Devices/Enocean"
+                    }
+                },
                 {
                     "path":"${thisdir}/../IPStack",
                     "config":{

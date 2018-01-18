@@ -281,7 +281,7 @@
                             "dataBits":8,
                             "stopBits":1,
                             "parity":"none",
-                            "endPacketTimeout":15
+                            "endPacketTimeout":25
                         },
                         "logLevel":1,   //Available- info- 2,debug- 3,trace- 4,error- 0,warn- 1
                         "relayId": "{{apikey}}",

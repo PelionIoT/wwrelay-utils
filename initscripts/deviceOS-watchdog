@@ -42,6 +42,12 @@ else
     START_DEVICEOSWD_CMD="$PROG_PATH/$PROG_RP200 -w 300 -m 90 -s $KEEPALIVE -d -p $PIDROOT/"
     # hardwareversion="RP200"
 fi
+
+ENABLE_TINY_WATCHDOG_CMD="echo -e \"dog_go\" | socat unix-sendto:$KEEPALIVE STDIO"
+DISABLE_TINY_WATCHDOG_CMD="echo -e \"dog_stop\" | socat unix-sendto:$KEEPALIVE STDIO"
+HEARTBEAT_TINY_WATCHDOG_CMD="echo -e \"dog_run\" | socat unix-sendto:$KEEPALIVE STDIO"
+EXPIRENOW_TINY_WATCHDOG_CMD="echo -e \"dog_die\" | socat unix-sendto:$KEEPALIVE STDIO"
+
 _log() {
     echo -e "$(date -u): $1" >> $THISLOG
     echo -e "$1"
@@ -83,6 +89,8 @@ start() {
         $START_DEVICEOSWD_CMD
         pid=$(pgrep $PROG)
         _throw_success "started ($pid)"
+        sleep 1
+        eval "$HEARTBEAT_TINY_WATCHDOG_CMD"
     fi
     else
         #When the relay doesn't have its keys in the right places, we dont autostart devicejs or the watchdog...
@@ -91,6 +99,8 @@ start() {
         echo "did not start $0 deviceOS-watchdog because wwrelay said not to" >> $WWRELAY_LOG
         #you must stop the middle boot deviceOSWD, otherwise you will bootloop in 300 seconds
         #this seems strange here, but the only way to stop the internal hardware timer is to take over the heartbeat, then stop the heartbeat
+        eval "$DISABLE_TINY_WATCHDOG_CMD"
+        sleep 1
         pkill $PROG
          $START_DEVICEOSWD_CMD
         eval "$STOP_DEVICEOSWD_CMD"
@@ -102,6 +112,8 @@ start() {
 humanhalt() {
     if [ -e "$PIDROOT/$FIXED_PID_FILE" ]; then
         ## Program is running, so stop it
+        eval "$DISABLE_TINY_WATCHDOG_CMD"
+        sleep 1
         pid=`cat $PIDROOT/$FIXED_PID_FILE`
         eval "$STOP_DEVICEOSWD_CMD"
         kill -9 $pid
@@ -118,6 +130,7 @@ humanhalt() {
 update(){
     t="$2"
     SOCATCMD="echo -e \"up $t\" | socat unix-sendto:$KEEPALIVE STDIO"; 
+    eval "$HEARTBEAT_TINY_WATCHDOG_CMD"
     echo "$SOCATCMD"
     eval "$SOCATCMD"
     if [[ $? -eq 0 ]]; then
@@ -128,6 +141,10 @@ update(){
 }
 panic(){
     insmod /lib/modules/4.2.0-rc8/extra/panic.ko
+}
+
+expirenow(){
+    eval "$EXPIRENOW_TINY_WATCHDOG_CMD"
 }
 
 status(){
@@ -171,6 +188,12 @@ case "$1" in
         exit 0
         ;;
     #
+    expirenow)
+        #
+        expirenow
+        exit 0
+        ;;
+    #
     reload|restart|force-reload)
         #
         humanhalt
@@ -186,7 +209,7 @@ case "$1" in
     #
     **)
         #
-        echo "Usage: $0 {start|humanhalt|status|panic|reload|restart|update <sec>}" 1>&2
+        echo "Usage: $0 {start|humanhalt|status|panic|reload|restart|expirenow|update <sec>}" 1>&2
         exit 1
         ;;
 #

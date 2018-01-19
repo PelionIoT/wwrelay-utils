@@ -25,7 +25,8 @@
             "startWithRunner":true,
             "config":{
                 "ledBrightness":5,
-                "ledColorProfile":"{{ledconfig}}"
+                "ledColorProfile":"{{ledconfig}}",
+                "ledDriverSocketPath": "/var/deviceOSkeepalive"
             }
         }
     },
@@ -135,19 +136,19 @@
                             }
                         }
                     }
-                },
-                {
-                    "path":"${thisdir}/../core-lighting",
-                    "config":{
+                }, 
+                // {
+                //     "path":"${thisdir}/../core-lighting",
+                //     "config":{
 
-                    }
-                },
-                {
-                    "path":"${thisdir}/../sonos",
-                    "config":{
+                //     }
+                // },
+                // {
+                //     "path":"${thisdir}/../sonos",
+                //     "config":{
 
-                    }
-                },
+                //     }
+                // },
                 {
                     "path":"${thisdir}/../core-interfaces",
                     "config":{
@@ -166,25 +167,25 @@
                         "platform":"{{wwplatform}}"
                     }
                 },
-                // {
-                //     "path":"${thisdir}/../Enocean",
-                //     "config":{
-                //         "serialInterfaceOptions": { 
-                //             "siodev": "/dev/wwUSBP1_TTY",
-                //             "baudrate": 57600,
-                //             "dataBits": 8,
-                //             "stopBits": 1,
-                //             "parity": "none"
-                //         },
-                //         "logLevel": 2, //Available- info- 2, debug- 3, trace- 4, error- 0, warn- 1
-                //         "relayId": "{{apikey}}",
-                //         "platform": "{{wwplatform}}", //Used to identify platform so that module can adapt and run automagically
-                //         "server-eep": "a5-38-08", //Representing as Central Command Gateway
-                //         "requestAckTimeout": 500, //Timeout if no data received on request (in ms)
-                //         "supportedEEPDirectory": "controllers/supportedEEPControllers", //Relative path to directory where all the resouce recipes are or will be defined,
-                //         "resourceTypePrefix": "Core/Devices/Enocean"
-                //     }
-                // },
+                {
+                    "path":"${thisdir}/../Enocean",
+                    "config":{
+                        "serialInterfaceOptions": { 
+                            "siodev": "/dev/ttyEnocean",
+                            "baudrate": 57600,
+                            "dataBits": 8,
+                            "stopBits": 1,
+                            "parity": "none"
+                        },
+                        "logLevel": 2, //Available- info- 2, debug- 3, trace- 4, error- 0, warn- 1
+                        "relayId": "{{apikey}}",
+                        "platform": "{{wwplatform}}", //Used to identify platform so that module can adapt and run automagically
+                        "server-eep": "a5-38-08", //Representing as Central Command Gateway
+                        "requestAckTimeout": 500, //Timeout if no data received on request (in ms)
+                        "supportedEEPDirectory": "controllers/supportedEEPControllers", //Relative path to directory where all the resouce recipes are or will be defined,
+                        "resourceTypePrefix": "Core/Devices/Enocean"
+                    }
+                },
                 {
                     "path":"${thisdir}/../IPStack",
                     "config":{
@@ -280,7 +281,7 @@
                             "dataBits":8,
                             "stopBits":1,
                             "parity":"none",
-                            "endPacketTimeout":15
+                            "endPacketTimeout":25
                         },
                         "logLevel":1,   //Available- info- 2,debug- 3,trace- 4,error- 0,warn- 1
                         "relayId": "{{apikey}}",
@@ -363,21 +364,21 @@
                 "NODE_PATH":"${NODE_PATH}:${thisdir}/../../devicejs-core-modules/node_modules"
             },
             "modules":[
-                {
-                    "path":"${thisdir}/../../wigwag-core-modules/RuleEngine",
-                    "config":{
-                        "cloudAddress":"{{cloudurl}}",
-                        "relayID":"{{apikey}}",
-                        "ssl":{
-                            "key":"{{sslCertsPath}}/client.key.pem",
-                            "cert":"{{sslCertsPath}}/client.cert.pem",
-                            "ca":[
-                                "{{sslCertsPath}}/ca.cert.pem",
-                                "{{sslCertsPath}}/intermediate.cert.pem"
-                            ]
-                        }
-                    }
-                },
+                // {
+                //     "path":"${thisdir}/../../wigwag-core-modules/RuleEngine",
+                //     "config":{
+                //         "cloudAddress":"{{cloudurl}}",
+                //         "relayID":"{{apikey}}",
+                //         "ssl":{
+                //             "key":"{{sslCertsPath}}/client.key.pem",
+                //             "cert":"{{sslCertsPath}}/client.cert.pem",
+                //             "ca":[
+                //                 "{{sslCertsPath}}/ca.cert.pem",
+                //                 "{{sslCertsPath}}/intermediate.cert.pem"
+                //             ]
+                //         }
+                //     }
+                // },
                 {
                     "path":"${thisdir}/../../wigwag-core-modules/RelayStatsSender",
                     "config":{
@@ -415,79 +416,79 @@
                         "logLevel": 2 //Available- error- 0, warn- 1, info- 2, debug- 3, trace- 4
                     }
                 },
-                {
-                    "path":"${thisdir}/../AppServer",
-                    "config":{
-                        "authentication":{
-                            "enabled":true,
-                            "cloudAPISecret":"{{apisecret}}",
-                            "redirectURL":"/wigwag-ui/s/login/",
-                            "cloudRedirectURL":"{{cloudurl}}/s/login"
-                        },
-                        "port":443,
-                        "ssl":{
-                            "key":"{{sslCertsPath}}/client.key.pem",
-                            "cert":"{{sslCertsPath}}/client.cert.pem",
-                            "ca":[
-                                "{{sslCertsPath}}/ca.cert.pem",
-                                "{{sslCertsPath}}/intermediate.cert.pem"
-                            ]
-                        },
-                        "relayID":"{{apikey}}"
-                    }
-                },
-                {
-                    "path":"${thisdir}/../APIProxy",
-                    "config":{
-                        "cloudAPISecret":"{{apisecret}}",
-                        "apiKey":"hello",
-                        "apiSecret":"asdfdsfa"
-                    }
-                },
-                {
-                    "path":"${thisdir}/../../wigwag-core-modules/WigWagMobileUI",
-                    "config":{
+                // {
+                //     "path":"${thisdir}/../AppServer",
+                //     "config":{
+                //         "authentication":{
+                //             "enabled":true,
+                //             "cloudAPISecret":"{{apisecret}}",
+                //             "redirectURL":"/wigwag-ui/s/login/",
+                //             "cloudRedirectURL":"{{cloudurl}}/s/login"
+                //         },
+                //         "port":443,
+                //         "ssl":{
+                //             "key":"{{sslCertsPath}}/client.key.pem",
+                //             "cert":"{{sslCertsPath}}/client.cert.pem",
+                //             "ca":[
+                //                 "{{sslCertsPath}}/ca.cert.pem",
+                //                 "{{sslCertsPath}}/intermediate.cert.pem"
+                //             ]
+                //         },
+                //         "relayID":"{{apikey}}"
+                //     }
+                // },
+                // {
+                //     "path":"${thisdir}/../APIProxy",
+                //     "config":{
+                //         "cloudAPISecret":"{{apisecret}}",
+                //         "apiKey":"hello",
+                //         "apiSecret":"asdfdsfa"
+                //     }
+                // },
+                // {
+                //     "path":"${thisdir}/../../wigwag-core-modules/WigWagMobileUI",
+                //     "config":{
 
-                    }
-                },
-                {
-                    "path":"${thisdir}/../../wigwag-core-modules/wigwag-ui",
-                    "config":{
-                        "cloudAPISecret":"{{apisecret}}"
-                    }
-                },
-                {
-                    "path":"${thisdir}/../../wigwag-core-modules/WWRelayWebUI",
-                    "config":{
+                //     }
+                // },
+                // {
+                //     "path":"${thisdir}/../../wigwag-core-modules/wigwag-ui",
+                //     "config":{
+                //         "cloudAPISecret":"{{apisecret}}"
+                //     }
+                // },
+                // {
+                //     "path":"${thisdir}/../../wigwag-core-modules/WWRelayWebUI",
+                //     "config":{
 
-                    }
-                },
-                {
-                    "path":"${thisdir}/../../wigwag-core-modules/RuleUI",
-                    "config":{
-                        "debug_mode":true,
-                        "debug_level":3,    // goes up to 3, default 1
-                        "RULE_NODE_TYPES_DIRECTORY":[
-                            "${thisdir}/../RuleEngine/src/nodes"
-                        ],
-                        "FORMS_DIR":[
-                            {
-                                "path":"${thisdir}/../../wigwag-core-modules/RuleUI/schemaFormDialogs",
-                                "ignores":[
-                                    "_public"
-                                ]
-                            }
-                        ]
-                    }
-                },
-                {
-                    "path":"${thisdir}/../../wigwag-core-modules/moods",
-                    "config":{
-                        "jwtSecret":"IXPySxxr0f5X2CIqdB45eK",
-                        "apiKey":"{{apikey}}",
-                        "apiSecret":"{{apisecret}}"
-                    }
-                },
+                //     }
+                // },
+                // {
+                //     "path":"${thisdir}/../../wigwag-core-modules/RuleUI",
+                //     "config":{
+                //         "debug_mode":true,
+                //         "debug_level":3,    // goes up to 3, default 1
+                //         "RULE_NODE_TYPES_DIRECTORY":[
+                //             "${thisdir}/../RuleEngine/src/nodes"
+                //         ],
+                //         "FORMS_DIR":[
+                //             {
+                //                 "path":"${thisdir}/../../wigwag-core-modules/RuleUI/schemaFormDialogs",
+                //                 "ignores":[
+                //                     "_public"
+                //                 ]
+                //             }
+                //         ]
+                //     }
+                // },
+                // {
+                //     "path":"${thisdir}/../../wigwag-core-modules/moods",
+                //     "config":{
+                //         "jwtSecret":"IXPySxxr0f5X2CIqdB45eK",
+                //         "apiKey":"{{apikey}}",
+                //         "apiSecret":"{{apisecret}}"
+                //     }
+                // },
                 {
                     "path":"${thisdir}/../../wigwag-core-modules/DevStateManager",
                     "config": {

@@ -49,6 +49,7 @@ class at24c16EepromHandler {
 						ee.sixBMAC.splice(3, 0, 0);
 						ee.sixBMAC.splice(4, 0, 1);
 					}
+					ee.relaySecret =  ee.relaySecret || "17c0c7bd1c7f8a360288ef56b4230ede";
 					ee.batch = ee.batch || '1';
 					ee.month = ee.month || 'F';
 					ee.year = ee.year || '5';

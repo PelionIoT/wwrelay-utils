@@ -37,7 +37,7 @@ runit(){
     
     #boots to a busybox shell.  Good for development of the initloader and other stuff
     #durring the button function on wigwag hardware is color: blue
-    shell                                                                                                                                                                                                                                                                                                                                                                                                                                                
+    #shell                                                                                                                                                                                                                                                                                                                                                                                                                                                
 }
 
 runit

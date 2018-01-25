@@ -54,7 +54,6 @@ Includes
 #include <errno.h>
 #include <termios.h>
 #include <argp.h>
-#include <errno.h>
 
 /*-----------------------------------------------------------------------------
 Structual defines
@@ -76,17 +75,13 @@ Global varriables
 -----------------------------------------------------------------------------*/
 int n;
 int fd;
-speed_t thisBaud=B38400;
-char *outspeed="38400";
+//const char *argp_program_version ="WigWag Watchdog controller version: .01";
 int connected;
 struct termios tty;
 struct termios stdio;
 struct termios stdioBefore;
 unsigned char c='D';
-
-
 struct sigaction saio;
-char *ttyport = "/dev/ttyUSB4";
 /*-----------------------------------------------------------------------------
 Public routines
 -----------------------------------------------------------------------------*/
@@ -105,19 +100,23 @@ Utility routines (private)
 /*-----------------------------------------------------------------------------
 Standard routines (private)
 -----------------------------------------------------------------------------*/
-const char *argp_program_version =
-"dogc 1.0";
+const char *argp_program_version = "WigWag Watchdog controller .16";
 
-const char *argp_program_bug_address =
-"<travis@wigwag.com>";
+const char *argp_program_bug_address = "<travis@wigwag.com>";
+
+enum mode_type {led,watchdog,sound};
+static const char *modetypes[] = { "led", "watchdog", "sound"};
 
 /* This structure is used by main to communicate with parse_opt. */
-struct arguments
-{
-  char *args[REQ_ARG_COUNT];            /* ARG1 and ARG2 */
-  int verbose;              /* The -v flag */
-  char *outfile;            /* Argument for -o */
-  char *string1, *baud;  /* Arguments for -a and -b */
+struct arguments {
+  	char *args[REQ_ARG_COUNT];            		/* ARG1 and ARG2 */
+	int verbose;							/* The -V flag */ 
+  	char *outfile;            				/* Argument for -o */
+  	char *string1, *baud;  					/* Arguments for -a and -b */
+	speed_t thisBaud;
+	char *outspeed;						/*text for baudrate */
+	char *ttyport;
+	enum mode_type mode;
 };
 
 /*
@@ -126,9 +125,10 @@ struct arguments
 */
 static struct argp_option options[] =
 {
-	{"verbose", 'v', 0, 0, "Produce verbose output"},
+	{"Verbose", 'V', 0, 0, "Display verboase output"},
 	{"alpha",   'a', "STRING1", 0, "Do something with STRING1 related to the letter A"},
-	{"baud",   'b', "baudrate", 0, "Set the baudrate. [9600 | 19200 | *38400]"},
+	{"baud",   'b', "baudrate", 0, "Set the baudrate. [9600 | 19200 | 38400 | 57600 | *115200]"},
+	{"tty",	't',"ttyport",0,"select the tty port to use [*/dev/ttyS1]"},
 	{"output",  'o', "OUTFILE", 0, "Output to OUTFILE instead of to standard output"},
 	{0}
 };
@@ -139,26 +139,41 @@ static error_t
 parse_opt (int key, char *arg, struct argp_state *state)
 {
 	struct arguments *arguments = state->input;
+
 	int compare;
 	switch (key)
 	{
-		case 'v':
+		case 'V':
 		arguments->verbose = 1;
-		break;
+		break;		
+		// case 'v':
+		// //fprintf(stdout,"WigWag Watchdog version %s\n",VERSION);
+		// exit(0);
+		// break;
 		case 'a':
 		arguments->string1 = arg;
 		break;
 		case 'b': NULL;
 		if (strcmp(arg,"B9600")==0 || strcmp(arg,"9600")==0){
-			thisBaud=B9600;
-			outspeed="9600";
+			arguments->thisBaud=B9600;
+			arguments->outspeed="9600";
 		}
 		else if (strcmp(arg,"B19200")==0 || strcmp(arg,"19200")==0){
-			thisBaud=B19200;
-			outspeed="19200";
+			arguments->thisBaud=B19200;
+			arguments->outspeed="19200";
 		}
 		else if (strcmp(arg,"B38400")==0 || strcmp(arg,"38400")==0){
-			thisBaud=B38400;
+			arguments->thisBaud=B38400;
+			arguments->outspeed="38400";
+
+		}
+		else if (strcmp(arg,"B57600")==0 || strcmp(arg,"57600")==0){
+			arguments->thisBaud=B57600;
+			arguments->outspeed="57600";
+		}
+		else if (strcmp(arg,"B115200")==0 || strcmp(arg,"115200")==0){
+			arguments->thisBaud=B115200;
+			arguments->outspeed="115200";
 		}
 		else {
 			fprintf(stderr, "Incorrect baudrate provided:  %s\n", arg);
@@ -170,6 +185,9 @@ parse_opt (int key, char *arg, struct argp_state *state)
 		break;
 		case 'o':
 		arguments->outfile = arg;
+		break;
+		case 't':
+		arguments->ttyport = arg;
 		break;
 		case ARGP_KEY_ARG:
 		if (state->arg_num >= REQ_ARG_COUNT)
@@ -192,7 +210,7 @@ parse_opt (int key, char *arg, struct argp_state *state)
 
 //ARGS_DOC. Field 3 in ARGP.  A description of the non-option command-line arguments that we accept.
 //static char args_doc[] = "ARG1 ARG2"; 
-static char args_doc[] = "TTY";
+static char args_doc[] = "<mode:[led|watchdog|sound>";
 
 //DOC.  Field 4 in ARGP.  Program documentation.
 
@@ -212,7 +230,9 @@ int main(int argc, char **argv) {
 	FILE *outstream;
 
   /* Set argument defaults */
-	arguments.outfile = NULL;
+	arguments.thisBaud=B115200;
+	arguments.outspeed="115200";
+	arguments.ttyport="/dev/ttyS1";
 	arguments.string1 = "";
 	arguments.baud ="";
 	arguments.verbose = 0;
@@ -221,11 +241,27 @@ int main(int argc, char **argv) {
 	argp_parse (&argp, argc, argv, 0, 0, &arguments);
 
   /* Where do we send output? */
-	if (arguments.outfile)
+	if (arguments.outfile){
 		outstream = fopen (arguments.outfile, "w");
-	else
+	}
+	else{
 		outstream = stdout;
-	ttyport=arguments.args[0];
+	}
+	//arguments.mode=arguments.args[0];
+	unsigned int numElements = sizeof(modetypes)/sizeof(modetypes[0]);
+	unsigned int i;
+	for(i = 0; i < numElements; ++i) {
+		if (strcmp(modetypes[i], arguments.args[0]) == 0) {
+			arguments.mode=i;
+			break;
+		}
+	}
+	if (i >= numElements) {
+		printf("Not a valid mode: [%s]\n",arguments.args[0]);
+		exit(1);
+	}
+
+	
 
   /* Print argument values */
 	// fprintf (outstream, "alpha = %s\nbaud = %s\n\n",
@@ -241,14 +277,14 @@ int main(int argc, char **argv) {
 	
 	tcgetattr(STDOUT_FILENO,&stdioBefore);
 
-     fd = open(ttyport, O_RDWR | O_NOCTTY | O_NDELAY);   //READ & WRITE, port never becomes the controlling terminal, Non-blocking
+     fd = open(arguments.ttyport, O_RDWR | O_NOCTTY | O_NDELAY);   //READ & WRITE, port never becomes the controlling terminal, Non-blocking
      if (fd == -1) {
-     	fprintf(stderr, "open_port: Unable to open %s\nError No: %d\n", ttyport,errno);
+     	fprintf(stderr, "open_port: Unable to open %s\nError No: %d\n", arguments.ttyport,errno);
      	perror("Error Message");
      	exit(1);
      }
      if(!isatty(fd)) {
-     	fprintf(stderr, "%s does not appear to be a valid TTY\n", ttyport);
+     	fprintf(stderr, "%s does not appear to be a valid TTY\n", arguments.ttyport);
      	perror("");
      	exit(1);	
      }
@@ -263,15 +299,16 @@ int main(int argc, char **argv) {
      //fcntl(STDIN_FILENO, F_SETFL, O_NONBLOCK);       // make the reads non-blocking
 
      if(tcgetattr(fd,&tty) < 0 ) {
-     	fprintf(stderr, "%s is not returning a configuration.\n", ttyport);
+     	fprintf(stderr, "%s is not returning a configuration.\n", arguments.ttyport);
      	perror("");
      	exit(1);
      }
-     if (cfsetispeed(&tty,thisBaud) < 0 || cfsetospeed(&tty,thisBaud) < 0) {
-     	fprintf(stderr, "%s is not accepting baud rate. %s \n", ttyport,thisBaud);
+     if (cfsetispeed(&tty,arguments.thisBaud) < 0 || cfsetospeed(&tty,arguments.thisBaud) < 0) {
+     	fprintf(stderr, "%s is not accepting baud rate. %s \n", arguments.ttyport,arguments.thisBaud);
      	perror("");
      	exit(1);
      }
+
 
      memset(&stdio,0,sizeof(stdio));
      stdio.c_iflag=0;
@@ -285,7 +322,7 @@ int main(int argc, char **argv) {
      fcntl(STDIN_FILENO, F_SETFL, O_NONBLOCK); 
 
      //blank out the $tty struct
-     memset(&tty,0,sizeof(tty));
+     //     memset(&tty,0,sizeof(tty));
      //Line Processing flags:
      //tty.c_lflag &= ~(ICANON | ECHO | ECHOE | ECHONL | ISIG); 
      tty.c_lflag &=~ICANON; 		//canonical mode 
@@ -336,8 +373,15 @@ int main(int argc, char **argv) {
      tcsetattr(fd,TCSANOW,&tty);		//the change occurs immedately
      //tcsetattr(fd,TCSADRAIN,&tty);	//the change occurs after all output written to fd has been transmitted.  This option should be used when changing parameters that affect output.
      //tcsetattr(fd,TCSAFLUSH,&tty);	//the change occurs after all output written to the object referred by fd has been transmitted, and all input that has been received but not read will be discarded before the change is made.
-     printf("%s connecting at %s \n",ttyport,outspeed);
+     cfsetispeed(&tty,arguments.thisBaud);
+     cfsetospeed(&tty,arguments.thisBaud);
+     //printf("ok here is it: %s %s %s\n",(char *)arguments.thisBaud,cfsetispeed(&tty,arguments.thisBaud));
+    // printf("ok here is it: %s\n",cfsetospeed(&tty,arguments.thisBaud));
+
+          printf("%s connecting at %s \n",arguments.ttyport,arguments.outspeed);
      //exit(1);
+     
+
      connected = 1;
      // while(connected == 1){
      // 	sleep(4);
@@ -353,4 +397,5 @@ int main(int argc, char **argv) {
            tcsetattr(STDOUT_FILENO,TCSANOW,&stdioBefore);
            exit(0);             
       }
+
 

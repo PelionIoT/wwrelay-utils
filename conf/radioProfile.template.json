@@ -193,15 +193,16 @@
     		"02": {
     			"wigwag-devices": 	[ "M1", "wigwag-cc2530" ],
     			"ww-zwave": 		[ "M2", "ZM5304" ],
-    			"zigbeeHA": 		[ "M4", "wigwag-cc2530" ]
+    			"zigbeeHA": 		[ "M4", "wigwag-cc2530" ],
+    			"ModbusRTU": 		[ "P1", "usb" ],
+    			"BACnet": 			[ "P2", "usb" ]
     		},
     		"03": {
-    			"wigwag-devices": 	[ "M1", "wigwag-cc2530" ],
+    			"wigwag-devices": 	[ "M1", "ulike-nc880" ],
     			"ww-zwave": 		[ "M2", "ZM5304" ],
-    			"zigbeeHA": 		[ "M4", "wigwag-cc2530" ],
-    			"ModbusRTU": 		[ "usb_hub_1", "usb" ],
-    			"Enocean": 			[ "usb_hub_2", "usb" ],
-    			"BACnet": 			[ "usb_hub_3", "usb" ]
+    			"zigbeeHA": 		[ "M4", "ulike-nc880" ],
+    			"ModbusRTU": 		[ "P1", "usb" ],
+    			"Enocean": 			[ "P2", "usb" ]
     		},
     		"04": {
     			"wigwag-devices": 	[ "M1", "wigwag-cc2530" ],
@@ -209,6 +210,46 @@
     			"zigbeeHA": 		[ "M4", "wigwag-cc2530" ],
     			"ModbusRTU": 		[ "P1", "usb" ],
     			"Enocean": 			[ "P2", "usb" ]
+    		},
+    		"05": {
+    			"wigwag-devices": 	[ "M1", "ulike-nc880" ],
+    			"ww-zwave": 		[ "M2", "ZM5304" ],
+    			"zigbeeHA": 		[ "M4", "ulike-nc880" ],
+    			"BACnet": 			[ "P1", "usb" ],
+    			"Enocean": 			[ "P2", "usb" ]
+    		},
+    		"06": {
+    			"wigwag-devices": 	[ "M1", "wigwag-cc2530" ],
+    			"ww-zwave": 		[ "M2", "ZM5304" ],
+    			"zigbeeHA": 		[ "M4", "wigwag-cc2530" ],
+    			"BACnet": 			[ "P1", "usb" ],
+    			"Enocean": 			[ "P2", "usb" ]
+    		},
+    		"07": {
+    			"wigwag-devices": 	[ "M1", "ulike-nc880" ],
+    			"ww-zwave": 		[ "M2", "ZM5304" ],
+    			"zigbeeHA": 		[ "M4", "ulike-nc880" ]
+    		},
+    		"08": {
+    			"wigwag-devices": 	[ "M1", "wigwag-cc2530" ],
+    			"ww-zwave": 		[ "M2", "ZM5304" ],
+    			"zigbeeHA": 		[ "M4", "wigwag-cc2530" ]
+    		},
+    		"09": {
+    			"wigwag-devices": 	[ "M1", "ulike-nc880" ],
+    			"ww-zwave": 		[ "M2", "ZM5304" ],
+    			"zigbeeHA": 		[ "M4", "ulike-nc880" ],
+    			"ModbusRTU": 		[ "usb_hub_1", "usb" ],
+    			"Enocean": 			[ "usb_hub_2", "usb" ],
+    			"BACnet": 			[ "usb_hub_3", "usb" ]
+    		},
+    		"0a": {
+    			"wigwag-devices": 	[ "M1", "wigwag-cc2530" ],
+    			"ww-zwave": 		[ "M2", "ZM5304" ],
+    			"zigbeeHA": 		[ "M4", "wigwag-cc2530" ],
+    			"ModbusRTU": 		[ "usb_hub_1", "usb" ],
+    			"Enocean": 			[ "usb_hub_2", "usb" ],
+    			"BACnet": 			[ "usb_hub_3", "usb" ]
     		}
     	},
     	"r2002": {

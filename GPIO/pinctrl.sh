@@ -14,13 +14,30 @@ exportall(){
 
 
 main(){
-	case $1 in
-	#
-	"wdog_reset") echo $2 > $gpio_root/gpio$wdog_reset/value; ;;
-esac
-
+	gpio=$gpio_root/gpio$1/
+	case $2 in
+		#
+		"enable") echo 1 > $gpio/value; ;;
+		#
+		"disable") echo 0 > $gpio/value; ;;
+		#
+		"out" ) echo "out" > $gpio/direction; 
+			#
+			if [[ $3 -eq 1 || $3 -eq 0]]; then 
+				echo $3 > $gpio/value;
+			fi
+			;;
+		#
+		"in" ) echo "in" > $gpio/direction; ;;
+		#
+	esac
 }
 
 
 exportall
 main $@
+
+
+#pinctrl wdag enable
+#pinctrl wdog out 1
+#pinctrl wdog in

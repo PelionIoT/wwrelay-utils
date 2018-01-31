@@ -215,7 +215,8 @@
                     "path":"${thisdir}/../../wigwag-core-modules/VirtualDeviceDriver",
                     "config": {
                         "deviceControllersDirectory": "templates",
-                        "logLevel": 2
+                        "hideTemplates": [ "VideoCamera" ],
+                        "logLevel": 1
                     }
                 }
             ]

@@ -10,6 +10,9 @@ function diskstorage(dev, mp, storepoint) {
 	this.mountPoint = mp;
 	this.previouslymounted = true;
 	this.mount;
+
+	//For some reason in new kernel setup do not work. This should anyways try to create .ssl directory
+	mkdirp.sync(this.mountPoint + "/" + this.sp);
 }
 
 diskstorage.prototype.setup = function() {
@@ -21,7 +24,6 @@ diskstorage.prototype.setup = function() {
 				self.mountPoint = result.mountpoint;
 				self.previouslymounted = true;
 				self.mount = result;
-				mkdirp.sync(self.mountPoint + "/" + self.sp);
 				resolve();
 			}).catch(function(error) {
 				console.log("were not mounted ", error);
@@ -32,7 +34,6 @@ diskstorage.prototype.setup = function() {
 						self.previouslymounted = true;
 						self.mountPoint = result.mountpoint;
 						self.mount = result;
-						mkdirp.sync(self.mountPoint + "/" + self.sp);
 						resolve();
 					}, function(err) {
 						reject(err);

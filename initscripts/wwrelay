@@ -35,6 +35,7 @@ eeprog /dev/i2c-1 0x55 -f -r 0:10 2> /dev/null
 		hardwareversion="relay"
 	else
 		hardwareversion="RP200"
+		modprobe at24
 	fi
 
 
@@ -78,6 +79,10 @@ _doPrepDb() {
 	fi
 }
 
+_eepromToSSH(){
+
+}
+
 _doUDEVreload(){
 	udevadm control --reload-rules && udevadm trigger
 }
@@ -104,7 +109,7 @@ _doGenerateSupportCertificates() {
 
 EEMESAGE=""
 _eepromBurned(){
-if [[ $hardwareversion = "relay" ]]; then
+	if [[ $hardwareversion = "relay" ]]; then
 		wwrl=$(eeprog -f -r 0:1 /dev/i2c-1 0x50 2>/dev/null )
 		h1=$(eeprog -f -r 0:4 /dev/i2c-1 0x51 2> /dev/null )
 		h2=$(eeprog -f -r 0:4 /dev/i2c-1 0x52 2> /dev/null )
@@ -126,6 +131,7 @@ if [[ $hardwareversion = "relay" ]]; then
 		fi
 	else
 		#need to read the eeporom at24 here, but lets just skip until I can see what burned one looks like
+		
 		echo 1
 	fi
 }

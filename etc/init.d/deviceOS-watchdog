@@ -55,22 +55,22 @@ _log() {
 
 _throw_warning(){
     warning
-    _log " $PROG $1" 1>&2
+    _log " $PROG $1" 
 }
 
 _throw_success(){
     success
-    _log " $PROG $1" 1>&2
+    _log " $PROG $1" 
 }
 
 _throw_failure(){
     failure
-    _log " $PROG $1" 1>&2
+    _log " $PROG $1" 
 }
 
 _throw_passed(){
     passed
-    _log " $PROG $1" 1>&2
+    _log " $PROG $1" 
 }
 
 start() {

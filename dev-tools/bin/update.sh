@@ -15,6 +15,22 @@
 #Includes
 #-------------------------------------------------------------------------------------------------------------------------------------------------------------
 source ccommon.sh nofunc
+source /wigwag/system/lib/bash/array.sh
+
+if [[ -e /wigwag/.branch ]]; then
+	source /wigwag/.branch
+else
+	branch=development
+fi
+cpu=$(cat /proc/cpuinfo | grep Hardware | awk '{print $5}')
+if [[ $cpu = "(A20)" ]]; then
+	board=cubietruck
+else
+	board=""
+	echo "board not detected.  Got an error here"
+	exit
+fi
+
 #-------------------------------------------------------------------------------------------------------------------------------------------------------------
 #Global Varribles
 #-------------------------------------------------------------------------------------------------------------------------------------------------------------
@@ -22,11 +38,16 @@ version="2.1"
 LogToTerm=1
 loglevel=verbose;
 #loglevel=debug;
+wanhostslist="https://10.10.102.57:8080/newsys/ https://10.10.102.57:8080/newsys/"
+array_createFromSpaceList "wanhosts" "$wanhostslist"
+wanhost="";
+cloudhost="https://code.wigwag.com/ugs/builds/"
 thistarball="https://code.wigwag.com/ugs/ud.tar.gz"
 manifestLocalhost="https://10.10.102.57:8080/builds/manifest.dat"
 manifesturl="https://code.wigwag.com/ugs/manifest.dat"
 upgrd="upgrade"
 buildurl="LOOKUP"
+
 setting_user_upgrade=0;
 setting_user_force=0;
 setting_user_wipe=0;
@@ -93,14 +114,15 @@ colorgrep(){
 	grep --color -m1 $1 upgrade.sh
 }
 
-localhostAvailable(){
-	isTHEURLup=$(isURLUp "$manifestLocalhost")
-	log "debug" "isURLUp($manifestLocalhost): '$isTHEURLup'"
-	if [[ $isTHEURLup -eq 1 ]]; then
-		echo 1
-	else
-		echo 0
-	fi
+discoverWanHost(){
+	for element in "${wanhosts[@]}"; do
+		isTHEURLup=$(isURLUp "$element")
+		if [[ $isTHEURLup = "1" ]]; then
+			wanhost="$element"
+			return 0
+		fi
+	done
+	return 1
 }
 
 #checks if there is an ipaddress set that is valid
@@ -222,6 +244,8 @@ esac
 done
 echo -e "\n"
 }
+
+
 upgradethis(){
 	pushd . >> /dev/null
 	cd /wigwag/wwrelay-utils/dev-tools/bin/
@@ -260,162 +284,6 @@ pdec(){
 
 callstring="upgrade"
 
-interactive(){
-	buildurl="LOOKUP";
-	
-	if [[ $advanced -eq 1 ]]; then
-		#decide what to replace
-		manifestChoices=("https://code.wigwag.com/ugs/manifest.dat*" "Other")
-		clearpadding
-		PS3="${YELLOW}Manifset choice: ";
-		echo -n "${NORM}"
-		select manifsetd in "${manifestChoices[@]}"; do
-			break;
-		done
-		echo -n "${NORM}"
-		if [[ "$manifsetd" != "${manifestChoices[0]}" ]]; then
-			echo "prefered manifesturl url: "
-			read -r manifesturl
-			callstring="$callstring -m $manifesturl"
-		fi
-
-	fi
-	readmanifest "$manifesturl"
-
-
-
-	#	List the builds
-	clearpadding
-	currentV=$(grep -ne 'version' /wigwag/etc/versions.json 2> /dev/null | xargs | awk -F ' ' '{print $8}')
-	userV=$(grep -ne 'version' /mnt/.overlay/user/slash/wigwag/etc/versions.json 2> /dev/null | xargs | awk -F ' ' '{print $8}')
-	upgradeV=$(grep -ne 'version' /mnt/.overlay/upgrade/wigwag/etc/versions.json 2> /dev/null | xargs | awk -F ' ' '{print $8}')
-	factoryV=$(grep -ne 'version' /mnt/.overlay/factory/wigwag/etc/versions.json 2> /dev/null | xargs | awk -F ' ' '{print $8}')
-	currentV=${currentV%%,*}
-	userV=${userV%%,*}
-	upgradeV=${upgradeV%%,*}
-	factoryV=${factoryV%%,*}
-	if [[ "$userV" = "" ]]; then
-		userV="N/A"
-	fi
-	if [[ "$upgradeV" = "" ]]; then
-		upgradeV="N/A"
-	fi
-	if [[ "$factoryV" = "" ]]; then
-		factoryV="N/A"
-	fi
-	echo "${NORM}"
-	echo -e "Your User Partition reports version:\t${CYAN}$userV${NORM}"
-	echo -e "Your Upgrade Partition reports version:\t${CYAN}$upgradeV${NORM}"
-	echo -e "Your Factory Partition reports version:\t${CYAN}$factoryV${NORM}\n"
-	PS3="${YELLOW}Change your current running version ${CYAN}$currentV${YELLOW} to: ";
-	echo -n "${NORM}"
-	select mybuild in "${ALLDB[@]}";
-	do break;
-done
-
-#decide to wipe the user or not (w)
-pdec "user partition forced wipe" "Disable" "w" "setting_user_wipe"
-# testray=("Keep*" "Erase");
-# clearpadding
-# PS3="${YELLOW}User Partition: ";
-# echo -n "${NORM}"
-# select userChoice in "${testray[@]}"; do
-	# 	break;
-	# done
-	# if [[ "$userChoice" = "${testray[1]}" ]]; then
-	# 	setting_user_wipe=1
-	# 	callstring="$callstring -w"
-	# 	echo "the callstring $callstring"
-	# fi
-
-	#decide to wipe the userdb (x)
-	pdec "userdata partition (aka database) forced wipe" "Disable" "x" "setting_userdata_wipe"
-	
-
-	#decide what to replace (G)
-	if [[ $advanced -eq 1 ]]; then
-		partitionDecision=("no*" "yes")
-		clearpadding
-		PS3="${YELLOW}Advanced, convert this build to a pure factory ";
-		echo -n "${NORM}"
-		select thechoicenow in "${partitionDecision[@]}"; do
-			break;
-		done
-		if [[ "$thechoicenow" = "yes" ]]; then
-			upgrd=factory
-			purefactory=1;
-			callstring="$callstring -G"
-			echo "the callstring $callstring"
-		fi
-
-		#decide to erase the eeprom
-		testray=("Keep*" "Erase");
-		clearpadding
-		PS3="${YELLOW}Factory EEPROM and WigWag Cloud SSL access keys: "
-		echo -n "${NORM}"
-		select userChoice in "${testray[@]}"; do
-			break;
-		done
-		if [[ "$userChoice" = "${testray[1]}" ]]; then
-			clearpadding
-			UIwarning
-			echo "${YELLOW}You have chosen to destroy your ability to connect to the WigWag cloud services."
-			echo "${CYAN}Confirm that this is your desire by typing: \"ERASEIT\" in the next line:"
-			echo -n "${NORM}"
-			read -r response
-			if [[ "$response" = "ERASEIT" ]]; then
-				wipeeeprom="ERASEIT"
-				callstring="$callstring -e ERASEIT"
-				echo "the callstring $callstring"
-			else 
-				log "error" "Exiting now, incorrect wipe eeprom response provided: '$response'"
-				exit
-			fi
-		fi
-		echo -n "${NORM}"
-		#decide to disable the automatic factory upgrade when newer version is avaiable
-		pdec "factory partition automatic update when update is newer" 'Enable' "f" "setting_factory_upgrade"
-		pdec "factory partition forced update" "Disable" "F" "setting_factory_force"
-		pdec "factory partition forced wipe" "Disable" "t" "setting_factory_wipe"
-
-		pdec "upgrade partition automatic update when update is newer" 'Enable' "u" "setting_upgrade_upgrade"
-		pdec "upgrade partition forced update" "Disable" "U" "setting_upgrade_force"
-		pdec "upgrade partition forced wipe" "Disable" "v" "setting_upgrade_wipe"
-
-		pdec "user partition automatic update when update is newer" 'Disable' "s" "setting_user_upgrade"
-		pdec "user partition forced update" "Disable" "S" "setting_user_force"
-
-		pdec "userdata partition automatic update when update is newer" 'Disable' "d" "setting_userdata_upgrade"
-		pdec "userdata partition forced update" "Disable" "D" "setting_userdata_force"
-
-		pdec "boot partition automatic update when update is newer" 'Enable' "b" "setting_boot_upgrade"
-		pdec "boot partition forced update" "Disable" "B" "setting_boot_force"
-		pdec "boot partition forced wipe" "Disable" "z" "setting_boot_wipe"
-
-		pdec "u-boot section automatic update when update is newer" 'Enable' "b" "setting_U_boot_upgrade"
-		pdec "u-boot section forced update" "Disable" "B" "setting_U_boot_force"
-		pdec "u-boot section forced wipe" "Disable" "z" "setting_U_boot_wipe"
-	fi
-
-	#decide to reboot
-	clearpadding
-	PS3="${YELLOW}Reboot on completion?: ";
-	echo -n "${NORM}"
-	select yn in "Yes" "No"; do
-		break;
-	done
-	if [[ "$yn" = "Yes" ]]; then
-		rebootit=1
-		callstring="$callstring -r"
-	fi
-	echo -n "${NORM}"
-
-	clearpadding
-	callstring="$callstring $mybuild"
-	echo "the callstring $callstring"
-	log "info" "Commandline Command-----> ${CYAN}$callstring${NORM}"
-	main
-}
 
 #-------------------------------------------------------------------------------------------------------------------------------------------------------------
 #Main
@@ -440,27 +308,34 @@ main(){
 	if [[ $buildurl = "FILE" ]]; then
 		mv "$buildfile" f.tar.gz
 	elif [[ "$buildurl" = "LOOKUP" ]]; then
-		lha=$(localhostAvailable)
-		log "debug" "upgrade type: $upgrd, localhostAvailable: $lha"
+		discoverWanHost
+		lha=$?;
+		myslash=$(echo $mybuild | tr . /)
 		if [[ "$upgrd" = "factory" || $purefactory = 1 ]]; then
 			setting_upgrade_upgrade=0;
 			setting_upgrade_force=0;
 			setting_upgrade_wipe=1;
-			if [[ "$lha" -eq 1 ]]; then
-				downloadfile="${LFACTORYURL[$mybuild]}"
+			if [[ "$lha" -eq 0 ]]; then
+				#downloadfile="${LFACTORYURL[$mybuild]}"
+				downloadfile=$wanhost$branch/$myslash/$board/$mybuild-field-factoryupdate.tar.gz 
 			else
-				downloadfile="${FACTORYURL[$mybuild]}"
+				#downloadfile="${FACTORYURL[$mybuild]}"
+				downloadfile=$cloudhost$branch/$board/$mybuild-field-factoryupdate.tar.gz 
 			fi
 		else
-			if [[ "$lha" -eq 1 ]]; then
-				downloadfile="${LUPGRADEURL[$mybuild]}"
+			if [[ "$lha" -eq 0 ]]; then
+				#downloadfile="${LUPGRADEURL[$mybuild]}"
+				downloadfile=$wanhost$branch/$myslash/$board/$mybuild-field-upgradeupdate.tar.gz 
 			else
-				downloadfile="${UPGRADEURL[$mybuild]}"
+				#downloadfile="${UPGRADEURL[$mybuild]}"
+				downloadfile=$cloudhost$branch/$board/$mybuild-field-upgradeupdate.tar.gz 
 			fi
 		fi
 		log "info" "downloading: ${CYAN}$downloadfile${NORM} for installation"
-		curl -o f.tar.gz -k "$downloadfile"
-		if [[ $? -ne 0 ]]; then
+		goodurl=$(isURLUp $downloadfile)
+		if [[ $goodurl -eq 1 ]]; then
+			curl -o f.tar.gz -k "$downloadfile"
+		else
 			echo "could not download image $downloadfile"
 			exit
 		fi
@@ -628,23 +503,23 @@ declare -A hp=(
 	[description]="Updates a relay with a different firmware version (up and down)"
 	[useage]="-options <[buildNo|buildURL|buildFile]>"
 	[a]="advanced interactive mode"
-	[b]="boot parittion:\tDISABLE upgrade if newer version avaiable"
-	[B]="boot partition:\tforce upgrade regardless"
+	[bb]="specify the build branch -b <branchname>"
 	[d]="userdata partition:\ENABLE upgrade if newer version avialable"
 	[D]="userdata partition:\tforce upgrade regardless"
-	[ee]="erase eeprom and ssl keys, must enter it this way: -e <ERASEIT>"
+	[e]="erase eeprom and ssl keys"
 	[f]="factory partition:\tDISABLE upgrade if newer version avaiable"
 	[F]="factory partition:\tforce upgrade regardless"
 	[G]="factory partition:\t this build, with a true factory version only.  (internal development only)"
 	[h]="help"
-	[i]="interactive (will ignore all other flags)"
 	[j]="u-boot section:\tDISABLE upgrade if newer version avaiable"
 	[J]="u-boot section:\tforce upgrade regardless"
 	[k]="wipe the u-boot (dangerous)"
 	[mm]="url to manifest.dat -m <url>, defaults to: https://code.wigwag.com/ugs/"
-	[N]="nuke to this x.y.z version, makes it look exactly as it would from the factory at this version (same as -k -t -v -z -w -x -F -U -B -J)"
-	[O]="downgrade, to this x.y.z version, but preserve userdata (database) and user partition.  light-weight nuke (same as -k -t -v -z -F -U -B -J)"
-	[p]="protect the default switches from the upgrade.sh file.  (only overide with switches called here.  The other behavior is that all switches get updated by this programs defaults.)"
+	[n]="little-nuke this to x.y.z version, presevers database and eeprom (same as -t -v -w -k -F -U -O -J)"
+	[N]="nuke to this x.y.z version, makes it look exactly as it would from the factory at this version, destroying eeprom and database (same as -e -k -t -v -z -w -x -F -U -O -J)"
+	[o]="boot parittion:\tDISABLE upgrade if newer version avaiable"
+	[O]="boot partition:\tforce upgrade regardless"
+	[p]="protect the default switches from the upgrade.sh file. (only overide with switches called here.)  The default behavior is that all switches get updated by this programs defaults."
 	[r]="reboot after install is complete"
 	[R]="DISABLE repartition the emmc automatically if a size delta is discovered"
 	[s]="user paritition:\tENABLE upgrade if newer version avaiable"
@@ -670,39 +545,70 @@ argprocessor(){
 	while getopts "$switch_conditions" flag; do
 		case $flag in
 			a)  advanced=1; interactive; exit; ;;
-b)	setting_boot_upgrade=0; setting_boot_upgrade_SET=1; ;;
-B)	setting_boot_force=1; setting_boot_force_SET=1; ;;
-d)  setting_userdata_upgrade=1; setting_userdata_upgrade_SET=1; ;;
-D)  setting_userdata_force=1; setting_userdata_force_SET=1; ;;
-V)	version; exit; ;;
-e)	wipeeeprom=$OPTARG; ;;
-f)	setting_factory_upgrade=0; setting_factory_upgrade_SET=1; ;;
-F)  setting_factory_force=1; setting_factory_force_SET=1; ;;
-G)	purefactory=1; ;;
-h) 	COMMON_MENU_HELP; ;;
-i) 	interactive; exit;;
-j)  setting_U_boot_upgrade=0; setting_U_boot_upgrade_SET=1; ;;
-J)	setting_U_boot_force=1; setting_U_boot_force_SET=1; ;;
-k)	setting_U_boot_wipe=1; setting_U_boot_wipe_SET=1; ;;
-m)	manifesturl=$OPTARG; ;;
-N)	setting_factory_force=1;setting_upgrade_force=1;setting_boot_force=1;setting_boot_wipe=1;setting_factory_wipe=1;setting_upgrade_wipe=1;setting_user_wipe=1;setting_userdata_wipe=1;setting_U_boot_wipe=1;setting_U_boot_force=1; setting_factory_force_SET=1;setting_upgrade_force_SET=1;setting_boot_force_SET=1;setting_boot_wipe_SET=1;setting_factory_wipe_SET=1;setting_upgrade_wipe_SET=1;setting_user_wipe_SET=1;setting_userdata_wipe_SET=1;setting_U_boot_wipe_SET=1;setting_U_boot_force_SET=1; ;;
-O)	setting_factory_force=1;setting_upgrade_force=1;setting_boot_force=1;setting_boot_wipe=1;setting_factory_wipe=1;setting_upgrade_wipe=1;setting_U_boot_wipe=1;setting_U_boot_force=1; setting_factory_force_SET=1;setting_upgrade_force_SET=1;setting_boot_force_SET=1;setting_boot_wipe_SET=1;setting_factory_wipe_SET=1;setting_upgrade_wipe_SET=1;setting_U_boot_wipe_SET=1;setting_U_boot_force_SET=1; ;;	
-p)	protect_switches=1; ;;
-r)	rebootit=1; ;;
-R)	setting_repartition_emmc=0; setting_repartition_emmc_SET=1; ;;
-s) 	setting_user_upgrade=1; setting_user_upgrade_SET=1; ;;
-S) 	setting_user_force=1; setting_user_force_SET=1; ;;
-t)  setting_factory_wipe=1; setting_factory_wipe_SET=1; ;;
-u)	setting_upgrade_upgrade=0; setting_upgrade_upgrade_SET=1; ;;
-U)  setting_upgrade_force=1; setting_upgrade_force_SET=1; ;;
-v)  setting_upgrade_wipe=1; setting_upgrade_wipe_SET=1; ;;
-w)	setting_user_wipe=1; setting_user_wipe_SET=1; ;; 
-x) 	setting_userdata_wipe=1; setting_userdata_wipe_SET=1; ;;
-z) 	setting_boot_wipe=1; setting_boot_wipe_SET=1; ;;
-\?) echo -e \\n"Option -${BOLD}$OPTARG${NORM} not allowed.";COMMON_MENU_HELP;exit; ;;
-esac
-done
-shift $(( OPTIND - 1 ));
+			#
+			b)	branch=$OPTARG; echo "branch=$branch;">/wigwag/.branch; ;;
+			#
+			d)  	setting_userdata_upgrade=1; setting_userdata_upgrade_SET=1; ;;
+			#
+			D)   setting_userdata_force=1; setting_userdata_force_SET=1; ;;
+			#
+			V)	version; exit; ;;
+			#
+			e)	wipeeeprom=ERASEIT; ;;
+			#
+			f)	setting_factory_upgrade=0; setting_factory_upgrade_SET=1; ;;
+			#
+			F)   setting_factory_force=1; setting_factory_force_SET=1; ;;
+			#
+			G)	purefactory=1; ;;
+			#
+			h) 	COMMON_MENU_HELP; ;;
+			#
+			j)   setting_U_boot_upgrade=0; setting_U_boot_upgrade_SET=1; ;;
+			#
+			J)	setting_U_boot_force=1; setting_U_boot_force_SET=1; ;;
+			#
+			k)	setting_U_boot_wipe=1; setting_U_boot_wipe_SET=1; ;;
+			#
+			m)	manifesturl=$OPTARG; ;;
+			#
+			n)	setting_factory_force=1;setting_upgrade_force=1;setting_boot_force=1;setting_boot_wipe=1;setting_factory_wipe=1;setting_upgrade_wipe=1;setting_user_wipe=1;setting_U_boot_wipe=1;setting_U_boot_force=1; setting_factory_force_SET=1;setting_upgrade_force_SET=1;setting_boot_force_SET=1;setting_boot_wipe_SET=1;setting_factory_wipe_SET=1;setting_upgrade_wipe_SET=1;setting_user_wipe_SET=1;setting_U_boot_wipe_SET=1;setting_U_boot_force_SET=1; ;;
+			#
+			N)	wipeeeprom=ERASEIT;setting_factory_force=1;setting_upgrade_force=1;setting_boot_force=1;setting_boot_wipe=1;setting_factory_wipe=1;setting_upgrade_wipe=1;setting_user_wipe=1;setting_userdata_wipe=1;setting_U_boot_wipe=1;setting_U_boot_force=1; setting_factory_force_SET=1;setting_upgrade_force_SET=1;setting_boot_force_SET=1;setting_boot_wipe_SET=1;setting_factory_wipe_SET=1;setting_upgrade_wipe_SET=1;setting_user_wipe_SET=1;setting_userdata_wipe_SET=1;setting_U_boot_wipe_SET=1;setting_U_boot_force_SET=1; ;;
+			#
+			o)	setting_boot_upgrade=0; setting_boot_upgrade_SET=1; ;;
+			#
+			O)	setting_boot_force=1; setting_boot_force_SET=1; ;;
+			#
+			p)	protect_switches=1; ;;
+			#
+			r)	rebootit=1; ;;
+			#
+			R)	setting_repartition_emmc=0; setting_repartition_emmc_SET=1; ;;
+			#
+			s) 	setting_user_upgrade=1; setting_user_upgrade_SET=1; ;;
+			#
+			S) 	setting_user_force=1; setting_user_force_SET=1; ;;
+			#
+			t)   setting_factory_wipe=1; setting_factory_wipe_SET=1; ;;
+			#
+			u)	setting_upgrade_upgrade=0; setting_upgrade_upgrade_SET=1; ;;
+			#
+			U)   setting_upgrade_force=1; setting_upgrade_force_SET=1; ;;
+			#
+			v)   setting_upgrade_wipe=1; setting_upgrade_wipe_SET=1; ;;
+			#
+			w)	setting_user_wipe=1; setting_user_wipe_SET=1; ;;
+			# 
+			x) 	setting_userdata_wipe=1; setting_userdata_wipe_SET=1; ;;
+			#
+			z) 	setting_boot_wipe=1; setting_boot_wipe_SET=1; ;;
+			#
+			\?)  echo -e \\n"Option -${BOLD}$OPTARG${NORM} not allowed.";COMMON_MENU_HELP;exit; ;;
+			#
+		esac
+	done
+	shift $(( OPTIND - 1 ));
 #echo "whats left: $@"
 if [[ $(isURL "$1") -eq 1 ]]; then
 	log "info" "URL passed in: $1"
@@ -723,24 +629,25 @@ elif [[ $1 = *.tar.gz ]]; then
 	echo "file doesn't exist"
 	exit
 else
-	log "info" "Looking up a build number"
-	buildurl="LOOKUP";
 	mybuild="$1"
+	log "info" "Looking up a build number: $mybuild"
+	buildurl="LOOKUP";
 	checkIPorexit
-	readmanifest "$manifesturl";
+	#readmanifest "$manifesturl";
 fi
 main
 } 
 
 
-lha=$(localhostAvailable)
+# lha=$(discoverWanHost)
+# echo "down here ho: $lha"
 
-if [[ "$lha" = "1" ]]; then
-	manifesturl="$manifestLocalhost"
-fi
+# if [[ "$lha" = "1" ]]; then
+# 	manifesturl="$manifestLocalhost"
+# fi
 
 if [[ "$#" -lt 1 ]]; then
-	interactive; exit;
+	COMMON_MENU_HELP
 else
 	argprocessor "$@"
 fi

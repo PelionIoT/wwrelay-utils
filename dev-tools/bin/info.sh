@@ -2,10 +2,10 @@
 #https://github.com/longsleep/build-pine64-image/blob/master/simpleimage/platform-scripts/pine64_health.sh
 #---------------Configuration-------------#
 source ccommon.sh nofunc
+source basheeprom
 version="1.5"
 LogToTerm=1
 loglevel=info;
-
 
 
 #run eetool
@@ -98,7 +98,7 @@ UPTIME="$UPTIME${hours}h ${mins}m ${secs}s"
 	MIN15="$(echo $LOAD | awk '{ print $3}')"
 	TASKS="$(echo $LOAD | awk '{ print $4}')"
 	IPADDRESS=$(ifconfig  | grep 'inet addr:'| grep -v '127.0.0.1' | cut -d: -f2 | awk '{ print $1}')
-	WDOGPID=$(/etc/init.d/deviceOS-watchdog status | awk '{print $3}' | sed 's/)//')
+	WDOGPID=$(/etc/init.d/deviceOS-watchdog status | awk '{print $6}' | sed 's/)//')
 	if [[ "$WDOGPID" = 'running.' ]]; then
 		WDOGPID="not enabled"
 	else
@@ -109,7 +109,7 @@ UPTIME="$UPTIME${hours}h ${mins}m ${secs}s"
 	_placeLine "  - Users:" "$USERS"
 	_placeLine "  - Load (1,5,15-min avg):" "$MIN1, $MIN5, $MIN15"
 	_placeLine "  - Queued Tasks:" "$TASKS"
-	_placeLine "  - Watdog:" "$WDOGPID"
+	_placeLine "  - Watchdog:" "$WDOGPID"
 	_placeLine "  - IP Address:" "$IPADDRESS"
 }
 

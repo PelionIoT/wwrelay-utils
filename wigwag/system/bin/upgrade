@@ -20,7 +20,7 @@ source /wigwag/system/lib/bash/array.sh
 if [[ -e /wigwag/.branch ]]; then
 	source /wigwag/.branch
 else
-	branch=development
+	branch=production
 fi
 cpu=$(cat /proc/cpuinfo | grep Hardware | awk '{print $5}')
 if [[ $cpu = "(A20)" ]]; then
@@ -331,12 +331,12 @@ main(){
 				downloadfile=$cloudhost$branch/$board/$mybuild-field-upgradeupdate.tar.gz 
 			fi
 		fi
-		log "info" "downloading: ${CYAN}$downloadfile${NORM} for installation"
 		goodurl=$(isURLUp $downloadfile)
 		if [[ $goodurl -eq 1 ]]; then
+			log "info" "downloading: ${CYAN}$downloadfile${NORM} for installation"
 			curl -o f.tar.gz -k "$downloadfile"
 		else
-			echo "could not download image $downloadfile"
+			log "error" "Build: ${CYAN}$mybuild${NORM} not found.  Branch is currently set to ${CYAN}$branch${NORM}"
 			exit
 		fi
 	else
@@ -351,7 +351,7 @@ main(){
 	rm -rf install.sh
 	rm -rf post-install.sh
 
-	if [[ protect_switches -eq 1 ]]; then
+	if [[ $protect_switches -eq 1 ]]; then
 		if [[ $setting_boot_upgrade_SET -eq 1 ]]; then
 			sedit "UPGRADETHEBOOTWHENNEWER" $setting_boot_upgrade
 		fi
@@ -504,7 +504,7 @@ declare -A hp=(
 	[useage]="-options <[buildNo|buildURL|buildFile]>"
 	[a]="advanced interactive mode"
 	[bb]="specify the build branch -b <branchname>"
-	[d]="userdata partition:\ENABLE upgrade if newer version avialable"
+	[d]="userdata partition:\tENABLE upgrade if newer version avialable"
 	[D]="userdata partition:\tforce upgrade regardless"
 	[e]="erase eeprom and ssl keys"
 	[f]="factory partition:\tDISABLE upgrade if newer version avaiable"
@@ -514,9 +514,9 @@ declare -A hp=(
 	[j]="u-boot section:\tDISABLE upgrade if newer version avaiable"
 	[J]="u-boot section:\tforce upgrade regardless"
 	[k]="wipe the u-boot (dangerous)"
+	[n]="little-nuke this to x.y.z version, becomes a 'keyed' factoy version u-boot, boot, factory, upgrade, user (same as -k -J -z -O -t -F -v -U -w )"
+	[N]="nuke to this x.y.z version, becomes a factoy version resetting eeprom, userdata, u-boot, boot, factory, upgrade, user (same as -e -x -k -J -z -O -t -F -v -U -w )"
 	[mm]="url to manifest.dat -m <url>, defaults to: https://code.wigwag.com/ugs/"
-	[n]="little-nuke this to x.y.z version, presevers database and eeprom (same as -t -v -w -k -F -U -O -J)"
-	[N]="nuke to this x.y.z version, makes it look exactly as it would from the factory at this version, destroying eeprom and database (same as -e -k -t -v -z -w -x -F -U -O -J)"
 	[o]="boot parittion:\tDISABLE upgrade if newer version avaiable"
 	[O]="boot partition:\tforce upgrade regardless"
 	[p]="protect the default switches from the upgrade.sh file. (only overide with switches called here.)  The default behavior is that all switches get updated by this programs defaults."
@@ -609,42 +609,38 @@ argprocessor(){
 		esac
 	done
 	shift $(( OPTIND - 1 ));
-#echo "whats left: $@"
-if [[ $(isURL "$1") -eq 1 ]]; then
-	log "info" "URL passed in: $1"
-	checkIPorexit
-	buildurl="$1"
-	mybuild=${buildurl##*/}
-	mybuild=${mybuild%%-*}
-elif [[ $(fileExists "$1") -eq 1 ]]; then
-	log "info" "file passed in"
-	if [[ $1 = *.tar.gz ]]; then
-		buildurl="FILE";
-		buildfile="$1"
-	else
-		echo "file must be of the format *.tar.gz"
+
+	if [[ "$1" = "branch" ]]; then
+		echo "Current Branch: $branch"
 		exit
-	fi
-elif [[ $1 = *.tar.gz ]]; then
-	echo "file doesn't exist"
-	exit
-else
-	mybuild="$1"
-	log "info" "Looking up a build number: $mybuild"
-	buildurl="LOOKUP";
-	checkIPorexit
+	elif [[ $(isURL "$1") -eq 1 ]]; then
+		log "info" "URL passed in: $1"
+		checkIPorexit
+		buildurl="$1"
+		mybuild=${buildurl##*/}
+		mybuild=${mybuild%%-*}
+	elif [[ $(fileExists "$1") -eq 1 ]]; then
+		log "info" "file passed in"
+		if [[ $1 = *.tar.gz ]]; then
+			buildurl="FILE";
+			buildfile="$1"
+		else
+			echo "file must be of the format *.tar.gz"
+			exit
+		fi
+	elif [[ $1 = *.tar.gz ]]; then
+		echo "file doesn't exist"
+		exit
+	else
+		mybuild="$1"
+		log "info" "Looking up a build number: $mybuild"
+		buildurl="LOOKUP";
+		checkIPorexit
 	#readmanifest "$manifesturl";
 fi
 main
 } 
 
-
-# lha=$(discoverWanHost)
-# echo "down here ho: $lha"
-
-# if [[ "$lha" = "1" ]]; then
-# 	manifesturl="$manifestLocalhost"
-# fi
 
 if [[ "$#" -lt 1 ]]; then
 	COMMON_MENU_HELP

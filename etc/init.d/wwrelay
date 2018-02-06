@@ -80,7 +80,7 @@ _doPrepDb() {
 }
 
 _eepromToSSH(){
-
+	:
 }
 
 _doUDEVreload(){

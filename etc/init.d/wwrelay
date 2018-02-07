@@ -191,20 +191,20 @@ start(){
 		_log " Bad config, not starting, lets run the scanner"
 		_led 10 10 0
 		udhcpc -n
-		#stop the watchdog here with a humanhalt
-		/etc/init.d/deviceOS-watchdog humanhalt
-		if [[ $hardwareversion = "relay" ]]; then
-			_log "starting leddaemon"
-			/wigwag/system/bin/leddaemon
-		fi
-		sleep 1
-		_log "$(ps ax | grep ledda)"
-		_log "starting scanner"
-		/wigwag/system/bin/scanner /dev/input/event1
-		sleep 1
-		_log "$(ps ax | grep scan)"
-		_log "exiting with a 1"
-		exit 7
+		# #stop the watchdog here with a humanhalt
+		# /etc/init.d/deviceOS-watchdog humanhalt
+		# if [[ $hardwareversion = "relay" ]]; then
+		# 	_log "starting leddaemon"
+		# 	/wigwag/system/bin/leddaemon
+		# fi
+		# sleep 1
+		# _log "$(ps ax | grep ledda)"
+		# _log "starting scanner"
+		# /wigwag/system/bin/scanner /dev/input/event1
+		# sleep 1
+		# _log "$(ps ax | grep scan)"
+		# _log "exiting with a 1"
+		# exit 7
 	else
 		echo 1 > $maestroOK
 		_log "maestro is OK"

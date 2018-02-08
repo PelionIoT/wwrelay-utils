@@ -7,7 +7,7 @@ sleep 1;
 pinctrl wdog_reset 1;
 echo -en "ATTINY ON: "
 cat /sys/class/gpio/gpio99/value
-if [[ $1 != "" ]]; then
+if [[ $1 = "" ]]; then
 	hexfile=/mnt/.boot/AT841WDOG.hex
 else
 	hexfile=$1

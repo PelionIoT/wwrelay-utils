@@ -1,5 +1,5 @@
 #!/bin/bash
-
+pushd . >> /dev/null
 MMCDEV="$1"
 if [[ "$MMCDEV" = "" || "$2" = "" ]]; then
 	echo -e "\tUSEAGE:\t$0 <device to burn> <image.tar.gz | path_to_folder_holding_image.tar.gz>"
@@ -10,6 +10,7 @@ fi
 
 error=0
 if [[ $2 != *"tar.gz" ]]; then
+	cd $2
 	fImage=`ls *-field-*update.tar.gz`
 	rImage=`ls RelayBuild-*.img.tar.gz`
 	if [[ $fImage != "" ]]; then
@@ -30,10 +31,8 @@ echo "my Image: $Image"
 echo "my Filename: $ImageFile"
 echo "my Image dir: $ImageDir"
 echo "my MMCDEV: $MMCDEV"
-pushd . >> /dev/null
 cd $ImageDir
 pwd
-
 OLDRAM="u-boot.bin"
 NEWRAM="u-boot_1500V_384MHZ_0EMR_124ZQ_nODT_nDT.bin"
 RAM="$NEWRAM"

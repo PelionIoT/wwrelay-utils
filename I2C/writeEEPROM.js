@@ -119,6 +119,7 @@ class at24c16EepromHandler {
 class at24c256EepromHandler {
 	constructor() {
 		this._eepromFilePath = at24c256EepromFilePath;
+		this._writeretry = 0;
 	}
 
 	verify_write(ee) {
@@ -168,48 +169,67 @@ class at24c256EepromHandler {
 		});
 	}
 
-	install_eeprom(ee) {
-		return new Promise((resolve, reject) => {
-			console.log('debug', "In install EEPROM Function");
-			process.stdout.write("Writing...");
-		 	let interval = setInterval(() => {
-				process.stdout.write(".");
-			}, 500);
-			fs.writeFile(this._eepromFilePath, JSON.stringify(ee), 'utf8', (err) => {
-				if(err) {
-					console.error("Write failed ", err);
-					reject(err);
-					return;
-				}
-				clearInterval(interval);
-				console.log('Wrote successfully!');
-				resolve(ee);
-			});
-		});
-	}
+    install_eeprom(ee) {
+        var self = this;
+        return new Promise((resolve, reject) => {
+            console.log('debug', "In install EEPROM Function");
+            process.stdout.write("Writing...");
+            let interval = setInterval(() => {
+                process.stdout.write(".");
+            }, 500);
+            fs.writeFile(self._eepromFilePath, JSON.stringify(ee), 'utf8', (err) => {
+                if(err) {
+                    if(self._writeretry > 2) {
+                        console.error("Write failed " + err);
+                        reject(err);
+                        return;
+                    } else {
+                        self._writeretry++;
+                        console.log('Write failed ' + err + ' Trying again!');
+                        clearInterval(interval);
+                        self.install_eeprom(ee);
+                        return;
+                    }
+                }
+                self._writeretry = 0;
+                clearInterval(interval);
+                console.log('Wrote successfully!');
+                resolve(ee);
+            });
+        });
+    }
 
-	main_erase() {
-		let self = this;
-		return new Promise((resolve, reject) => {
-			console.log("main erase");
-			let eeprom_spaces = new Buffer(32768);
-			eeprom_spaces.fill(0x20);
-			process.stdout.write("Erasing...");
-		 	let interval = setInterval(() => {
-				process.stdout.write(".");
-			}, 500);
-			fs.writeFile(self._eepromFilePath, eeprom_spaces, (err) => {
-				if(err) {
-					console.error("Erase failed ", err);
-					reject(err);
-					return;
-				}
-				clearInterval(interval);
-				console.log('Erased successfully!');
-				resolve();
-			});
-		});
-	}
+    main_erase() {
+        let self = this;
+        return new Promise((resolve, reject) => {
+            console.log("main erase");
+            let eeprom_spaces = new Buffer(32768);
+            eeprom_spaces.fill(0x20);
+            process.stdout.write("Erasing...");
+            let interval = setInterval(() => {
+                process.stdout.write(".");
+            }, 500);
+            fs.writeFile(self._eepromFilePath, eeprom_spaces, (err) => {
+                if(err) {
+                    if(self._writeretry > 2) {
+                        console.error("Erase failed " + err);
+                        reject(err);
+                        return;
+                    } else {
+                        self._writeretry++;
+                        console.log('Erase failed ' + err + ' Trying again!');
+                        clearInterval(interval);
+                        self.main_erase();
+                        return;
+                    }
+                }
+                self._writeretry = 0;
+                clearInterval(interval);
+                console.log('Erased successfully!');
+                resolve();
+            });
+        });
+    }
 
 	main_install() {
 		let self = this;

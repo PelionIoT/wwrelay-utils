@@ -50,6 +50,9 @@ IPRIP_NETMASK="";				#Static Netmask to fall to
 IPRIP_BROADCAST="";				#Static broadcast to fall to
 IPRIP_GW="";					#Static GW to fall to
 IPRIP_TOGGLETIME=30;			#Time to flip flop from DHCP to Statc
+
+DO_FACTORY=0;					#1 Enables, 0 Disables
+FACTORY_MACHINE=RP200			#Set the machine you want to test, supports RP200 so far
 #-------------------------------------------------------------------------------------------------------------------------------
 #-------------------------------------------------------------END-SETUP---------------------------------------------------------
 ##------------------------------------------------------------------------------------------------------------------------------
@@ -73,6 +76,12 @@ SQA_CNT=$WIGWAGLOGROOT"/sqa.cnt"
 #2. the _PROG must be 1 word no space.  This is required to identify the PID
 #3. Try to just keep logging to the SQA_LOG unless you need a different file for some reason.  Anything you throw to echo is captured in the log file, from the _PROG
 
+FACTORY_PROG="start.sh"
+FACTORY_PATH=$SQAROOT"/RP200/"$FACTORY_PROG
+FACTORY_LOG=$SQA_LOG
+FACTORY_CNT=$SQA_CNT
+FACTORY_START="$FACTORY_PATH "
+FACTORY_PIDFILE=$SQA_PIDFILE
 
 #OOM_ Out of Memory test (other settings)
 OOM_PROG="nodefiller.sh"
@@ -226,11 +235,11 @@ _displayDOs(){
 	_log "SQA.sh" " DO_START:\t$DO_START"
 	_log "SQA.sh" " DO_CNT:\t$DO_CNT"
 	_log "SQA.sh" " DO_LOG:\t$DO_LOG"
+	_log "SQA.sh" " DO_FACTORY:\t$DO_FACTORY"
 }
 
 _updatePAPERPROGRAM(){
 	if [[ $PAPERPROGRAM != "" ]]; then
-
 		PAPERPROGRAM="$PAPERPROGRAM[$1]"
 	fi
 }
@@ -269,7 +278,7 @@ killAll() {
     fi
 }
 
-total=$(($DO_OOM+$DO_PANIC+$DO_IPRIP+$DO_UPGRADE))
+total=$(($DO_OOM+$DO_PANIC+$DO_IPRIP+$DO_UPGRADE+DO_FACTORY))
 if [[ $total -gt 1 ]]; then
 	error
 	_log "SQA.sh" " Too much configured for /etc/init.d/sqa"
@@ -277,6 +286,13 @@ if [[ $total -gt 1 ]]; then
 elif [[ $total -eq 0 ]]; then
 	warning
 	_displayDOs
+elif [[ $DO_FACTORY -eq 1 ]]; then
+	_updatePAPERPROGRAM FACTORY
+	DO_LOG="$FACTORY_LOG"
+	DO_PROG="$FACTORY_PROG"
+	DO_PIDFILE="$FACTORY_PIDFILE"
+	DO_START="$FACTORY_START"
+	DO_CNT="$FACTORY_CNT"
 elif [[ $DO_OOM -eq 1 ]]; then
 	_updatePAPERPROGRAM OOM
 	DO_LOG="$OOM_LOG"

@@ -34,6 +34,9 @@ programTiny(){
 if [[ $1 = "" ]]; then
 	rebootTiny
 	programTiny
+elif [[ $1 = "-h" || $1 = "--help" ]]; then
+	echo "Useage: $0 [-b baud] [hexfile]"
+	echo "defaults to baud 9600 and /mnt/.boot/AT841WDOG.hex"
 elif [[ $1 = "-b" ]]; then
 	baud=$2
 	rebootTiny
@@ -42,5 +45,6 @@ else
 	rebootTiny
 	programTiny $1
 fi
+
 
 	#statements

@@ -22,7 +22,8 @@ while (true); do
 		/etc/init.d/devjssupport start
 		sleep 5
 	fi
-	netstat -an | grep 3000 | grep TIME_WAIT
+	TIP=$(nslookup tunnel.wigwag.com | xargs | egrep -o tunnel.wigwag.com.* | awk '{ print $4 }')
+	netstat -an | grep $TIP
 	if [[ $? -ne 0 ]]; then
 		curl http://localhost:3000/start
 	fi

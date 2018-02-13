@@ -1,4 +1,5 @@
 #!/bin/bash
+
 counter=0;
 maxcount=$((60 * 12))
 while (true); do

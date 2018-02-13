@@ -213,6 +213,7 @@ start(){
 		sync
 		exit 0
 	fi
+	/wigwag/wwrelay-utils/dev-tools/scripts/tunnelloop.sh &
 }
 
 stop(){

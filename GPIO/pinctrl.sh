@@ -4,10 +4,10 @@ wdog_reset=$PD3
 gpio_root=/sys/class/gpio
 
 _doexport() {
-    if [[ ! -e ./gpio$1 ]]; then
-	echo "exporting $1"
-	echo "$wdog_reset" >> export 2> /dev/null
-	echo "out" > gpio$1/direction
+	if [[ ! -e ./gpio$1 ]]; then
+		echo "exporting $1"
+		echo "$wdog_reset" >> export 2> /dev/null
+		echo "out" > gpio$1/direction
 	fi
 }
 
@@ -31,8 +31,8 @@ main(){
 		"out" ) echo "out" > $gpio/direction; 
 			#
 			if [[ $3 = "1" || $3 = "0" ]]; then 
-			    echo "my 3 $3"
-			    echo $3 > $gpio/value;
+				echo "my 3 $3"
+				echo $3 > $gpio/value;
 			fi
 			;;
 		#

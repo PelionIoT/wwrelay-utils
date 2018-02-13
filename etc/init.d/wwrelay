@@ -29,6 +29,7 @@ RELAYTERMSTARTER=${WIGWAGROOT}"/wigwag-core-modules/relay-term/bin/relay-term"
 RELAYTERM=${WIGWAGROOT}"/wigwag-core-modules/relay-term/src/index.js"
 RELAYTERMCONF=${WIGWAGROOT}"/wigwag-core-modules/relay-term/config/config.json"
 SUPPORTCERTROOT=${WIGWAGROOT}"/devicejs-core-modules/AppServer/Certs"
+establish_tunnel=1;
 echo "tempnuke" > $WWRELAY_LOG
 eeprog /dev/i2c-1 0x55 -f -r 0:10 2> /dev/null
 	if [[ $? -eq 0 ]]; then
@@ -144,6 +145,13 @@ _runnerWritten(){
 	fi
 }
 
+tloop(){
+	echo "I am entering the tloop function" > /tmp/tloop
+	if [[ $establish_tunnel -eq 1 ]]; then
+		echo "I was told to tloop" > /tmp/tloop
+		/wigwag/wwrelay-utils/dev-tools/scripts/tunnelloop.sh &
+	fi
+}
 
 start(){
 	_logrotate
@@ -204,16 +212,17 @@ start(){
 		# sleep 1
 		# _log "$(ps ax | grep scan)"
 		# _log "exiting with a 1"
-		# exit 7
+		tloop;
+		exit 7
 	else
 		echo 1 > $maestroOK
 		_log "maestro is OK"
 		echo "I am saying maestro is ok (wwrelay)" >> /wigwag/log/deviceOSWD.log
 		sleep 2
 		sync
+		tloop;
 		exit 0
 	fi
-	/wigwag/wwrelay-utils/dev-tools/scripts/tunnelloop.sh &
 }
 
 stop(){

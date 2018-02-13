@@ -1,7 +1,8 @@
 #!/bin/bash
-
 counter=0;
 maxcount=$((60 * 12))
+echo "$counter/$maxcount just now starting, waiting 180" > /tmp/timeloopcounter
+sleep 180
 while (true); do
 	counter=$(($counter + 1))
 	if [[ counter -gt $maxcount ]]; then
@@ -20,7 +21,12 @@ while (true); do
 	if [[ $? -ne 0 ]]; then
 		/etc/init.d/devjssupport start
 		sleep 5
-		/etc/init.d/devjssupport start
 	fi
+	netstat -an | grep 3000 | grep TIME_WAIT
+	if [[ $? -ne 0 ]]; then
+		curl http://localhost:3000/start
+	fi
+	echo $counter > /tmp/timeloopcounter
+	echo "if this value gets to $maxcount, the tunnel will rebuild" >> /tmp/timeloopcounter
 	sleep 60
 done

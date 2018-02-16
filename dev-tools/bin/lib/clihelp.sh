@@ -39,6 +39,7 @@ clihelp_validArgument(){
 	local localfirstTrip=1;
 	local fullray="< "
 	for element in "${!array}"; do
+		log debug "$element <> $seeking";
 		if [[ "$element" == "$seeking" ]]; then
 			in=1
 		else

@@ -49,3 +49,8 @@ math_ascii2hex(){
 	letterhex=$(echo "$1" | od -t x1 | xargs | awk '{print $2}')
 	echo -en "$letterhex"
 } #end_math_ascii2hex
+
+math_div1024(){
+	out=$(bc <<< "scale=1; $1 / 1024")
+	echo "$out"
+}

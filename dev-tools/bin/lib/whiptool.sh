@@ -38,9 +38,9 @@ wp-raytype() {
 
 
 wp-rayadd(){
-wpstring="$1"
-name="$2[@]"
-dataray=("${!name}")
+    wpstring="$1"
+    name="$2[@]"
+    dataray=("${!name}")
 #echo -e "$wpstring $name $dataray"
 
 for i in "${dataray[@]}" ; do
@@ -55,13 +55,13 @@ echo "$wpstring"
 
 
 wp-eval(){
-RESULT2=$(eval $wpstring 3>&1 1>&2 2>&3)
-exitstatus=$?
-if [[ $exitstatus -ne 0 ]]; then
-    echo "CANCELPRESSED"
-else
-    echo "$RESULT2"
-fi
+    RESULT2=$(eval $wpstring 3>&1 1>&2 2>&3)
+    exitstatus=$?
+    if [[ $exitstatus -ne 0 ]]; then
+        echo "CANCELPRESSED"
+    else
+        echo "$RESULT2"
+    fi
 }
 
 
@@ -140,20 +140,20 @@ wp-yesno () {
 wp-fileselect(){
     dirpath=$1;
     if [ -f $dirpath ]; then
-            fname=$(basename $dirpath)
-            fname="--default-item $fname"
-            dirpath=$(dirname $dirpath)/
-            echo $fname
-            echo $dirpath
+        fname=$(basename $dirpath)
+        fname="--default-item $fname"
+        dirpath=$(dirname $dirpath)/
+        echo $fname
+        echo $dirpath
     fi
     eval `resize`
     if [ -z $dirpath ]; then
         imgpath=$(ls -lhp / | awk -F ' ' ' { print $9 " " $5 } ')
         pathselect=$(whiptail --menu "Select File" $LINES $COLUMNS $(($LINES - 8)) --cancel-button Cancel --ok-button Select $imgpath 3>&1 1>&2 2>&3)
-   else
+    else
         imgpath=$(ls -lhp "$dirpath" | awk -F ' ' ' { print $9 " " $5 } ')
         pathselect=$(whiptail --menu "Select File" $LINES $COLUMNS $(($LINES - 8)) $fname --cancel-button Cancel --ok-button Select ../ BACK $imgpath 3>&1 1>&2 2>&3)
-    
+
     fi
     RET=$?
     if [ $RET -eq 1 ]; then
@@ -198,7 +198,7 @@ wp-dirselect(){
         imgpath=$(ls -lhp / | grep '^d' | awk -F ' ' ' { print $9 " " $5 }')
         #imgpath=$(ls -lhp / | awk -F ' ' ' { print $9 " " $5 } ')
         pathselect=$(whiptail --menu "$dirpath" $LINES $COLUMNS $(($LINES - 8)) --cancel-button Cancel --ok-button Select $injectMenuChoices ' ' ' ' $thisdir $imgpath 3>&1 1>&2 2>&3)
-   else
+    else
         imgpath=$(ls -lhp "$dirpath" | grep '^d' | awk -F ' ' ' { print $9 " " $5 }')
         #imgpath=$(ls -lhp "$dirpath" | awk -F ' ' ' { print $9 " " $5 } ')
         pathselect=$(whiptail --menu "$dirpath" $LINES $COLUMNS $(($LINES - 8)) $fname --cancel-button Cancel --ok-button Select  $injectMenuChoices ' ' ' ' $thisdir $imgpath 3>&1 1>&2 2>&3)
@@ -214,10 +214,10 @@ wp-dirselect(){
         if [[ -d "$dirpath/$pathselect" ]]; then
             #echo -e "\t\t\t 7: inside the iff" >> testout
             if [[ "$pathselect" = "." ]]; then
-                 out=$(readlink -f "$dirpath/$pathselect")
-                 echo $out
-            else
-                dirpath=$(readlink -f $dirpath/$pathselect);
+               out=$(readlink -f "$dirpath/$pathselect")
+               echo $out
+           else
+            dirpath=$(readlink -f $dirpath/$pathselect);
                 #echo "s1: $dirpath" >> testout
                 wp-dirselect "$dirpath"
             fi
@@ -252,26 +252,32 @@ wp-dirselect(){
 
 
 wp-getResults(){
-RES=$("$@");
-echo "$RES"
-}
-
-whip(){
     RES=$("$@");
     echo "$RES"
 }
+
+#if your looking for whip, i had to kill it because of sourcing whip() so p
+wp-whip(){
+    RES=$("$@");
+    echo "$RES"
+}
+
+wp-help(){
+    echo "help is here.. expand"
+}
 # Usage info
 show_help() {
-cat << EOF
-Usage: ${0##*/} [-hv] [-f OUTFILE] [FILE]...
-Do stuff with FILE and write the result to standard output. With no FILE
-or when FILE is -, read standard input.
+    log_removed "show_help" "wp-help" "the EOF stuff in show_help was causing sourcing errors"
+    # cat << EOF
+    # Usage: ${0##*/} [-hv] [-f OUTFILE] [FILE]...
+    # Do stuff with FILE and write the result to standard output. With no FILE
+    # or when FILE is -, read standard input.
     
-    -h          display this help and exit
-    -f OUTFILE  write the result to OUTFILE instead of standard output.
-    -v          verbose mode. Can be used multiple times for increased
-                verbosity.
-EOF
+    # -h          display this help and exit
+    # -f OUTFILE  write the result to OUTFILE instead of standard output.
+    # -v          verbose mode. Can be used multiple times for increased
+    # verbosity.
+    # EOF
 }                
 
 
@@ -288,16 +294,16 @@ EOF
 
 testwp () {
     testing=$1
-menu_ray=("<-- Back" "Return to the main menu." "Add User" "Add a user to the system." "Modify User" "Modify an existing user." "List Users" "List all users on the system." "Add Group" "Add a user group to the system." "Modify Group" "Modify a group and its list of members." "List Groups" "List all groups on the system.")
-radio_ray=("<-- Back" "Return to the main menu." ON "Add User" "Add a user to the system." OFF "Modify User" "Modify an existing user." OFF "List Users" "List all users on the system." OFF "Add Group" "Add a user group to the system." OFF "Modify Group" "Modify a group and its list of members." OFF "List Groups" "List all groups on the system." OFF)
+    menu_ray=("<-- Back" "Return to the main menu." "Add User" "Add a user to the system." "Modify User" "Modify an existing user." "List Users" "List all users on the system." "Add Group" "Add a user group to the system." "Modify Group" "Modify a group and its list of members." "List Groups" "List all groups on the system.")
+    radio_ray=("<-- Back" "Return to the main menu." ON "Add User" "Add a user to the system." OFF "Modify User" "Modify an existing user." OFF "List Users" "List all users on the system." OFF "Add Group" "Add a user group to the system." OFF "Modify Group" "Modify a group and its list of members." OFF "List Groups" "List all groups on the system." OFF)
 
 
-if [[ $testing = "ALL" || $testing = "RADIO" ]]; then
-    echo -e "Testing Radio"
-    echo -e 'Result: '$(wp-getResults wp-radio "Radio test" "doit" radio_ray)'\n'
-fi
-if [[ $testing = "ALL" || $testing = "LIST" ]]; then
-    echo "Testing LIST"
+    if [[ $testing = "ALL" || $testing = "RADIO" ]]; then
+        echo -e "Testing Radio"
+        echo -e 'Result: '$(wp-getResults wp-radio "Radio test" "doit" radio_ray)'\n'
+    fi
+    if [[ $testing = "ALL" || $testing = "LIST" ]]; then
+        echo "Testing LIST"
     # echo -e 'Result:res1=$(wp-getResults wp-input "input test" "doit" "default value")
     # res2=$(wp-getResults wp-input "input test" "doit" "default value")
     # res3=$(wp-getResults wp-input "input test" "doit" "default value") '$(wp-getResults wp-check "List test" "doit" radio_ray)'\n'

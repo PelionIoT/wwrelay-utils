@@ -61,13 +61,13 @@ interpMenuStructure(){
 			MENUDEFERROR $item 2
 		fi
 	#	MENUBUILDER_array+=("$item")
-		eval "${1}_array+=(\"$item\")"
-		eval "${1}_array+=(\"$DESC\")"	
+	eval "${1}_array+=(\"$item\")"
+	eval "${1}_array+=(\"$DESC\")"	
 		#echo "$cstatus cstatus"
 		if [[ "$cstatus" = "allcaps" ]]; then
-		if [[ "$TITLE" = "" ]]; then
-			MENUDEFERROR $item 3
-		fi
+			if [[ "$TITLE" = "" ]]; then
+				MENUDEFERROR $item 3
+			fi
 			ALLMENUS+=("$item");
 			interpMenuStructure "$item"	
 		elif [[ "$cstatus" = "alllower" ]]; then
@@ -91,20 +91,20 @@ interpMenuStructure(){
 
 
 DBradioStringBuilder(){
-key="$1"
-name="$2[@]"
-dataray=("${!name}")
-dataraylen=${#dataray[@]}
-for (( i=0; i<$dataraylen; i=i+2)); do
-    a="${dataray[$i]}"
-    b="${dataray[$i+1]}"
-    if [[ "$a" = ${db[$key]} ]]; then
-        buildstring="$buildstring$a|$b|ON|";
-    else
-        buildstring="$buildstring$a|$b|OFF|";
-    fi
-done
-echo "$buildstring"
+	key="$1"
+	name="$2[@]"
+	dataray=("${!name}")
+	dataraylen=${#dataray[@]}
+	for (( i=0; i<$dataraylen; i=i+2)); do
+		a="${dataray[$i]}"
+		b="${dataray[$i+1]}"
+		if [[ "$a" = ${db[$key]} ]]; then
+			buildstring="$buildstring$a|$b|ON|";
+		else
+			buildstring="$buildstring$a|$b|OFF|";
+		fi
+	done
+	echo "$buildstring"
 }
 
 
@@ -127,32 +127,36 @@ renderRadioWithDBMemory(){
 	# echo "rayname: $rayname"
 	radiostring=$(DBradioStringBuilder "$key" "$prerayname")
 	IFS='|' read -a $rayname <<< "$radiostring"
-	out=$(whip wp-radio "$title" "$useDescription" $rayname)
+	out=$(wp-whip wp-radio "$title" "$useDescription" $rayname)
 	if [[ "$out" != "CANCELPRESSED" ]]; then
 		db["$key"]="$out";
-		savedb
+		database_save
 	fi
 }
 
 
 DBlistStringBuilder(){
-key="$1"
-name="$2[@]"
-dataray=("${!name}")
-dataraylen=${#dataray[@]}
-for (( i=0; i<$dataraylen; i=i+2)); do
-    a="${dataray[$i]}"
-    b="${dataray[$i+1]}"
-    if [[ "ON" = ${db["$a"]} ]]; then
-        buildstring="$buildstring$a|$b|ON|";
-    else
-        buildstring="$buildstring$a|$b|OFF|";
-    fi
-done
-echo "$buildstring"
+	key="$1"
+	name="$2[@]"
+	dataray=("${!name}")
+	dataraylen=${#dataray[@]}
+	for (( i=0; i<$dataraylen; i=i+2)); do
+		a="${dataray[$i]}"
+		b="${dataray[$i+1]}"
+		if [[ "ON" = ${db["$a"]} ]]; then
+			buildstring="$buildstring$a|$b|ON|";
+		else
+			buildstring="$buildstring$a|$b|OFF|";
+		fi
+	done
+	echo "$buildstring"
 }
 
-renderList(){
+
+
+
+
+menusystem_renderList(){
 	key="$1"
 	title=$(deref $key TITLE)
 	longDescription=$(deref $key LONGDESCRIPTION)
@@ -166,29 +170,46 @@ renderList(){
 	fi
 	rayname=$key"_ray"
 	prerayname=$key"_listray"
-	# echo "title: $title"
-	# echo "description: $description"
-	# echo "rayname: $rayname"
+	hastic=$(array_valueContains $prerayname "[\']+")
+	#log debug "hastic $hastic"
+	if [[ $hastic != 0 ]]; then
+		log error "${MAGENTA}[${BASH_SOURCE[1]##*/}:${BASH_LINENO[0]}]${NORM}: $prerayname [$hastic] has a ' mark and this is unacceptable."
+		exit
+	fi
+	echo "title: $title"
+	echo "description: $description"
+	echo "rayname: $rayname"
+	#log "debug" "calling database_dump"
+	#database_dump
 	IFS='|' read -a $rayname <<< $(DBlistStringBuilder "$key" "$prerayname")
-	out=$(whip wp-check "$title" "$useDescription" $rayname)
+	out=$(wp-whip wp-check "$title" "$useDescription" $rayname)
 	out="${out//\" \"/|}"
 	out="${out//\"/}"
+	#log "debug" "my out is $out"
 	if [[ "$out" != "CANCELPRESSED" ]]; then
 		IFS='|' read -a outray <<< $out
 		name="$rayname[@]"
 		origkey=("${!name}");
 		origkeylen=${#origkey[@]};
 		for (( i=0; i<$origkeylen; i=i+3)); do
-	    a="${origkey[$i]}"
+			a="${origkey[$i]}"
 			db["$a"]="OFF";
 		done
 		for qkey in "${outray[@]}"; do 
-			db["$qkey"]="ON";
-		done
-		savedb
-	fi
+		log "debug" "setting $qkey as ON"
+		db["$qkey"]="ON";
+	done
+	database_save
+fi
+	# echo "the pie is at " db["Rpi-poky-morty"];
+	#  echo "read x"
+	# read x
 }
 
+renderList(){
+	log_depricated "renderList" "menusystem_renderlist" "[${BASH_SOURCE[1]##*/}:${BASH_LINENO[0]}]"
+	menusystem_renderList "$@"
+}
 
 renderDirectoryPickerWithDBMemory(){
 	key="$1"
@@ -205,9 +226,10 @@ renderDirectoryPickerWithDBMemory(){
 	# val=${db["$key"]};
 	# echo "$val"
 	# exit
-    out=$(whip wp-dirselect ${db["$key"]} )
+	out=$(wp-whip wp-dirselect ${db["$key"]} )
 	if [[ "$out" != "CANCELPRESSED" ]]; then
-		DBset "$key" "$out"
+		#log "debug" "$key $out"
+		database_set "$key" "$out"
 	fi
 }
 
@@ -230,7 +252,7 @@ stateisMenu(){
 
 
 stack_new menuStack
-menuLauncher(){
+menusystem_menuLauncher(){
 	state=$1;
 	next=$state;
 	lastState="$2";
@@ -246,19 +268,26 @@ menuLauncher(){
 		mtitle=$(deref $state TITLE)
 		mdesc=$(deref $state DESCRIPTION)
 		mrayNAME=${state}_array
-		#next=$(whip wp-menu "Main" "main Menu" menu_main_ray);
+		#next=$(wp-whip wp-menu "Main" "main Menu" menu_main_ray);
 		# echo "mtitle: $mtitle"
 		# echo "mdesc: $mdesc"
 		# echo "mray: $mrayNAME"
 		#echo "$lastState" >> out
-		next=$(whip wp-menu "$mtitle" "$mdesc" "$mrayNAME" "--default-item $lastState");
+		next=$(wp-whip wp-menu "$mtitle" "$mdesc" "$mrayNAME" "--default-item $lastState");
 	else
-		eval ${state}
-		if [[ "$next" = "$state" ]]; then
-			stack_pop menuStack next
-			stack_push menuStack "$next"
+		if [[ ${state} != "CANCELPRESSED" ]]; then
+			eval ${state}
+			if [[ "$next" = "$state" ]]; then
+				stack_pop menuStack next
+				stack_push menuStack "$next"
+			fi
 		fi
 	fi
 	#echo "would call $next"
-	menuLauncher "$next" "$state";
+	menusystem_menuLauncher "$next" "$state";
+}
+
+menuLauncher(){
+	log_depricated "menuLauncher" "menusystem_menuLauncher" "[${BASH_SOURCE[1]##*/}:${BASH_LINENO[0]}]"
+	menusystem_menuLauncher "$@"
 }

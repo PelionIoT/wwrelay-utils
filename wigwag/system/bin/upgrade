@@ -38,9 +38,16 @@ version="2.1"
 LogToTerm=1
 loglevel=verbose;
 #loglevel=debug;
-wanhostslist="https://10.10.102.57:8080/newsys/ https://10.10.102.57:8080/newsys/"
-array_createFromSpaceList "wanhosts" "$wanhostslist"
-wanhost="";
+#Developers: to run non production builds on your hardware, setup a file named lanhostslist.sh in your developer folder
+#at /mnt/.boot/developement/lanhostslist.sh.   This file is sourced and will cause this upgrade software to look there first 
+#for development builds.  The content of that file must have a defined string as
+#lanhostslist="server server server ..." e.g.
+#lanhostslist="https://10.10.102.57:8080/newsys/ https://192.168.5.55/newsys/"
+source /mnt/.boot/development/lanhostslist.sh
+if [[ $lanhostslist != "" ]]; then
+	array_createFromSpaceList "lanhosts" "$lanhostslist"
+	lanhost="";
+fi
 cloudhost="https://code.wigwag.com/ugs/builds/"
 thistarball="https://code.wigwag.com/ugs/ud.tar.gz"
 manifestLocalhost="https://10.10.102.57:8080/builds/manifest.dat"
@@ -114,11 +121,11 @@ colorgrep(){
 	grep --color -m1 $1 upgrade.sh
 }
 
-discoverWanHost(){
-	for element in "${wanhosts[@]}"; do
+discoverLanHost(){
+	for element in "${lanhosts[@]}"; do
 		isTHEURLup=$(isURLUp "$element")
 		if [[ $isTHEURLup = "1" ]]; then
-			wanhost="$element"
+			lanhost="$element"
 			return 0
 		fi
 	done
@@ -308,7 +315,7 @@ main(){
 	if [[ $buildurl = "FILE" ]]; then
 		mv "$buildfile" f.tar.gz
 	elif [[ "$buildurl" = "LOOKUP" ]]; then
-		discoverWanHost
+		discoverLanHost
 		lha=$?;
 		myslash=$(echo $mybuild | tr . /)
 		if [[ "$upgrd" = "factory" || $purefactory = 1 ]]; then
@@ -317,7 +324,7 @@ main(){
 			setting_upgrade_wipe=1;
 			if [[ "$lha" -eq 0 ]]; then
 				#downloadfile="${LFACTORYURL[$mybuild]}"
-				downloadfile=$wanhost$branch/$myslash/$board/$mybuild-field-factoryupdate.tar.gz 
+				downloadfile=$lanhost$branch/$myslash/$board/$mybuild-field-factoryupdate.tar.gz 
 			else
 				#downloadfile="${FACTORYURL[$mybuild]}"
 				downloadfile=$cloudhost$branch/$board/$mybuild-field-factoryupdate.tar.gz 
@@ -325,12 +332,14 @@ main(){
 		else
 			if [[ "$lha" -eq 0 ]]; then
 				#downloadfile="${LUPGRADEURL[$mybuild]}"
-				downloadfile=$wanhost$branch/$myslash/$board/$mybuild-field-upgradeupdate.tar.gz 
+				downloadfile=$lanhost$branch/$myslash/$board/$mybuild-field-upgradeupdate.tar.gz 
 			else
 				#downloadfile="${UPGRADEURL[$mybuild]}"
 				downloadfile=$cloudhost$branch/$board/$mybuild-field-upgradeupdate.tar.gz 
 			fi
 		fi
+		echo $downloadfile
+		exit
 		goodurl=$(isURLUp $downloadfile)
 		if [[ $goodurl -eq 1 ]]; then
 			log "info" "downloading: ${CYAN}$downloadfile${NORM} for installation"

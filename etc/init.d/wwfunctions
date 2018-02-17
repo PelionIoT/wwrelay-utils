@@ -1,0 +1,25 @@
+#!/bin/bash
+_log() {
+    echo -e "$(date -u): $1" >> $THISLOG
+    echo -e "$1"
+}
+
+_throw_warning(){
+    warning
+    _log " $PROG $1" 
+}
+
+_throw_success(){
+    success
+    _log " $PROG $1" 
+}
+
+_throw_failure(){
+    failure
+    _log " $PROG $1" 
+}
+
+_throw_passed(){
+    passed
+    _log " $PROG $1" 
+}

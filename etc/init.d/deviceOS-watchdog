@@ -13,6 +13,7 @@
 # Short-Description:    watchdog timer for the relay
 ### END INIT INFO
 source /etc/init.d/functions
+source /etc/init.d/wwfunctions
 WIGWAGROOT="/wigwag"
 WIGWAGLOGROOT="/wigwag/log"
 PIDROOT="/var/run"
@@ -48,30 +49,7 @@ DISABLE_TINY_WATCHDOG_CMD="echo -e \"dog_stop\" | socat unix-sendto:$KEEPALIVE S
 HEARTBEAT_TINY_WATCHDOG_CMD="echo -e \"dog_run\" | socat unix-sendto:$KEEPALIVE STDIO"
 EXPIRENOW_TINY_WATCHDOG_CMD="echo -e \"dog_die\" | socat unix-sendto:$KEEPALIVE STDIO"
 
-_log() {
-    echo -e "$(date -u): $1" >> $THISLOG
-    echo -e "$1"
-}
 
-_throw_warning(){
-    warning
-    _log " $PROG $1" 
-}
-
-_throw_success(){
-    success
-    _log " $PROG $1" 
-}
-
-_throw_failure(){
-    failure
-    _log " $PROG $1" 
-}
-
-_throw_passed(){
-    passed
-    _log " $PROG $1" 
-}
 
 start() {
     _log "deviceOSWD start called"

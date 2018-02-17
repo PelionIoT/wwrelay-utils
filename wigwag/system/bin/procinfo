@@ -1,0 +1,71 @@
+#!/bin/bash
+
+source math.sh
+
+let PSSTOT=0;
+
+ppid () { 
+out=$(ps -p ${1:-$$} -o ppid=;) 
+out="$(echo -e "${out}" | tr -d '[:space:]')"
+echo $out
+}
+
+_memperf(){
+	pup="90min"
+	pid="$1"
+	if [[ $pid != "" ]]; then
+		et=$(ps -o etime= -p "$pid");
+		if [[ "$et" = *"-"* ]]; then 
+			pupd=$(echo $et | awk -F '-' '{print $1}')
+		else
+			pupd=0
+		fi
+		puph=$(echo $et | awk -F ':' '{print $1}');
+		pupm=$(echo $et | awk -F ':' '{print $2}');
+		pups=$(echo $et | awk -F ':' '{print $3}');
+		upSeconds=$(ps -o etimes= -p "$pid");
+		let secs=$((${upSeconds}%60))
+		let mins=$((${upSeconds}/60%60))
+		let hours=$((${upSeconds}/3600%24))
+		let days=$((${upSeconds}/86400))
+		UPTIME=""
+		if [[ "${days}" -ne "0" ]]; then
+			UPTIME="${days}d ";
+		fi
+		UPTIME="$UPTIME${hours}h ${mins}m ${secs}s"
+
+
+
+		Share=$(echo 0 $(awk '/Shared/ {print "+", $2}' /proc/$pid/smaps) | bc)K
+		Priv=$(echo 0 $(awk '/Private/ {print "+", $2}' /proc/$pid/smaps) | bc)K
+		Swap=$(echo 0 $(awk '/Swap/ {print "+", $2}' /proc/$pid/smaps) | bc)K
+		Size=$(echo 0 $(awk '/Size/ {print "+", $2}' /proc/$pid/smaps) | bc)K
+		Ref=$(echo 0 $(awk '/Referenced/ {print "+", $2}' /proc/$pid/smaps) | bc)K
+		Pss=$(echo 0 $(awk '/Pss/ {print "+", $2}' /proc/$pid/smaps) | bc)K
+		Rss=$(echo 0 $(awk '/Rss/ {print "+", $2}' /proc/$pid/smaps) | bc)K
+		parrentPID=$(ppid $pid)
+		parrentName=$(cat /proc/$parrentPID/status | grep "Name" | awk '{print $2}')
+		processname=$(cat /proc/$pid/status | grep "Name" | awk '{print $2}')
+
+		#_placeLine "  - $name ($pid):" "$Pss\t$Rss\t$Share\t$Priv\t$Size\t$Ref"
+		echo -e "Process $processname"
+		echo -e " - Detail"
+		echo -e "    Uptime:\t$UPTIME"
+		echo -e "    pid:\t$pid"
+		echo -e "    Parrent:\t$parrentName ($parrentPID)"
+		echo -e " - Memory"
+		echo -e "    Pss:\t$Pss"
+		echo -e "    Rss:\t$Rss"
+		echo -e "    Shared:\t$Share"
+		echo -e "    Private:\t$Priv"
+		echo -e "    Swap:\t$Swap"
+		echo -e "    Virtual:\t$Size"
+	fi
+}
+
+pid=$1
+if [[ $pid = "" ]]; then
+	echo "USEAGE meminfo <pid>"
+else
+	_memperf "$pid"
+fi

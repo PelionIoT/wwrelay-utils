@@ -66,6 +66,7 @@
                 "limit":5000,
                 "timeout":2000
             },
+            "enable": false,
             "execPath":"/usr/bin/devicedb",
             "configFile":"{{devicedbConfFile}}"
         },

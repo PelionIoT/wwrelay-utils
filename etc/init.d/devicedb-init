@@ -1,0 +1,68 @@
+#!/bin/bash
+# /etc/init.d/devicedbd: starts WigWag Device Database
+
+### BEGIN INIT INFO
+# Provides:             devicedbd
+# Required-Start:       $remote_fs $time
+# Required-Stop:        $remote_fs $time
+# Should-Start:         $network
+# Should-Stop:          $network
+# Default-Start:        4 5
+# Default-Stop:         0 1 6
+# Short-Description:    Device Database for WigWag
+### END INIT INFO
+
+PROG="DEVICEDB"
+source /etc/init.d/functions
+source /etc/init.d/wwfunctions 
+
+DEVICEDB_CMD="/etc/init.d/run-devicedb.sh"
+
+function run_devicedb() {
+    $DEVICEDB_CMD &
+}
+
+
+start(){
+_startCalled
+    run_devicedb
+    if [[ $? -eq 0 ]]; then
+    	_throw_success "Started loop service"
+    else
+    	_throw_failure "Failed to Start loop service"
+    fi
+}
+
+stop(){
+	 _stopCalled
+    killall devicedb
+    if [[ $? -eq 0 ]]; then
+    	_throw_success "Stopped loop service"
+    else
+    	_throw_failure "Failed to Stop loop service"
+    fi
+}
+
+
+restart(){
+	_restartCalled
+	stop;
+	sleep1;
+	start;
+}
+
+
+case "$1" in
+	#
+	start) start; ;;
+	#
+    	stop) stop; ;;
+	#
+    	restart) restart; ;;
+     #
+     *) echo "Usage: $0 {start|stop|restart}"; exit 1; ;;
+esac
+
+exit 0
+
+     

@@ -1,25 +1,63 @@
 #!/bin/bash
+#When sourcing this, you must have the following pre defined:
+# PROG=the name of the program your writing the init script for
+INITLOG=/wigwag/log/wwinit.log
+WIGWAGROOT=/wigwag/
+WIGWAGLOGROOT=/wigwag/log/
+THISLOG=$WIGWAGLOGROOT/$PROG".log"
+
+
+wwfunctions_init(){
+	PROG="$1"
+	THISLOG="$WIGWAGLOGROOT/$PROG"
+}
+
+_initlog(){
+	echo -e "$(date -u): $1" >> $INITLOG
+}
+
+_startCalled(){
+	_initlog "Service $PROG: start called"
+}
+
+_stopCalled(){
+	_initlog "Service $PROG: stop called"
+}
+
+_restartCalled(){
+	_initlog "Service $PROG: restart called"
+	}
+
+_statusCalled(){
+	_initlog "Service $PROG: status called"
+}
+
 _log() {
     echo -e "$(date -u): $1" >> $THISLOG
-    echo -e "$1"
+}
+
+_slog(){
+	echo -e "$(date -u): $1" >> $INITLOG
+	echo -e "$(date -u): $1" >> $THISLOG
+	echo -e "$1"
 }
 
 _throw_warning(){
     warning
-    _log " $PROG $1" 
+    _slog " $PROG $1" 
 }
 
 _throw_success(){
     success
-    _log " $PROG $1" 
+    _slog " $PROG $1" 
 }
 
 _throw_failure(){
     failure
-    _log " $PROG $1" 
+    _slog " $PROG $1" 
 }
 
 _throw_passed(){
     passed
-    _log " $PROG $1" 
+    _slog  " $PROG $1" 
 }

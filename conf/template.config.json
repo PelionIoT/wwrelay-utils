@@ -344,6 +344,7 @@
                         "requestAckTimeout": 300, //ms
                         "throttleRate": 50, //ms
                         "bacnetResourceId": "BacnetDriver",
+                        "stateManagerIntervalResolution": 12000,
                         "supportedRecipesDirectory": "controllers/supportedResourceRecipes" //Relative path to directory where all the resouce recipes are or will be defined,
                     }
                 }

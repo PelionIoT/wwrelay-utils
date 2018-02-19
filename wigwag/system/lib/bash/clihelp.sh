@@ -132,3 +132,44 @@ clihelp_displayHelp(){
 	echo -e "$etext\n"
 	exit 1
 } #end_clihelp_displayHelp
+
+# declare -A hp=(
+# 	[description]="Updates a relay with a different firmware version (up and down)"
+# 	[useage]="-options <[buildNo|buildURL|buildFile]>"
+# 	[a]="advanced interactive mode"
+# 	[bb]="specify the build branch -b <branchname>"
+# 	[e1]="\t${BOLD}${UND}Update a Relay factory partition to Build 1.1.1 ${NORM}\n\t\t$0 -u factory  1.1.1 ${NORM}\n"
+# 	)
+
+# argprocessor(){
+# 	switch_conditions=$(clihelp_switchBuilder)
+# 	while getopts "$switch_conditions" flag; do
+# 		case $flag in
+# 			a);;
+# 			#
+# 			b);;
+# 			#
+# 			c);;
+# 			#
+# 			d);;
+# 			#
+# 			D);;
+# 			#
+# 			\?)  echo -e \\n"Option -${BOLD}$OPTARG${NORM} not allowed.";clihelp_displayHelp;exit; ;;
+# 			#
+# 		esac
+# 	done
+# 	shift $(( OPTIND - 1 ));
+
+# 	if [[ "$1" = "xxx" ]]; then
+# 		:
+# 	fi
+# 	main $1
+# } 
+
+
+# if [[ "$#" -lt 1 ]]; then
+# 	clihelp_displayHelp
+# else
+# 	argprocessor "$@"
+# fi

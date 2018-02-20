@@ -84,6 +84,10 @@
                 "gpios": {
                     "reset": 39
                 }
+            },
+            "P3": {
+                "description": "USB on core board",
+                "siodev": "/dev/serial/by-path/platform-1c14400.usb-usb-0:1:1.0-port0"
             }
         }
     },
@@ -265,7 +269,12 @@
     			"zigbeeHA":			[ "M1", "wigwag-cc2530" ],
     			"ModbusRTU": 		[ "P1", "rs485" ],
     			"BACnet": 			[ "P2", "rs485" ]
-    		}
+    		},
+            "13": {
+                "ModbusRTU":        [ "P1", "rs485" ],
+                "BACnet":           [ "P2", "rs485" ],
+                "ww-zwave":         [ "P3", "ZM5304" ]
+            }
     	}
     }
 }

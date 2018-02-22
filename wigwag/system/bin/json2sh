@@ -1,0 +1,8 @@
+#!/bin/bash
+source json.sh
+
+if [[ $1 = "" || $2 = "" ]]; then
+	echo "USEAGE $0 <in.json> <out.sh>"
+	exit
+fi
+json_toShFile $@

@@ -50,8 +50,7 @@ if [[ $lanhostslist != "" ]]; then
 fi
 cloudhost="https://code.wigwag.com/ugs/builds/"
 thistarball="https://code.wigwag.com/ugs/ud.tar.gz"
-manifestLocalhost="https://10.10.102.57:8080/builds/manifest.dat"
-manifesturl="https://code.wigwag.com/ugs/manifest.dat"
+manifesturl="https://code.wigwag.com/ugs/manifest"
 upgrd="upgrade"
 buildurl="LOOKUP"
 
@@ -525,7 +524,7 @@ declare -A hp=(
 	[k]="wipe the u-boot (dangerous)"
 	[n]="little-nuke this to x.y.z version, becomes a 'keyed' factoy version u-boot, boot, factory, upgrade, user (same as -k -J -z -O -t -F -v -U -w )"
 	[N]="nuke to this x.y.z version, becomes a factoy version resetting eeprom, userdata, u-boot, boot, factory, upgrade, user (same as -e -x -k -J -z -O -t -F -v -U -w )"
-	[mm]="url to manifest.dat -m <url>, defaults to: https://code.wigwag.com/ugs/"
+	[mm]="url to cloudserver manifest -m <url>, defaults to: https://code.wigwag.com/ugs/manifest"
 	[o]="boot parittion:\tDISABLE upgrade if newer version avaiable"
 	[O]="boot partition:\tforce upgrade regardless"
 	[p]="protect the default switches from the upgrade.sh file. (only overide with switches called here.)  The default behavior is that all switches get updated by this programs defaults."
@@ -645,7 +644,6 @@ argprocessor(){
 		log "info" "Looking up a build number: $mybuild"
 		buildurl="LOOKUP";
 		checkIPorexit
-	#readmanifest "$manifesturl";
 fi
 main
 } 

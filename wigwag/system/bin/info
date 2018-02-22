@@ -368,6 +368,12 @@ about(){
 	_placeAbout "  - Referenced: " " ammount of memory current marked as referenced or accessed"
 }
 
+showthesticker(){
+	_placeTitle "Factory Label"
+	d="{\"ID\":\"$relayID\",\"PC\":\"$pairingCode\"}"
+     qrcode-terminal -l "L" -f "black" -b "white" "$d"
+}
+
 main(){
 	if [[ $about -eq 1 ]]; then
 		about
@@ -383,6 +389,9 @@ main(){
 			performance
 			memory
 		fi
+		if [[ $showsticker -eq 1 ]]; then
+			showthesticker 
+		fi
 	fi
 }
 
@@ -393,6 +402,7 @@ declare -A hp=(
 	[a]="about"
 	[h]="help"
 	[m]="memory information added"
+	[s]="show qr sticker at the end"
 	[e1]="\t${BOLD}${UND}displays vital system information and process data${NORM}\n\t\t$0${NORM}\n"
 	)
 
@@ -402,7 +412,11 @@ argprocessor(){
 		case $flag in
 			a)  about=1; ;;
 			#
+			h) COMMON_MENU_HELP; exit; ;;
+			#
 			m) memory=1; ;;
+			#
+			s) showsticker=1; ;;
 			#
 			\?) echo -e \\n"Option -${BOLD}$OPTARG${NORM} not allowed.";COMMON_MENU_HELP;exit; ;;
 			#

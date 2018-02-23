@@ -180,7 +180,7 @@ start(){
 			if [[ $stillgood -eq 1 ]]; then
 				success 
 				_log "ww_eeprom_reader generated relay.config.json successfully"
-					/wigwag/system/bin/json2sh /wigwag/wwrelay-utils/I2C/relay.conf /wigwag/system/lib/bash/relaystatics.sh
+					PATH=/wigwag/system/lib/bash:$PATH /wigwag/system/bin/json2sh /wigwag/wwrelay-utils/I2C/relay.conf /wigwag/system/lib/bash/relaystatics.sh
 			else
 				failure
 				_log "ssl files are not of proper size at $RunnerSSLROOT"

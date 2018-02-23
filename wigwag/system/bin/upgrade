@@ -17,11 +17,7 @@
 source ccommon.sh nofunc
 source /wigwag/system/lib/bash/array.sh
 
-if [[ -e /wigwag/.branch ]]; then
-	source /wigwag/.branch
-else
-	branch=production
-fi
+
 cpu=$(cat /proc/cpuinfo | grep Hardware | awk '{print $5}')
 if [[ $cpu = "(A20)" ]]; then
 	board=cubietruck
@@ -34,6 +30,10 @@ fi
 #-------------------------------------------------------------------------------------------------------------------------------------------------------------
 #Global Varribles
 #-------------------------------------------------------------------------------------------------------------------------------------------------------------
+branch=production
+devfolder=/mnt/.boot/.ssl/dev/
+branchfile=$devfolder/branch.sh
+lanhostfile=$devfolder/lanhostlist.sh
 version="2.1"
 LogToTerm=1
 loglevel=verbose;
@@ -43,11 +43,18 @@ loglevel=verbose;
 #for development builds.  The content of that file must have a defined string as
 #lanhostslist="server server server ..." e.g.
 #lanhostslist="https://10.10.102.57:8080/newsys/ https://192.168.5.55/newsys/"
-source /mnt/.boot/development/lanhostslist.sh
-if [[ $lanhostslist != "" ]]; then
-	array_createFromSpaceList "lanhosts" "$lanhostslist"
-	lanhost="";
+
+if [[ -e $lanhostfile ]]; then
+	source $lanhostfile
+	if [[ $lanhostslist != "" ]]; then
+		array_createFromSpaceList "lanhosts" "$lanhostslist"
+		lanhost="";
+	fi
 fi
+if [[ -e $branchfile ]]; then
+	source $branchfile
+fi
+
 cloudhost="https://code.wigwag.com/ugs/builds/"
 thistarball="https://code.wigwag.com/ugs/ud.tar.gz"
 manifesturl="https://code.wigwag.com/ugs/manifest"
@@ -338,7 +345,6 @@ main(){
 			fi
 		fi
 		echo $downloadfile
-		exit
 		goodurl=$(isURLUp $downloadfile)
 		if [[ $goodurl -eq 1 ]]; then
 			log "info" "downloading: ${CYAN}$downloadfile${NORM} for installation"
@@ -554,7 +560,7 @@ argprocessor(){
 		case $flag in
 			a)  advanced=1; interactive; exit; ;;
 			#
-			b)	branch=$OPTARG; echo "branch=$branch;">/wigwag/.branch; ;;
+			b)	branch=$OPTARG; if [[ ! -e $devfolder ]]; then mkdir -p $devfolder; fi; echo "branch=$branch;">$branchfile; ;;
 			#
 			d)  	setting_userdata_upgrade=1; setting_userdata_upgrade_SET=1; ;;
 			#

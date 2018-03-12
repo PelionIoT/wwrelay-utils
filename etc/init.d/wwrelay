@@ -180,6 +180,7 @@ start(){
 			if [[ $stillgood -eq 1 ]]; then
 				success 
 				_log "ww_eeprom_reader generated relay.config.json successfully"
+					PATH=/wigwag/system/lib/bash:$PATH /wigwag/system/bin/json2sh /wigwag/wwrelay-utils/I2C/relay.conf /wigwag/system/lib/bash/relaystatics.sh
 			else
 				failure
 				_log "ssl files are not of proper size at $RunnerSSLROOT"
@@ -196,7 +197,7 @@ start(){
 	fi
 	if [[ $eepromSet -eq 0 ]]; then
 		failure
-		_log " Bad config, not starting, lets run the scanner"
+		_log " Bad config, not starting, do something else"
 		_led 10 10 0
 		udhcpc -n
 		# #stop the watchdog here with a humanhalt

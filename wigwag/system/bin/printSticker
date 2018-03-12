@@ -1,0 +1,37 @@
+#!/bin/bash
+source zpl.sh
+source relaystatics.sh
+if [[ $1 = "" ]]; then
+	echo "USEAGE: $0 <zplPrinterIP> <printerPort>"
+	exit
+fi
+
+pc1=${pairingCode:0:5}
+pc2=${pairingCode:4:5}
+pc3=${pairingCode:9:5}
+pc4=${pairingCode:14:5}
+pc5=${pairingCode:19:5}
+
+qrr1=12
+qrc=46
+
+pc_c1=24
+cinc=30
+rstart=161
+rinc=23
+
+d="{\"ID\":\"$relayID\",\"PC\":\"$pairingCode\"}"
+data=$(echo "$d" | recode-sr-latin)
+#data=$d
+zpl_start
+zpl_unicode
+zpl_goto $qrc $qrr1
+zpl_qrcode 0 4 M "$data"
+zpl_fontset D 1
+zpl_goto $(( $pc_c1 + $cinc )) $rstart 
+zpl_print "$pc4$pc5"
+zpl_goto $pc_c1 $(( $rstart + $rinc ))
+zpl_print "$pc1$pc2$pc3"
+zpl_end
+echo $printstring
+zpl_sendToPrinter $1 $2

@@ -17,11 +17,7 @@
 source ccommon.sh nofunc
 source /wigwag/system/lib/bash/array.sh
 
-if [[ -e /wigwag/.branch ]]; then
-	source /wigwag/.branch
-else
-	branch=production
-fi
+
 cpu=$(cat /proc/cpuinfo | grep Hardware | awk '{print $5}')
 if [[ $cpu = "(A20)" ]]; then
 	board=cubietruck
@@ -34,6 +30,10 @@ fi
 #-------------------------------------------------------------------------------------------------------------------------------------------------------------
 #Global Varribles
 #-------------------------------------------------------------------------------------------------------------------------------------------------------------
+branch=production
+devfolder=/mnt/.boot/.ssl/dev/
+branchfile=$devfolder/branch.sh
+lanhostfile=$devfolder/lanhostlist.sh
 version="2.1"
 LogToTerm=1
 loglevel=verbose;
@@ -43,15 +43,21 @@ loglevel=verbose;
 #for development builds.  The content of that file must have a defined string as
 #lanhostslist="server server server ..." e.g.
 #lanhostslist="https://10.10.102.57:8080/newsys/ https://192.168.5.55/newsys/"
-source /mnt/.boot/development/lanhostslist.sh
-if [[ $lanhostslist != "" ]]; then
-	array_createFromSpaceList "lanhosts" "$lanhostslist"
-	lanhost="";
+
+if [[ -e $lanhostfile ]]; then
+	source $lanhostfile
+	if [[ $lanhostslist != "" ]]; then
+		array_createFromSpaceList "lanhosts" "$lanhostslist"
+		lanhost="";
+	fi
 fi
+if [[ -e $branchfile ]]; then
+	source $branchfile
+fi
+
 cloudhost="https://code.wigwag.com/ugs/builds/"
 thistarball="https://code.wigwag.com/ugs/ud.tar.gz"
-manifestLocalhost="https://10.10.102.57:8080/builds/manifest.dat"
-manifesturl="https://code.wigwag.com/ugs/manifest.dat"
+manifesturl="https://code.wigwag.com/ugs/manifest"
 upgrd="upgrade"
 buildurl="LOOKUP"
 
@@ -339,7 +345,6 @@ main(){
 			fi
 		fi
 		echo $downloadfile
-		exit
 		goodurl=$(isURLUp $downloadfile)
 		if [[ $goodurl -eq 1 ]]; then
 			log "info" "downloading: ${CYAN}$downloadfile${NORM} for installation"
@@ -525,7 +530,7 @@ declare -A hp=(
 	[k]="wipe the u-boot (dangerous)"
 	[n]="little-nuke this to x.y.z version, becomes a 'keyed' factoy version u-boot, boot, factory, upgrade, user (same as -k -J -z -O -t -F -v -U -w )"
 	[N]="nuke to this x.y.z version, becomes a factoy version resetting eeprom, userdata, u-boot, boot, factory, upgrade, user (same as -e -x -k -J -z -O -t -F -v -U -w )"
-	[mm]="url to manifest.dat -m <url>, defaults to: https://code.wigwag.com/ugs/"
+	[mm]="url to cloudserver manifest -m <url>, defaults to: https://code.wigwag.com/ugs/manifest"
 	[o]="boot parittion:\tDISABLE upgrade if newer version avaiable"
 	[O]="boot partition:\tforce upgrade regardless"
 	[p]="protect the default switches from the upgrade.sh file. (only overide with switches called here.)  The default behavior is that all switches get updated by this programs defaults."
@@ -555,7 +560,7 @@ argprocessor(){
 		case $flag in
 			a)  advanced=1; interactive; exit; ;;
 			#
-			b)	branch=$OPTARG; echo "branch=$branch;">/wigwag/.branch; ;;
+			b)	branch=$OPTARG; if [[ ! -e $devfolder ]]; then mkdir -p $devfolder; fi; echo "branch=$branch;">$branchfile; ;;
 			#
 			d)  	setting_userdata_upgrade=1; setting_userdata_upgrade_SET=1; ;;
 			#
@@ -645,7 +650,6 @@ argprocessor(){
 		log "info" "Looking up a build number: $mybuild"
 		buildurl="LOOKUP";
 		checkIPorexit
-	#readmanifest "$manifesturl";
 fi
 main
 } 

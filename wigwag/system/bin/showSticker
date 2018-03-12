@@ -1,0 +1,5 @@
+#!/bin/bash
+source relaystatics.sh
+d="{\"ID\":\"$relayID\",\"PC\":\"$pairingCode\"}"
+qrcode-terminal -l "l" "$d"
+echo "$relayID $pairingCode"

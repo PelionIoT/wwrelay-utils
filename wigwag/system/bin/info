@@ -2,11 +2,13 @@
 #https://github.com/longsleep/build-pine64-image/blob/master/simpleimage/platform-scripts/pine64_health.sh
 #---------------Configuration-------------#
 source ccommon.sh nofunc
-source basheeprom
+
 version="1.5"
 LogToTerm=1
 loglevel=info;
-
+if [[ -e "/wigwag/system/lib/bash/relaystatics.sh" ]]; then
+	source "/wigwag/system/lib/bash/relaystatics.sh"
+fi
 
 #run eetool
 _ret(){
@@ -190,9 +192,9 @@ firmware(){
 }
 
 account(){
-	SN=$(_ret relayID)
-	PAIRINGCODE=$(_ret pairingCode)
-	CLOUDURL=$(_ret cloudURL)
+	SN=$relayID
+	PAIRINGCODE=$pairingCode
+	CLOUDURL=$cloudURL
 	_placeTitle "Account Infomation"
 	_placeLine "  - Serial Number:" "$SN"
 	_placeLine "  - Pairing Code:" "$PAIRINGCODE"
@@ -201,9 +203,9 @@ account(){
 
 hardware(){
 	LEDTYPE="RBG"
-	LEDCONFIG=$(_ret ledConfig)
-	HWV=$(_ret hardwareVersion)
-	ETHERNETMAC=$(eetool -t hex-colon get ethernetMAC)
+	LEDCONFIG=$ledConfig
+	HWV=$hardwareVersion
+	ETHERNETMAC=$ethernetMAC_string
 	if [[ $LEDCONFIG = "01" ]]; then
 		LEDTYPE="RGB"
 	fi
@@ -312,7 +314,7 @@ performance(){
 	_memperf "runner" "node /wigwag/devicejs-core-modules/Runner/start.js"
 	_memperf "devicejs-user" "=user"
 	_memperf "devicejs" "devicejs.conf"
-	_memperf "devicedb" "devicedb"
+	_memperf "devicedb" "devicedb.yaml"
 	_memperf "devicejs-modbus" "=modbus"
 	_memperf "devicejs-modules" "=all-modules"
 	_memperf "devicejs-bacnet" "=bacnet"
@@ -366,6 +368,12 @@ about(){
 	_placeAbout "  - Referenced: " " ammount of memory current marked as referenced or accessed"
 }
 
+showthesticker(){
+	_placeTitle "Factory Label"
+	d="{\"ID\":\"$relayID\",\"PC\":\"$pairingCode\"}"
+     qrcode-terminal -l "L" -f "black" -b "white" "$d"
+}
+
 main(){
 	if [[ $about -eq 1 ]]; then
 		about
@@ -376,10 +384,13 @@ main(){
 		firmware
 		hardware
 		account
-		manufacturing
+		#manufacturing
 		if [[ $memory -eq 1 ]]; then
 			performance
 			memory
+		fi
+		if [[ $showsticker -eq 1 ]]; then
+			showthesticker 
 		fi
 	fi
 }
@@ -391,6 +402,7 @@ declare -A hp=(
 	[a]="about"
 	[h]="help"
 	[m]="memory information added"
+	[s]="show qr sticker at the end"
 	[e1]="\t${BOLD}${UND}displays vital system information and process data${NORM}\n\t\t$0${NORM}\n"
 	)
 
@@ -400,7 +412,11 @@ argprocessor(){
 		case $flag in
 			a)  about=1; ;;
 			#
+			h) COMMON_MENU_HELP; exit; ;;
+			#
 			m) memory=1; ;;
+			#
+			s) showsticker=1; ;;
 			#
 			\?) echo -e \\n"Option -${BOLD}$OPTARG${NORM} not allowed.";COMMON_MENU_HELP;exit; ;;
 			#

@@ -248,7 +248,7 @@
                         "channelMask":25,
                         "baudRate":115200,
                         "log_level":1,
-                        "networkRefreshDuration":17000,
+                        "networkRefreshDuration": 0,
                         "panIdSelection":"randomInRange",
                         "panId":23,
                         "platform":"{{wwplatform}}",

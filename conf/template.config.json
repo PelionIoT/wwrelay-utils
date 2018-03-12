@@ -503,6 +503,7 @@
                             "fast": {
                                 "interval": 21500,
                                 "interfaces": [
+                                    "Facades/MediaStream",
                                     "Facades/HasTemperature",
                                     "Facades/ThermostatGStatus",
                                     "Facades/ThermostatSupplyTemperature",

@@ -12,8 +12,16 @@ pc3=${pairingCode:9:5}
 pc4=${pairingCode:14:5}
 pc5=${pairingCode:19:5}
 
+rshort3=${relayID:4:6}
+
 qrr1=12
-qrc=46
+qrc=26
+
+wwrl_c=175
+wwrl_c_offset=5
+wwrl_r=22
+wwrl_r_offset=20
+
 
 pc_c1=24
 cinc=30
@@ -24,14 +32,37 @@ d="{\"ID\":\"$relayID\",\"PC\":\"$pairingCode\"}"
 data=$(echo "$d" | recode-sr-latin)
 #data=$d
 zpl_start
+
+
 zpl_unicode
 zpl_goto $qrc $qrr1
 zpl_qrcode 0 4 M "$data"
 zpl_fontset D 1
-zpl_goto $(( $pc_c1 + $cinc )) $rstart 
+zpl_goto $(( $pc_c1 )) $rstart 
 zpl_print "$pc4$pc5"
 zpl_goto $pc_c1 $(( $rstart + $rinc ))
 zpl_print "$pc1$pc2$pc3"
+
+
+#printstring=$printstring"^FO,$wwrl_c,$wwrl_r^FPV,10^AV,N,10,10"
+zpl_goto $wwrl_c $wwrl_r
+if [[ $dovertical -eq 1 ]]; then
+zpl_print "WR"
+zpl_goto $wwrl_c $(($wwrl_r + $wwrl_r_offset ))
+zpl_print "AA"
+zpl_goto $(($wwrl_c + $wwrl_c_offset)) $(($wwrl_r + $wwrl_r_offset + $wwrl_r_offset))
+printstring=$printstring"^FPV"
+zpl_print "$rshort3"
+else
+zpl_goto $(($wwrl_c )) $(($wwrl_r + 8 ))
+#Rotation=$(zpl_getRotation 90)
+#zpl_rotate 90
+zpl_rotateFontOnce C 90
+#zpl_fontset D 1
+#printstring=$printstring"^AE$Rotation,1,1"
+zpl_print "$relayID"
+#zpl_rotate 0
+fi
 zpl_end
 echo $printstring
 zpl_sendToPrinter $1 $2

@@ -39,6 +39,14 @@ eeprog /dev/i2c-1 0x55 -f -r 0:10 2> /dev/null
 		modprobe at24
 	fi
 
+_dhcpcfix(){
+	udhcpc -n
+	sleep 5
+	killall udhcpc
+}
+
+_dhcpcfix
+sleep 100
 
 _log() {
 	echo -e "$1" >> $WWRELAY_LOG

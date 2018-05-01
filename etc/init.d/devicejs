@@ -17,7 +17,7 @@ WIGWAGROOT="/wigwag"
 START_SOFTWARE="runner" # runner or maestro
 
 MAESTRO_DIR="${WIGWAGROOT}/system/bin"
-MAESTRO_CONFIG="${WIGWAGROOT}/wwrelay-utils/maestro-conf/wwrelay-config.yaml"
+MAESTRO_CONFIG="${WIGWAGROOT}/wwrelay-utils/templates/wwrelay-config.yaml"
 MAESTRO_START_CMD="./maestro -config ${MAESTRO_CONFIG}"
 MAESTRO_STOP_CMD="echo Need_Stop_Command"
 

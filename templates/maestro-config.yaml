@@ -5,11 +5,11 @@ configDBPath: /wigwag/system/bin/maestroConfig.db
 clientId: "{{ARCH_RELAYID}}"
 platform_readers:
   - platform: "wwrelayA10"
-relaymq:
-    host: "{{ARCH_relaymqHost}}"
-    logging: true
-    client_cert: "{{ARCH_CLIENT_CERT_PEM}}"
-    client_key: "{{ARCH_CLIENT_KEY_PEM}}"
+# relaymq:
+#     host: "{{ARCH_relaymqHost}}"
+#     logging: true
+#     client_cert: "{{ARCH_CLIENT_CERT_PEM}}"
+#     client_key: "{{ARCH_CLIENT_KEY_PEM}}"
 #     ---Only specify server_name if the RootCA is not in the default list
 #     This is only a valid option if you are not using a well-known CA
 #    server_name: "devcloud.wigwag.io"
@@ -168,7 +168,6 @@ container_templates:
      send_composite_jobs_to_stdin: true
      send_grease_origin_id: true
      exec_pre_args: 
-        - "--max-executable-size=96"
         - "--max-old-space-size=128"
         - "--max-semi-space-size=1"
         - "{{MAESTRO_RUNNER_DIR}}/index.js"
@@ -184,7 +183,6 @@ container_templates:
      inherit_env: true
      exec_cmd: "{{NODE_EXEC}}"        # will use PATH if not absolute path (as per execvp())
      exec_pre_args: 
-        - "--max-executable-size=96"
         - "--max-old-space-size=128"
         - "--max-semi-space-size=1"
 jobs:
@@ -247,7 +245,7 @@ jobs:
                       "error"
                   ],
                   "platform":"{{ARCH_WW_PLATFORM}}",
-                  "siodev":"ttyUSB0",
+                  "siodev":"tty6lbr",
                   "siodev_secondary":"ttyUSB1",
                   "sixBMAC":"{{ARCH_SIXLBR_MAC}}",
                   "baudrate":115200,
@@ -271,26 +269,32 @@ jobs:
               }
           }         
         }
-   - job: "core-lighting"
-     immutable: true  # don't store in DB
-     exec_cmd: "${thisdir}/../core-lighting"
-     container_template: "deviceJS_process"
-     composite_id: "all-modules"
-     restart: true
-     restart_limit: 5000
-     restart_pause: 90
-     config: |
-        {}
-   - job: "sonos"
-     immutable: true  # don't store in DB
-     exec_cmd: "${thisdir}/../sonos"
-     container_template: "deviceJS_process"
-     composite_id: "all-modules"
-     restart: true
-     restart_limit: 5000
-     restart_pause: 90
-     config: |
-        {}
+   # - job: "core-lighting"
+   #   immutable: true  # don't store in DB
+   #   exec_cmd: "${thisdir}/../core-lighting"
+   #   container_template: "deviceJS_process"
+   #   composite_id: "all-modules"
+   #   restart: true
+   #   restart_limit: 5000
+   #   restart_pause: 90
+   #   config: |
+   #      {}
+   #   exec_cmd: "${thisdir}/../IPStack"
+   #   container_template: "deviceJS_process"
+   #   composite_id: "all-modules"
+   #   restart: true
+   #   restart_limit: 5000
+   #   restart_pause: 90
+   # - job: "sonos"
+   #   immutable: true  # don't store in DB
+   #   exec_cmd: "${thisdir}/../sonos"
+   #   container_template: "deviceJS_process"
+   #   composite_id: "all-modules"
+   #   restart: true
+   #   restart_limit: 5000
+   #   restart_pause: 90
+   #   config: |
+   #      {}
    - job: "core-interfaces"
      immutable: true  # don't store in DB
      exec_cmd: "${thisdir}/../core-interfaces"
@@ -305,13 +309,13 @@ jobs:
      immutable: true  # don't store in DB
      exec_cmd: "${thisdir}/../zigbeeHA"
      container_template: "deviceJS_process"
-     composite_id: "all-modules"
+     composite_id: "zigbee"
      restart: true
      restart_limit: 5000
      restart_pause: 90
      config: |
         {
-          "siodev":"/dev/ttyUSB0",
+          "siodev":"/dev/ttyZigbee",
           "devType":0,
           "newNwk":false,
           "channelMask":25,
@@ -327,7 +331,7 @@ jobs:
      immutable: true  # don't store in DB
      exec_cmd: "${thisdir}/../../wigwag-core-modules/RelayStatsSender"
      container_template: "deviceJS_process"
-     composite_id: "all-modules"
+     composite_id: "user"
      restart: true
      restart_limit: 5000
      restart_pause: 90
@@ -370,50 +374,44 @@ jobs:
      config: |
         {
           "serialInterfaceOptions":{
-              "siodev":"/dev/ttyUSB0",
+              "siodev":"/dev/ttyZwave",
               "baudrate":115200,
               "dataBits":8,
               "stopBits":1
           },
           "platform":"{{ARCH_WW_PLATFORM}}"
         }
-   - job: "IPStack"
-     immutable: true  # don't store in DB
-     exec_cmd: "${thisdir}/../IPStack"
-     container_template: "deviceJS_process"
-     composite_id: "all-modules"
-     restart: true
-     restart_limit: 5000
-     restart_pause: 90
-     config: |
-        {
-          "wan":[
-              "eth0",
-              "eth1",
-              "wlan0"
-          ],
-          "dhcp":"on",
-          "static":{
-              "ipaddress":"10.10.20.31",
-              "mask":"255.255.255.0",
-              "gateway":"10.10.20.1"
-          },
-          "ethernetMAC":"{{ARCH_ETHERNET_MAC}}"
-        }
-   - job: "MDNS"
-     immutable: true  # don't store in DB
-     exec_cmd: "${thisdir}/../../wigwag-core-modules/MDNS"
-     container_template: "deviceJS_process"
-     composite_id: "all-modules"
-     restart: true
-     restart_limit: 5000
-     restart_pause: 90
-     config: |
-        {
-          "id":"{{ARCH_RELAYID}}",
-          "waitForIPStack":true,
-          "port":443
-        }
+   # - job: "IPStack"
+   #   immutable: true  # don't store in DB
+   #   config: |
+   #      {
+   #        "wan":[
+   #            "eth0",
+   #            "eth1",
+   #            "wlan0"
+   #        ],
+   #        "dhcp":"on",
+   #        "static":{
+   #            "ipaddress":"10.10.20.31",
+   #            "mask":"255.255.255.0",
+   #            "gateway":"10.10.20.1"
+   #        },
+   #        "ethernetMAC":"{{ARCH_ETHERNET_MAC}}"
+   #      }
+   # - job: "MDNS"
+   #   immutable: true  # don't store in DB
+   #   exec_cmd: "${thisdir}/../../wigwag-core-modules/MDNS"
+   #   container_template: "deviceJS_process"
+   #   composite_id: "all-modules"
+   #   restart: true
+   #   restart_limit: 5000
+   #   restart_pause: 90
+   #   config: |
+   #      {
+   #        "id":"{{ARCH_RELAYID}}",
+   #        "waitForIPStack":true,
+   #        "port":443
+   #      }
    - job: "LEDController"
      immutable: true  # don't store in DB
      exec_cmd: "${thisdir}/../../wigwag-core-modules/LEDController"
@@ -431,13 +429,14 @@ jobs:
      immutable: true  # don't store in DB
      exec_cmd: "${thisdir}/../../wigwag-core-modules/VirtualDeviceDriver"
      container_template: "deviceJS_process"
-     composite_id: "all-modules"
+     composite_id: "user"
      restart: true
      restart_limit: 5000
      restart_pause: 90
      config: |
         {
           "deviceControllersDirectory": "templates",
+          "hideTemplates": [ "VideoCamera" ],
           "logLevel": 1
         }
    - job: "ModbusRTU"
@@ -451,12 +450,12 @@ jobs:
      config: |
         {
           "serialInterfaceOptions":{ //Serial communication setup parameters
-              "siodev":"/dev/wwUSBP1_TTY",
+              "siodev":"/dev/ttymodbus",
               "baudrate":19200,
               "dataBits":8,
               "stopBits":1,
               "parity":"none",
-              "endPacketTimeout":15
+              "endPacketTimeout":25
           },
           "logLevel":1,   //Available- info- 2,debug- 3,trace- 4,error- 0,warn- 1
           "relayId": "{{ARCH_RELAYID}}",
@@ -482,7 +481,7 @@ jobs:
      config: |
         {
           "serialInterfaceOptions": { //Used to setup comms with BACnet device
-              "siodev": "/dev/wwUSBP2_TTY",
+              "siodev": "/dev/ttybacnet",
               "baudrate": 76800,
               "dataBits": 8,
               "parity": "none",
@@ -504,29 +503,30 @@ jobs:
           "requestAckTimeout": 300, //ms
           "throttleRate": 50, //ms
           "bacnetResourceId": "BacnetDriver",
+          "stateManagerIntervalResolution": 12000,
           "supportedRecipesDirectory": "controllers/supportedResourceRecipes" //Relative path to directory where all the resouce recipes are or will be defined,
         }
-   - job: "RuleEngine"
-     immutable: true  # don't store in DB
-     exec_cmd: "${thisdir}/../../wigwag-core-modules/RuleEngine"
-     container_template: "deviceJS_process"
-     composite_id: "user"
-     restart: true
-     restart_limit: 5000
-     restart_pause: 90
-     config: |
-        {
-          "cloudAddress":"{{ARCH_CLOUD_URL}}",
-          "relayID":"{{ARCH_RELAYID}}",
-          "ssl":{
-              "key":"{{SSL_CERTS_PATH}}/client.key.pem",
-              "cert":"{{SSL_CERTS_PATH}}/client.cert.pem",
-              "ca":[
-                  "{{SSL_CERTS_PATH}}/ca.cert.pem",
-                  "{{SSL_CERTS_PATH}}/intermediate.cert.pem"
-              ]
-          }
-        }
+   # - job: "RuleEngine"
+   #   immutable: true  # don't store in DB
+   #   exec_cmd: "${thisdir}/../../wigwag-core-modules/RuleEngine"
+   #   container_template: "deviceJS_process"
+   #   composite_id: "user"
+   #   restart: true
+   #   restart_limit: 5000
+   #   restart_pause: 90
+   #   config: |
+   #      {
+   #        "cloudAddress":"{{ARCH_CLOUD_URL}}",
+   #        "relayID":"{{ARCH_RELAYID}}",
+   #        "ssl":{
+   #            "key":"{{SSL_CERTS_PATH}}/client.key.pem",
+   #            "cert":"{{SSL_CERTS_PATH}}/client.cert.pem",
+   #            "ca":[
+   #                "{{SSL_CERTS_PATH}}/ca.cert.pem",
+   #                "{{SSL_CERTS_PATH}}/intermediate.cert.pem"
+   #            ]
+   #        }
+   #      }
    - job: "SchedulerEngine"
      immutable: true  # don't store in DB
      exec_cmd: "${thisdir}/../../wigwag-core-modules/SchedulerEngine"
@@ -537,119 +537,119 @@ jobs:
      restart_pause: 90
      config: |
         {
-          "logLevel": 1 //Available- error- 0, warn- 1, info- 2, debug- 3, trace- 4
+          "logLevel": 2 //Available- error- 0, warn- 1, info- 2, debug- 3, trace- 4
         }
-   - job: "AppServer"
-     immutable: true  # don't store in DB
-     exec_cmd: "${thisdir}/../AppServer"
-     container_template: "deviceJS_process"
-     composite_id: "user"
-     restart: true
-     restart_limit: 5000
-     restart_pause: 90
-     config: |
-        {
-          "authentication":{
-              "enabled":true,
-              "cloudAPISecret":"{{ARCH_PAIRING_CODE}}",
-              "redirectURL":"/wigwag-ui/s/login/",
-              "cloudRedirectURL":"{{ARCH_CLOUD_URL}}/s/login"
-          },
-          "port":443,
-          "ssl":{
-              "key":"{{SSL_CERTS_PATH}}/client.key.pem",
-              "cert":"{{SSL_CERTS_PATH}}/client.cert.pem",
-              "ca":[
-                  "{{SSL_CERTS_PATH}}/ca.cert.pem",
-                  "{{SSL_CERTS_PATH}}/intermediate.cert.pem"
-              ]
-          },
-          "relayID":"{{ARCH_RELAYID}}"
-        }
-   - job: "APIProxy"
-     immutable: true  # don't store in DB
-     exec_cmd: "${thisdir}/../APIProxy"
-     container_template: "deviceJS_process"
-     composite_id: "user"
-     restart: true
-     restart_limit: 5000
-     restart_pause: 90
-     config: |
-        {
-          "cloudAPISecret":"{{ARCH_PAIRING_CODE}}",
-          "apiKey":"hello",
-          "apiSecret":"asdfdsfa"
-        }
-   - job: "WigWagMobileUI"
-     immutable: true  # don't store in DB
-     exec_cmd: "${thisdir}/../../wigwag-core-modules/WigWagMobileUI"
-     container_template: "deviceJS_process"
-     composite_id: "user"
-     restart: true
-     restart_limit: 5000
-     restart_pause: 90
-     config: |
-        {}
-   - job: "WigWagUI"
-     immutable: true  # don't store in DB
-     exec_cmd: "${thisdir}/../../wigwag-core-modules/wigwag-ui"
-     container_template: "deviceJS_process"
-     composite_id: "user"
-     restart: true
-     restart_limit: 5000
-     restart_pause: 90
-     config: |
-        {
-            "cloudAPISecret":"{{ARCH_PAIRING_CODE}}"
-        }
-   - job: "WWRelayWebUI"
-     immutable: true  # don't store in DB
-     exec_cmd: "${thisdir}/../../wigwag-core-modules/WWRelayWebUI"
-     container_template: "deviceJS_process"
-     composite_id: "user"
-     restart: true
-     restart_limit: 5000
-     restart_pause: 90
-     config: |
-        {}
-   - job: "RuleUI"
-     immutable: true  # don't store in DB
-     exec_cmd: "${thisdir}/../../wigwag-core-modules/RuleUI"
-     container_template: "deviceJS_process"
-     composite_id: "user"
-     restart: true
-     restart_limit: 5000
-     restart_pause: 90
-     config: |
-        {
-          "debug_mode":true,
-          "debug_level":3,    // goes up to 3, default 1
-          "RULE_NODE_TYPES_DIRECTORY":[
-              "${thisdir}/../RuleEngine/src/nodes"
-          ],
-          "FORMS_DIR":[
-              {
-                  "path":"${thisdir}/../../wigwag-core-modules/RuleUI/schemaFormDialogs",
-                  "ignores":[
-                      "_public"
-                  ]
-              }
-          ]
-        }
-   - job: "moods"
-     immutable: true  # don't store in DB
-     exec_cmd: "${thisdir}/../../wigwag-core-modules/moods"
-     container_template: "deviceJS_process"
-     composite_id: "user"
-     restart: true
-     restart_limit: 5000
-     restart_pause: 90
-     config: |
-        {
-          "jwtSecret":"IXPySxxr0f5X2CIqdB45eK",
-          "apiKey":"{{ARCH_RELAYID}}",
-          "apiSecret":"{{ARCH_PAIRING_CODE}}"
-        }
+   # - job: "AppServer"
+   #   immutable: true  # don't store in DB
+   #   exec_cmd: "${thisdir}/../AppServer"
+   #   container_template: "deviceJS_process"
+   #   composite_id: "user"
+   #   restart: true
+   #   restart_limit: 5000
+   #   restart_pause: 90
+   #   config: |
+   #      {
+   #        "authentication":{
+   #            "enabled":true,
+   #            "cloudAPISecret":"{{ARCH_PAIRING_CODE}}",
+   #            "redirectURL":"/wigwag-ui/s/login/",
+   #            "cloudRedirectURL":"{{ARCH_CLOUD_URL}}/s/login"
+   #        },
+   #        "port":443,
+   #        "ssl":{
+   #            "key":"{{SSL_CERTS_PATH}}/client.key.pem",
+   #            "cert":"{{SSL_CERTS_PATH}}/client.cert.pem",
+   #            "ca":[
+   #                "{{SSL_CERTS_PATH}}/ca.cert.pem",
+   #                "{{SSL_CERTS_PATH}}/intermediate.cert.pem"
+   #            ]
+   #        },
+   #        "relayID":"{{ARCH_RELAYID}}"
+   #      }
+   # - job: "APIProxy"
+   #   immutable: true  # don't store in DB
+   #   exec_cmd: "${thisdir}/../APIProxy"
+   #   container_template: "deviceJS_process"
+   #   composite_id: "user"
+   #   restart: true
+   #   restart_limit: 5000
+   #   restart_pause: 90
+   #   config: |
+   #      {
+   #        "cloudAPISecret":"{{ARCH_PAIRING_CODE}}",
+   #        "apiKey":"hello",
+   #        "apiSecret":"asdfdsfa"
+   #      }
+   # - job: "WigWagMobileUI"
+   #   immutable: true  # don't store in DB
+   #   exec_cmd: "${thisdir}/../../wigwag-core-modules/WigWagMobileUI"
+   #   container_template: "deviceJS_process"
+   #   composite_id: "user"
+   #   restart: true
+   #   restart_limit: 5000
+   #   restart_pause: 90
+   #   config: |
+   #      {}
+   # - job: "WigWagUI"
+   #   immutable: true  # don't store in DB
+   #   exec_cmd: "${thisdir}/../../wigwag-core-modules/wigwag-ui"
+   #   container_template: "deviceJS_process"
+   #   composite_id: "user"
+   #   restart: true
+   #   restart_limit: 5000
+   #   restart_pause: 90
+   #   config: |
+   #      {
+   #          "cloudAPISecret":"{{ARCH_PAIRING_CODE}}"
+   #      }
+   # - job: "WWRelayWebUI"
+   #   immutable: true  # don't store in DB
+   #   exec_cmd: "${thisdir}/../../wigwag-core-modules/WWRelayWebUI"
+   #   container_template: "deviceJS_process"
+   #   composite_id: "user"
+   #   restart: true
+   #   restart_limit: 5000
+   #   restart_pause: 90
+   #   config: |
+   #      {}
+   # - job: "RuleUI"
+   #   immutable: true  # don't store in DB
+   #   exec_cmd: "${thisdir}/../../wigwag-core-modules/RuleUI"
+   #   container_template: "deviceJS_process"
+   #   composite_id: "user"
+   #   restart: true
+   #   restart_limit: 5000
+   #   restart_pause: 90
+   #   config: |
+   #      {
+   #        "debug_mode":true,
+   #        "debug_level":3,    // goes up to 3, default 1
+   #        "RULE_NODE_TYPES_DIRECTORY":[
+   #            "${thisdir}/../RuleEngine/src/nodes"
+   #        ],
+   #        "FORMS_DIR":[
+   #            {
+   #                "path":"${thisdir}/../../wigwag-core-modules/RuleUI/schemaFormDialogs",
+   #                "ignores":[
+   #                    "_public"
+   #                ]
+   #            }
+   #        ]
+   #      }
+   # - job: "moods"
+   #   immutable: true  # don't store in DB
+   #   exec_cmd: "${thisdir}/../../wigwag-core-modules/moods"
+   #   container_template: "deviceJS_process"
+   #   composite_id: "user"
+   #   restart: true
+   #   restart_limit: 5000
+   #   restart_pause: 90
+   #   config: |
+   #      {
+   #        "jwtSecret":"IXPySxxr0f5X2CIqdB45eK",
+   #        "apiKey":"{{ARCH_RELAYID}}",
+   #        "apiSecret":"{{ARCH_PAIRING_CODE}}"
+   #      }
    - job: "DevStateManager"
      immutable: true  # don't store in DB
      exec_cmd: "${thisdir}/../../wigwag-core-modules/DevStateManager"

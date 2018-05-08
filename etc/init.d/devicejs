@@ -17,8 +17,9 @@ WIGWAGROOT="/wigwag"
 START_SOFTWARE="runner" # runner or maestro
 
 MAESTRO_DIR="${WIGWAGROOT}/system/bin"
+GREASE_STATIC_LIB="${WIGWAGROOT}/system/lib"
 MAESTRO_CONFIG="${WIGWAGROOT}/wwrelay-utils/templates/maestro-config.yaml"
-MAESTRO_START_CMD="./maestro -config ${MAESTRO_CONFIG}"
+MAESTRO_START_CMD="$MAESTRO_DIR/maestro -config ${MAESTRO_CONFIG}"
 MAESTRO_STOP_CMD="echo Need_Stop_Command"
 
 
@@ -46,9 +47,7 @@ config_cpu_scaling() {
 
 stop_devjs() {
 	if [[ $START_SOFTWARE = "maestro" ]]; then
-		pushd $MAESTRO_DIR
 		$MAESTRO_STOP_CMD > $MAESTRO_RUNTIME_LOG 2>&1
-		popd
 	else
 		pushd $RUNNER_DIR
 		$RUNNER_STOP_CMD > $RUNNER_LOG 2>&1
@@ -67,9 +66,9 @@ START() {
 		# fi
 		if [[ $START_SOFTWARE = "maestro" ]]; then
 			ulimit -c unlimited
-			pushd $MAESTRO_DIR
+			LD_LIBRARY_PATH=$GREASE_STATIC_LIB:/$LD_LIBRARY_PATH
+			export LD_LIBRARY_PATH
 			$MAESTRO_START_CMD > $MAESTRO_RUNTIME_LOG 2>&1 &
-			popd
 		else
 			if [ -e $RUNNER_LOG ]; then
 				mv $RUNNER_LOG $RUNNER_LOG.1

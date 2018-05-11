@@ -453,7 +453,16 @@
                 	"config":{
                         "logLevel": 2 //Available- error- 0, warn- 1, info- 2, debug- 3, trace- 4
                    }
-              },
+                },
+                {
+                  "path":"${thisdir}/../../wigwag-core-modules/onsite-enterprise-server",
+                  "config": {
+                      "prodPort": "3131",
+                      "modelDefinitions": "/api/models",
+                      "logRequests": false,
+                      "logLevel": 2
+                  }
+                },
                 // {
                 //     "path":"${thisdir}/../AppServer",
                 //     "config":{
@@ -582,6 +591,6 @@
                 	}
                 }
            ]
-}
-}
+        }
+    }
 }

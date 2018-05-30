@@ -45,8 +45,7 @@ _dhcpcfix(){
 	killall udhcpc
 }
 
-_dhcpcfix
-sleep 100
+# _dhcpcfix
 
 _log() {
 	echo -e "$1" >> $WWRELAY_LOG

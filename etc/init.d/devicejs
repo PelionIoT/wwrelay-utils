@@ -14,11 +14,19 @@
 ### END INIT INFO
 WIGWAGROOT="/wigwag"
 
-START_SOFTWARE="runner" # runner or maestro
+START_SOFTWARE="maestro" # runner or maestro
 
 MAESTRO_DIR="${WIGWAGROOT}/system/bin"
 GREASE_STATIC_LIB="${WIGWAGROOT}/system/lib"
-MAESTRO_CONFIG="${WIGWAGROOT}/wwrelay-utils/templates/maestro-config.yaml"
+MAESTRO_CONFIG_RP100="${WIGWAGROOT}/wwrelay-utils/conf/maestro-conf/maestro-config-rp100.yaml"
+MAESTRO_CONFIG_RP200="${WIGWAGROOT}/wwrelay-utils/conf/maestro-conf/maestro-config-rp200.yaml"
+eeprog /dev/i2c-1 0x55 -f -r 0:10 2> /dev/null
+	if [[ $? -eq 0 ]]; then
+		MAESTRO_CONFIG=MAESTRO_CONFIG_RP100
+	else
+		MAESTRO_CONFIG=MAESTRO_CONFIG_RP200
+	fi
+
 MAESTRO_START_CMD="$MAESTRO_DIR/maestro -config ${MAESTRO_CONFIG}"
 MAESTRO_STOP_CMD="echo Need_Stop_Command"
 

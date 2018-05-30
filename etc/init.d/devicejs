@@ -22,9 +22,9 @@ MAESTRO_CONFIG_RP100="${WIGWAGROOT}/wwrelay-utils/conf/maestro-conf/maestro-conf
 MAESTRO_CONFIG_RP200="${WIGWAGROOT}/wwrelay-utils/conf/maestro-conf/maestro-config-rp200.yaml"
 eeprog /dev/i2c-1 0x55 -f -r 0:10 2> /dev/null
 	if [[ $? -eq 0 ]]; then
-		MAESTRO_CONFIG=MAESTRO_CONFIG_RP100
+		MAESTRO_CONFIG=$MAESTRO_CONFIG_RP100
 	else
-		MAESTRO_CONFIG=MAESTRO_CONFIG_RP200
+		MAESTRO_CONFIG=$MAESTRO_CONFIG_RP200
 	fi
 
 MAESTRO_START_CMD="$MAESTRO_DIR/maestro -config ${MAESTRO_CONFIG}"
@@ -76,6 +76,7 @@ START() {
 			ulimit -c unlimited
 			LD_LIBRARY_PATH=$GREASE_STATIC_LIB:/$LD_LIBRARY_PATH
 			export LD_LIBRARY_PATH
+			echo "starting maestro"
 			$MAESTRO_START_CMD > $MAESTRO_RUNTIME_LOG 2>&1 &
 		else
 			if [ -e $RUNNER_LOG ]; then

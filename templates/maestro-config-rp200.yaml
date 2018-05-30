@@ -3,8 +3,20 @@ sysLogSocket: /dev/log
 httpUnixSocket: /tmp/maestroapi.sock
 configDBPath: /wigwag/system/bin/maestroConfig.db
 clientId: "{{ARCH_RELAYID}}"
+watchdog:
+    path: "/wigwag/system/lib/rp100wd.so"
+    opt1: "/var/deviceOSkeepalive"
+    opt2: "30"
+network:
+    interfaces:
+        - if_name: eth0
+          dhcpv4: true
+          # set the mac addresses for this interface also:
+          hw_addr: "{{ARCH_ETHERNET_MAC}}"
+processes:
+    reaper_interval: 1500
 platform_readers:
-  - platform: "wwrelayA10"
+    - platform: "rp200"
 # relaymq:
 #     host: "{{ARCH_relaymqHost}}"
 #     logging: true
@@ -29,7 +41,7 @@ var_defs:
    - key: "MAESTRO_RUNNER_DIR"
      value: "/wigwag/devicejs-core-modules/maestroRunner"
    - key: "SSL_CERTS_PATH"
-     value: "/wigwag/devicejs-core-modules/Runner/.ssl"
+     value: "{{SSL_CERTS_PATH}}"
    - key: "LOCAL_DEVICEDB_PORT"
      value: 9000
    - key: "LOCAL_DATABASE_STORAGE_DIRECTORY"
@@ -42,12 +54,45 @@ var_defs:
      value: "/mnt/.overlay/user/slash/wigwag/etc/versions.json"
    - key: "UPGRADE_VERSIONS_FILE"
      value: "/mnt/.overlay/upgrade/wigwag/etc/versions.json"
-stats:
-    interval: 5 # frequency in seconds - default 300
-    check_mem: true # default true
-    check_mem_pace: 1  # means check every interval (default is 1 - every interval)
+sys_stats: # system stats intervals
+  vm_stats:
+    every: "15s"
+    name: vm
+  disk_stats:
+    every: "30s"
+    name: disk
+mdns: 
+  # disable: true
+  static_records:
+   - name: "WigWagRelay"
+     service: "_wwservices._tcp"  # normally something like https or ftp
+     # domain: "local"     # local is default
+     interfaces: "eth0"
+     not_interfaces: "Witap0"
+     port: 3131
+     text: 
+      - "wwid={{ARCH_RELAYID}}"
+     hostname: "wigwaggateway"
+   - name: "WigWagRelay_{{ARCH_RELAYID}}"
+     service: "_wwservices._tcp"  # normally something like https or ftp
+     # domain: "local"     # local is default
+     interfaces: "eth0"
+     not_interfaces: "Witap0"
+     port: 3131
+     text: 
+      - "wwid={{ARCH_RELAYID}}"
+     hostname: "{{ARCH_RELAYID}}"
+symphony:
+# symphony system management APIs
+    # defaults to 10:
+    sys_stats_count_threshold: 15     # send if you have 15 or more stats queued
+    sys_stats_time_threshold: 120000  # every 120 seconds send stuff, no matter what
+    client_cert: "{{ARCH_SSL_CLIENT_CERT_PEM}}"
+    client_key: "{{ARCH_SSL_CLIENT_KEY_PEM}}"
+    host: "{{ARCH_RELAY_SERVICES_HOST}}"
+    port: "{{ARCH_RELAY_SERVICES_PORT}}"
 targets:
-   - file: "/wigwag/log/maestro.log"
+   - file: "/wigwag/log/devicejs.log"
      rotate:
          max_files: 10
          max_file_size: 10000
@@ -151,6 +196,27 @@ static_file_generators:
    - name: "radioProfile"
      template_file: "/wigwag/wwrelay-utils/templates/radioProfile.template.json"
      output_file: "/wigwag/devicejs-core-modules/rsmi/radioProfile.config.json"  
+   - name: "ca_pem"
+     template: "{{ARCH_SSL_CA_PEM}}"
+     output_file: "{{SSL_CERTS_PATH}}/ca.cert.pem"
+   - name: "intermediate_ca_pem"
+     template: "{{ARCH_SSL_CA_INTERMEDIATE_PEM}}"
+     output_file: "{{SSL_CERTS_PATH}}/intermediate.cert.pem"
+   - name: "client_key"
+     template: "{{ARCH_SSL_CLIENT_KEY_PEM}}"
+     output_file: "{{SSL_CERTS_PATH}}/client.key.pem"
+   - name: "client_cert"
+     template: "{{ARCH_SSL_CLIENT_CERT_PEM}}"
+     output_file: "{{SSL_CERTS_PATH}}/client.cert.pem"
+   - name: "server_key"
+     template: "{{ARCH_SSL_SERVER_KEY_PEM}}"
+     output_file: "{{SSL_CERTS_PATH}}/server.key.pem"
+   - name: "client_cert"
+     template: "{{ARCH_SSL_SERVER_CERT_PEM}}"
+     output_file: "{{SSL_CERTS_PATH}}/server.cert.pem"
+   - name: "ca_chain"
+     template: "{{ARCH_SSL_CA_CHAIN_PEM}}"
+     output_file: "{{SSL_CERTS_PATH}}/ca-chain.cert.pem"
 container_templates:
    - name: "deviceJS_process"
      immutable: true  # don't store in DB

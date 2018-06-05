@@ -41,7 +41,7 @@ var_defs:
    - key: "MAESTRO_RUNNER_DIR"
      value: "/wigwag/devicejs-core-modules/maestroRunner"
    - key: "SSL_CERTS_PATH"
-     value: "{{SSL_CERTS_PATH}}"
+     value: "/wigwag/devicejs-core-modules/Runner/.ssl"
    - key: "LOCAL_DEVICEDB_PORT"
      value: 9000
    - key: "LOCAL_DATABASE_STORAGE_DIRECTORY"

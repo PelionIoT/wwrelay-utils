@@ -194,7 +194,7 @@ static_file_generators:
      template_file: "/wigwag/wwrelay-utils/conf/maestro-conf/relayTerm.template.json"
      output_file: "/wigwag/wigwag-core-modules/relay-term/config/config.json"  
    - name: "radioProfile"
-     template_file: "/wigwag/wwrelay-utils/conf/maestro-conf/radioProfile.template.json"
+     template_file: "/wigwag/devicejs-core-modules/rsmi/radioProfile.template.json"
      output_file: "/wigwag/devicejs-core-modules/rsmi/radioProfile.config.json"  
    - name: "ca_pem"
      template: "{{ARCH_SSL_CA_PEM}}"

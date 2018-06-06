@@ -134,147 +134,160 @@
                 "testprog": "bin/zigbeeHA-test.js"
             }
 
-        },
-        "ww-zwave": {
-            "ZM5304": {
-                "ICs": [ "ZM5304" ],
-                "applications": "Z-Wave",
-                "baudrate": 115200,
-                "dataBits": 8,
-                "stopBits": 1
-            }
-        },
-        "ModbusRTU": {
-            "usb": {
-                "baudrate": 19200,
-                "dataBits": 8,
-                "stopBits": 1,
-                "parity": "none"
-            },
-            "rs485": {
-                "ICs": [ "FT232RL", "ISO3082" ],
-                "applications": "RS485",
-                "baudrate": 19200,
-                "dataBits": 8,
-                "stopBits": 1,
-                "parity": "none"
-            }
-        },
-        "BACnet": {
-            "usb": {
-                "baudrate": 76800,
-                "dataBits": 8,
-                "stopBits": 1,
-                "parity": "none"
-            },
-            "rs485": {
-                "ICs": [ "FT232RL", "ISO3082" ],
-                "applications": "RS485",
-                "baudrate": 76800,
-                "dataBits": 8,
-                "stopBits": 1,
-                "parity": "none"
-            }
-        },
-        "Enocean": {
-            "usb": {
-                "baudrate": 57600,
-                "dataBits": 8,
-                "stopBits": 1,
-                "parity": "none"
-            }
-        }
-    },
-    "configurations": {
-    	"0.1.1": {
-    		"01": {
-    			"wigwag-devices": 	[ "M1", "ulike-nc880" ],
-    			"ww-zwave": 		[ "M2", "ZM5304" ],
-    			"zigbeeHA": 		[ "M4", "ulike-nc880" ],
-    			"ModbusRTU": 		[ "P1", "usb" ],
-    			"BACnet": 			[ "P2", "usb" ]
-    		},
-    		"02": {
-    			"wigwag-devices": 	[ "M1", "wigwag-cc2530" ],
-    			"ww-zwave": 		[ "M2", "ZM5304" ],
-    			"zigbeeHA": 		[ "M4", "wigwag-cc2530" ],
-    			"ModbusRTU": 		[ "P1", "usb" ],
-    			"BACnet": 			[ "P2", "usb" ]
-    		},
-    		"03": {
-    			"wigwag-devices": 	[ "M1", "ulike-nc880" ],
-    			"ww-zwave": 		[ "M2", "ZM5304" ],
-    			"zigbeeHA": 		[ "M4", "ulike-nc880" ],
-    			"ModbusRTU": 		[ "P1", "usb" ],
-    			"Enocean": 			[ "P2", "usb" ]
-    		},
-    		"04": {
-    			"wigwag-devices": 	[ "M1", "wigwag-cc2530" ],
-    			"ww-zwave": 		[ "M2", "ZM5304" ],
-    			"zigbeeHA": 		[ "M4", "wigwag-cc2530" ],
-    			"ModbusRTU": 		[ "P1", "usb" ],
-    			"Enocean": 			[ "P2", "usb" ]
-    		},
-    		"05": {
-    			"wigwag-devices": 	[ "M1", "ulike-nc880" ],
-    			"ww-zwave": 		[ "M2", "ZM5304" ],
-    			"zigbeeHA": 		[ "M4", "ulike-nc880" ],
-    			"BACnet": 			[ "P1", "usb" ],
-    			"Enocean": 			[ "P2", "usb" ]
-    		},
-    		"06": {
-    			"wigwag-devices": 	[ "M1", "wigwag-cc2530" ],
-    			"ww-zwave": 		[ "M2", "ZM5304" ],
-    			"zigbeeHA": 		[ "M4", "wigwag-cc2530" ],
-    			"BACnet": 			[ "P1", "usb" ],
-    			"Enocean": 			[ "P2", "usb" ]
-    		},
-    		"07": {
-    			"wigwag-devices": 	[ "M1", "ulike-nc880" ],
-    			"ww-zwave": 		[ "M2", "ZM5304" ],
-    			"zigbeeHA": 		[ "M4", "ulike-nc880" ]
-    		},
-    		"08": {
-    			"wigwag-devices": 	[ "M1", "wigwag-cc2530" ],
-    			"ww-zwave": 		[ "M2", "ZM5304" ],
-    			"zigbeeHA": 		[ "M4", "wigwag-cc2530" ]
-    		},
-    		"09": {
-    			"wigwag-devices": 	[ "M1", "ulike-nc880" ],
-    			"ww-zwave": 		[ "M2", "ZM5304" ],
-    			"zigbeeHA": 		[ "M4", "ulike-nc880" ],
-    			"ModbusRTU": 		[ "usb_hub_1", "usb" ],
-    			"Enocean": 			[ "usb_hub_2", "usb" ],
-    			"BACnet": 			[ "usb_hub_3", "usb" ]
-    		},
-    		"0a": {
-    			"wigwag-devices": 	[ "M1", "wigwag-cc2530" ],
-    			"ww-zwave": 		[ "M2", "ZM5304" ],
-    			"zigbeeHA": 		[ "M4", "wigwag-cc2530" ],
-    			"ModbusRTU": 		[ "usb_hub_1", "usb" ],
-    			"Enocean": 			[ "usb_hub_2", "usb" ],
-    			"BACnet": 			[ "usb_hub_3", "usb" ]
-    		}
-    	},
-    	"r2002": {
-    		"10": {
-    			"ModbusRTU": 		[ "P1", "rs485" ],
-    			"BACnet": 			[ "P2", "rs485" ]
-    		},
-    		"11": {
-    			"BACnet": 			[ "P1", "rs485" ],
-    			"ModbusRTU": 		[ "P2", "rs485" ]
-    		},
-    		"12": {
-    			"zigbeeHA":			[ "M1", "wigwag-cc2530" ],
-    			"ModbusRTU": 		[ "P1", "rs485" ],
-    			"BACnet": 			[ "P2", "rs485" ]
-    		},
-            "13": {
-                "ModbusRTU":        [ "P1", "rs485" ],
-                "BACnet":           [ "P2", "rs485" ],
-                "ww-zwave":         [ "P3", "ZM5304" ]
-            }
-    	}
-    }
+      },
+      "ww-zwave": {
+      	"ZM5304": {
+      		"ICs": [ "ZM5304" ],
+      		"applications": "Z-Wave",
+      		"baudrate": 115200,
+      		"dataBits": 8,
+      		"stopBits": 1
+      	}
+      },
+      "ModbusRTU": {
+      	"usb": {
+      		"baudrate": 19200,
+      		"dataBits": 8,
+      		"stopBits": 1,
+      		"parity": "none"
+      	},
+      	"rs485": {
+      		"ICs": [ "FT232RL", "ISO3082" ],
+      		"applications": "RS485",
+      		"baudrate": 19200,
+      		"dataBits": 8,
+      		"stopBits": 1,
+      		"parity": "none"
+      	}
+      },
+      "BACnet": {
+      	"usb": {
+      		"baudrate": 76800,
+      		"dataBits": 8,
+      		"stopBits": 1,
+      		"parity": "none"
+      	},
+      	"rs485": {
+      		"ICs": [ "FT232RL", "ISO3082" ],
+      		"applications": "RS485",
+      		"baudrate": 76800,
+      		"dataBits": 8,
+      		"stopBits": 1,
+      		"parity": "none"
+      	}
+      },
+      "Enocean": {
+      	"usb": {
+      		"baudrate": 57600,
+      		"dataBits": 8,
+      		"stopBits": 1,
+      		"parity": "none"
+      	}
+      }
+ },
+ "configurations": {
+ 	"0.1.1": {
+ 		"01": {
+ 			"wigwag-devices": 	[ "M1", "ulike-nc880" ],
+ 			"ww-zwave": 		[ "M2", "ZM5304" ],
+ 			"zigbeeHA": 		[ "M4", "ulike-nc880" ],
+ 			"ModbusRTU": 		[ "P1", "usb" ],
+ 			"BACnet": 			[ "P2", "usb" ]
+ 		},
+ 		"02": {
+ 			"wigwag-devices": 	[ "M1", "wigwag-cc2530" ],
+ 			"ww-zwave": 		[ "M2", "ZM5304" ],
+ 			"zigbeeHA": 		[ "M4", "wigwag-cc2530" ],
+ 			"ModbusRTU": 		[ "P1", "usb" ],
+ 			"BACnet": 			[ "P2", "usb" ]
+ 		},
+ 		"03": {
+ 			"wigwag-devices": 	[ "M1", "ulike-nc880" ],
+ 			"ww-zwave": 		[ "M2", "ZM5304" ],
+ 			"zigbeeHA": 		[ "M4", "ulike-nc880" ],
+ 			"ModbusRTU": 		[ "P1", "usb" ],
+ 			"Enocean": 			[ "P2", "usb" ]
+ 		},
+ 		"04": {
+ 			"wigwag-devices": 	[ "M1", "wigwag-cc2530" ],
+ 			"ww-zwave": 		[ "M2", "ZM5304" ],
+ 			"zigbeeHA": 		[ "M4", "wigwag-cc2530" ],
+ 			"ModbusRTU": 		[ "P1", "usb" ],
+ 			"Enocean": 			[ "P2", "usb" ]
+ 		},
+ 		"05": {
+ 			"wigwag-devices": 	[ "M1", "ulike-nc880" ],
+ 			"ww-zwave": 		[ "M2", "ZM5304" ],
+ 			"zigbeeHA": 		[ "M4", "ulike-nc880" ],
+ 			"BACnet": 			[ "P1", "usb" ],
+ 			"Enocean": 			[ "P2", "usb" ]
+ 		},
+ 		"06": {
+ 			"wigwag-devices": 	[ "M1", "wigwag-cc2530" ],
+ 			"ww-zwave": 		[ "M2", "ZM5304" ],
+ 			"zigbeeHA": 		[ "M4", "wigwag-cc2530" ],
+ 			"BACnet": 			[ "P1", "usb" ],
+ 			"Enocean": 			[ "P2", "usb" ]
+ 		},
+ 		"07": {
+ 			"wigwag-devices": 	[ "M1", "ulike-nc880" ],
+ 			"ww-zwave": 		[ "M2", "ZM5304" ],
+ 			"zigbeeHA": 		[ "M4", "ulike-nc880" ]
+ 		},
+ 		"08": {
+ 			"wigwag-devices": 	[ "M1", "wigwag-cc2530" ],
+ 			"ww-zwave": 		[ "M2", "ZM5304" ],
+ 			"zigbeeHA": 		[ "M4", "wigwag-cc2530" ]
+ 		},
+ 		"09": {
+ 			"wigwag-devices": 	[ "M1", "ulike-nc880" ],
+ 			"ww-zwave": 		[ "M2", "ZM5304" ],
+ 			"zigbeeHA": 		[ "M4", "ulike-nc880" ],
+ 			"ModbusRTU": 		[ "usb_hub_1", "usb" ],
+ 			"Enocean": 			[ "usb_hub_2", "usb" ],
+ 			"BACnet": 			[ "usb_hub_3", "usb" ]
+ 		},
+ 		"0a": {
+ 			"wigwag-devices": 	[ "M1", "wigwag-cc2530" ],
+ 			"ww-zwave": 		[ "M2", "ZM5304" ],
+ 			"zigbeeHA": 		[ "M4", "wigwag-cc2530" ],
+ 			"ModbusRTU": 		[ "usb_hub_1", "usb" ],
+ 			"Enocean": 			[ "usb_hub_2", "usb" ],
+ 			"BACnet": 			[ "usb_hub_3", "usb" ]
+ 		}
+ 	},
+ 	"r2002": {
+ 		"10": {
+ 			"ModbusRTU": 		[ "P1", "rs485" ],
+ 			"BACnet": 			[ "P2", "rs485" ]
+ 		},
+ 		"11": {
+ 			"BACnet": 			[ "P1", "rs485" ],
+ 			"ModbusRTU": 		[ "P2", "rs485" ]
+ 		},
+ 		"12": {
+ 			"zigbeeHA":			[ "M1", "wigwag-cc2530" ],
+ 			"ModbusRTU": 		[ "P1", "rs485" ],
+ 			"BACnet": 			[ "P2", "rs485" ]
+ 		},
+ 		"13": {
+ 			"ModbusRTU":        [ "P1", "rs485" ],
+ 			"BACnet":           [ "P2", "rs485" ],
+ 			"ww-zwave":         [ "P3", "ZM5304" ]
+ 		},
+ 		"14": {
+ 			"zigbeeHA":		 [ "M1", "wigwag-cc2530" ],
+ 			"ModbusRTU":        [ "P1", "rs485" ],
+ 			"BACnet":           [ "P2", "rs485" ],
+ 			"ww-zwave":         [ "P3", "ZM5304" ]
+ 		},
+ 		"15": {
+ 			"zigbeeHA":		 [ "M1", "wigwag-cc2530" ],
+ 			"wigwag-devices": 	[ "M2", "wigwag-cc2530" ],
+ 			"ModbusRTU":        [ "P1", "rs485" ],
+ 			"BACnet":           [ "P2", "rs485" ],
+ 			"ww-zwave":         [ "P3", "ZM5304" ]
+ 		}
+ 	}
+ }
 }

@@ -41,7 +41,7 @@ var_defs:
    - key: "MAESTRO_RUNNER_DIR"
      value: "/wigwag/devicejs-core-modules/maestroRunner"
    - key: "SSL_CERTS_PATH"
-     value: "{{SSL_CERTS_PATH}}"
+     value: "/wigwag/devicejs-core-modules/Runner/.ssl"
    - key: "LOCAL_DEVICEDB_PORT"
      value: 9000
    - key: "LOCAL_DATABASE_STORAGE_DIRECTORY"
@@ -90,7 +90,7 @@ symphony:
     client_cert: "{{ARCH_SSL_CLIENT_CERT_PEM}}"
     client_key: "{{ARCH_SSL_CLIENT_KEY_PEM}}"
     host: "{{ARCH_RELAY_SERVICES_HOST}}"
-    port: "{{ARCH_RELAY_SERVICES_PORT}}"
+    # port: "{{ARCH_RELAY_SERVICES_PORT}}"
 targets:
    - file: "/wigwag/log/devicejs.log"
      rotate:
@@ -194,7 +194,7 @@ static_file_generators:
      template_file: "/wigwag/wwrelay-utils/conf/maestro-conf/relayTerm.template.json"
      output_file: "/wigwag/wigwag-core-modules/relay-term/config/config.json"  
    - name: "radioProfile"
-     template_file: "/wigwag/wwrelay-utils/conf/maestro-conf/radioProfile.template.json"
+     template_file: "/wigwag/devicejs-core-modules/rsmi/radioProfile.template.json"
      output_file: "/wigwag/devicejs-core-modules/rsmi/radioProfile.config.json"  
    - name: "ca_pem"
      template: "{{ARCH_SSL_CA_PEM}}"
@@ -488,8 +488,10 @@ jobs:
      restart_pause: 90
      config: |
         {
-          "ledBrightness":5,
-          "ledColorProfile":"{{ARCH_LED_COLOR_PROFILE}}"
+          "ledBrightness": 255,
+          "heartbeatBrightness": 128,
+          "ledColorProfile":"{{ARCH_LED_COLOR_PROFILE}}",
+          "ledDriverSocketPath": "/var/deviceOSkeepalive"
         }
    - job: "VirtualDeviceDriver"
      immutable: true  # don't store in DB

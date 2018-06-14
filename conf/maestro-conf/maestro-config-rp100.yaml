@@ -488,8 +488,8 @@ jobs:
      restart_pause: 90
      config: |
         {
-          "ledBrightness": 255,
-          "heartbeatBrightness": 128,
+          "ledBrightness": 5,
+          "heartbeatBrightness": 2,
           "ledColorProfile":"{{ARCH_LED_COLOR_PROFILE}}",
           "ledDriverSocketPath": "/var/deviceOSkeepalive"
         }

@@ -1,5 +1,6 @@
 unixLogSocket: /tmp/grease.socket
 sysLogSocket: /dev/log
+linuxKernelLog: true
 httpUnixSocket: /tmp/maestroapi.sock
 configDBPath: /wigwag/system/bin/maestroConfig.db
 clientId: "{{ARCH_RELAYID}}"

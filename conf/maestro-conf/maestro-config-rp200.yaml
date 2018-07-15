@@ -2,7 +2,7 @@ unixLogSocket: /tmp/grease.socket
 sysLogSocket: /dev/log
 linuxKernelLog: true
 httpUnixSocket: /tmp/maestroapi.sock
-configDBPath: /wigwag/system/bin/maestroConfig.db
+configDBPath: /userdata/etc/maestroConfig.db
 clientId: "{{ARCH_RELAYID}}"
 watchdog:
     path: "/wigwag/system/lib/rp100wd.so"

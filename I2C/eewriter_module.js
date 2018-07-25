@@ -12,6 +12,7 @@ var ssl_server_key = "server.key.pem";
 var ssl_server_cert = "server.cert.pem";
 var ssl_ca_cert = "ca.cert.pem";
 var ssl_ca_intermediate = "intermediate.cert.pem";
+var mcc_config = "mcc_config.tar.gz";
 
 writer = new WWAT24();
 
@@ -153,6 +154,9 @@ EEprom_Writer.prototype.writeSSL = function() {
 		Pcert.push(diskprom.setFile(ssl_client_key, self.CI.ssl.client.key));
 		Pcert.push(diskprom.setFile(ssl_ca_cert, self.CI.ssl.ca.ca));
 		Pcert.push(diskprom.setFile(ssl_ca_intermediate, self.CI.ssl.ca.intermediate));
+		if(self.CI.cloudURL.indexOf('mbed') > -1) {
+			Pcert.push(diskprom.setFile(mcc_config, self.CI.mcc_config, 'hex'));
+		}
 		Promise.all(Pcert).then(function(result) {
 			return diskprom.disconnect();
 		}).then(function(result) {
@@ -177,6 +181,7 @@ EEprom_Writer.prototype.destroySSL = function() {
 		Pcert.push(diskprom.destroyFile(ssl_client_key));
 		Pcert.push(diskprom.destroyFile(ssl_ca_cert));
 		Pcert.push(diskprom.destroyFile(ssl_ca_intermediate));
+		Pcert.push(diskprom.destroyFile(mcc_config));
 		Promise.all(Pcert).then(function(result) {
 			resolve("successfull diskprom destroyer");
 		}).catch(function(error) {
@@ -203,6 +208,9 @@ EEprom_Writer.prototype.writeBoth = function() {
 		Pcert.push(diskprom.setFile(ssl_client_key, self.CI.ssl.client.key));
 		Pcert.push(diskprom.setFile(ssl_ca_cert, self.CI.ssl.ca.ca));
 		Pcert.push(diskprom.setFile(ssl_ca_intermediate, self.CI.ssl.ca.intermediate));
+		if(self.CI.cloudURL.indexOf('mbed') > -1) {
+			Pcert.push(diskprom.setFile(mcc_config, self.CI.mcc_config, 'hex'));
+		}
 		Promise.all(Pcert).then(function(result) {
 			resolve("successfull eeprom writer");
 		}).catch(function(error) {

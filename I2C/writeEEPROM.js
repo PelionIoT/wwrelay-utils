@@ -53,7 +53,32 @@ class at24c16EepromHandler {
 					ee.batch = ee.batch || '1';
 					ee.month = ee.month || 'F';
 					ee.year = ee.year || '5';
-					resolve(ee);
+                    if(ee.cloudURL.indexOf('mbed') > -1) {
+                        fs.stat('./pal', function(err, stats) {
+                            if(err) {
+                                reject('Mbed gateway. Failed to get pal directory stats ', err);
+                                return;
+                            } 
+                            if(stats.isDirectory()) {
+                                execSync('mv ./pal ./mcc_config');
+                                execSync('tar -czvf mcc_config.tar.gz ./mcc_config');
+                                if(ee.mbed) {
+                                    delete ee.mbed;
+                                    ee.mcc_config = fs.readFileSync('./mcc_config.tar.gz', 'hex');
+                                    resolve(ee);
+                                } else {
+                                    reject('Mbed gateway. Did not find the mbed device certs and enrollment id!');
+                                    return;
+                                }
+                            } else {
+                                reject('Mbed gateway. Failed to locate pal directory!');
+                                return;
+                            }
+                        });
+                    } else {
+                        resolve(ee);
+                    }
+					// resolve(ee);
 				}
 				catch (e) {
 					reject('Could not open ' + program.args[0] + ' file', e);
@@ -159,7 +184,31 @@ class at24c256EepromHandler {
 			else {
 				try {
 					let ee = JSON.parse(jsonminify(fs.readFileSync(program.args[0], 'utf8')));
-					resolve(ee);
+                    if(ee.cloudURL.indexOf('mbed') > -1) {
+                        fs.stat('./pal', function(err, stats) {
+                            if(err) {
+                                reject('Mbed gateway. Failed to get pal directory stats ', err);
+                                return;
+                            } 
+                            if(stats.isDirectory()) {
+                                execSync('mv ./pal ./mcc_config');
+                                execSync('tar -czvf mcc_config.tar.gz ./mcc_config');
+                                if(ee.mbed) {
+                                    delete ee.mbed;
+                                    ee.mcc_config = fs.readFileSync('./mcc_config.tar.gz', 'hex');
+                                    resolve(ee);
+                                } else {
+                                    reject('Mbed gateway. Did not find the mbed device certs and enrollment id!');
+                                    return;
+                                }
+                            } else {
+                                reject('Mbed gateway. Failed to locate pal directory!');
+                                return;
+                            }
+                        });
+                    } else {
+                        resolve(ee);
+                    }
 				}
 				catch (e) {
 					reject('Could not open ' + program.args[0] + ' file', e);
@@ -172,30 +221,36 @@ class at24c256EepromHandler {
     install_eeprom(ee) {
         var self = this;
         return new Promise((resolve, reject) => {
-            console.log('debug', "In install EEPROM Function");
+            console.log('debug', "In install EEPROM function");
             process.stdout.write("Writing...");
             let interval = setInterval(() => {
                 process.stdout.write(".");
             }, 500);
-            fs.writeFile(self._eepromFilePath, JSON.stringify(ee), 'utf8', (err) => {
-                if(err) {
-                    if(self._writeretry > 2) {
-                        console.error("Write failed " + err);
-                        reject(err);
-                        return;
+            try {
+                fs.writeFile(self._eepromFilePath, JSON.stringify(ee), 'utf8', (err) => {
+                    if(err) {
+                        if(self._writeretry > 2) {
+                            console.error("Write failed " + err);
+                            clearInterval(interval);
+                            reject(err);
+                        } else {
+                            self._writeretry++;
+                            console.log('Write failed ' + err + ' Trying again!');
+                            clearInterval(interval);
+                            self.install_eeprom(ee);
+                        }
                     } else {
-                        self._writeretry++;
-                        console.log('Write failed ' + err + ' Trying again!');
+                        self._writeretry = 0;
                         clearInterval(interval);
-                        self.install_eeprom(ee);
-                        return;
+                        console.log('Wrote successfully!');
+                        resolve(ee);
                     }
-                }
-                self._writeretry = 0;
+                });
+            } catch(err){
+                console.error("Write caught exception failed ", err);
                 clearInterval(interval);
-                console.log('Wrote successfully!');
-                resolve(ee);
-            });
+                reject(err);
+            }
         });
     }
 
@@ -209,25 +264,31 @@ class at24c256EepromHandler {
             let interval = setInterval(() => {
                 process.stdout.write(".");
             }, 500);
-            fs.writeFile(self._eepromFilePath, eeprom_spaces, (err) => {
-                if(err) {
-                    if(self._writeretry > 2) {
-                        console.error("Erase failed " + err);
-                        reject(err);
-                        return;
+            try {
+                fs.writeFile(self._eepromFilePath, eeprom_spaces, (err) => {
+                    if(err) {
+                        if(self._writeretry > 2) {
+                            console.error("Erase failed " + err);
+                            clearInterval(interval);
+                            reject(err);
+                        } else {
+                            self._writeretry++;
+                            console.log('Erase failed ' + err + ' Trying again!');
+                            clearInterval(interval);
+                            return self.main_erase();
+                        }
                     } else {
-                        self._writeretry++;
-                        console.log('Erase failed ' + err + ' Trying again!');
+                        self._writeretry = 0;
                         clearInterval(interval);
-                        self.main_erase();
-                        return;
+                        console.log('Erased successfully!');
+                        resolve();
                     }
-                }
-                self._writeretry = 0;
+                });
+            } catch(err) {
+                console.error("Erase caught exception failed ", err);
                 clearInterval(interval);
-                console.log('Erased successfully!');
-                resolve();
-            });
+                reject(err);
+            }
         });
     }
 

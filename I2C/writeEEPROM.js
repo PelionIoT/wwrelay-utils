@@ -191,7 +191,7 @@ class at24c256EepromHandler {
                                 return;
                             } 
                             if(stats.isDirectory()) {
-                                execSync('mv ./pal ./mcc_config');
+                                execSync('cp -R ./pal ./mcc_config');
                                 execSync('tar -czvf mcc_config.tar.gz ./mcc_config');
                                 if(ee.mbed) {
                                     delete ee.mbed;

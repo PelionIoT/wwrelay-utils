@@ -187,6 +187,8 @@
  },
  "configurations": {
  	"0.1.1": {
+    "00": {
+    },
  		"01": {
  			"wigwag-devices": 	[ "M1", "ulike-nc880" ],
  			"ww-zwave": 		[ "M2", "ZM5304" ],
@@ -257,6 +259,8 @@
  		}
  	},
  	"r2002": {
+    "00": {
+    },
  		"10": {
  			"ModbusRTU": 		[ "P1", "rs485" ],
  			"BACnet": 			[ "P2", "rs485" ]
@@ -287,7 +291,12 @@
  			"ModbusRTU":        [ "P1", "rs485" ],
  			"BACnet":           [ "P2", "rs485" ],
  			"ww-zwave":         [ "P3", "ZM5304" ]
- 		}
+ 		},
+    "16": {
+      "wigwag-devices":     [ "M2", "wigwag-cc2530" ],
+      "ModbusRTU":    [ "P1", "rs485" ],
+      "BACnet":       [ "P2", "rs485" ]
+    }
  	}
  }
 }

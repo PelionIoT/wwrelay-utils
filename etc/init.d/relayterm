@@ -55,7 +55,7 @@ start() {
     else
         ## Change from /dev/null to something like /var/log/$PROG if you want to save output.
         #echo "my pgrep: -f $PROG"
-        sudo su -c "NODE_PATH=${WIGWAGROOT}/devicejs-core-modules/node_modules /usr/bin/node $RELAYTERM start $RELAYTERMCONF > $RELAYTERM_LOG 2>&1 &" -s /bin/bash wigwaguser
+        sudo su -c "NODE_PATH=${WIGWAGROOT}/devicejs-core-modules/node_modules /usr/bin/node $RELAYTERM start $RELAYTERMCONF > $RELAYTERM_LOG 2>&1 &" -s /bin/bash maestro
         pid=$(pgrep -f $PROG)
         echo "$pid">$PIDFILE
         success

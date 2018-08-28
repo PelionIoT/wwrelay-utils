@@ -271,8 +271,8 @@ function createHandlebarsData(eeprom, platform) {
 function createHandlebarsDataForRSMI(eeprom) {
     var data = {};
 
-    data.hardwareVersion = eeprom.hardwareVersion;
-    data.radioConfig = eeprom.radioConfig;
+    data.ARCH_HARDWARE_VERSION = eeprom.hardwareVersion;
+    data.ARCH_RADIO_CONFIG = eeprom.radioConfig;
 
     return data;
 }
@@ -280,9 +280,9 @@ function createHandlebarsDataForRSMI(eeprom) {
 function createHandlebarsDevicejsConf(eeprom) {
     var data = {};
 
-    data.clouddevicejsurl = cloudDevicejsURL;
-    data.databasePort = databasePort;
-    data.sslCertsPath = sslPathDefault;
+    data.ARCH_RELAY_SERVICES_HOST = cloudDdbURL.replace('devicedb', 'relays');
+    data.LOCAL_DEVICEDB_PORT = databasePort;
+    data.SSL_CERTS_PATH = sslPathDefault;
 
     return data;
 }
@@ -290,12 +290,14 @@ function createHandlebarsDevicejsConf(eeprom) {
 function createHandlebarsDevicedbConf(eeprom) {
     var data = {};
 
-    data.clouddbid = '*' + cloudDdbURL.slice(cloudDdbURL.indexOf('.'));
-    data.cloudddburl = cloudDdbURL.slice('https://'.length);
-    data.cloudhistoryhosturl = data.cloudddburl.replace('devicedb', 'history');
-    data.databasePort = databasePort;
-    data.sslCertsPath = sslPathDefault;
-    data.localDatabaseDirectory = localDatabaseDirectory;
+    // data.clouddbid = '*' + cloudDdbURL.slice(cloudDdbURL.indexOf('.'));
+    // data.cloudddburl = cloudDdbURL.slice('https://'.length);
+    // data.cloudhistoryhosturl = 
+    data.LOCAL_DEVICEDB_PORT = databasePort;
+    data.ARCH_RELAY_SERVICES_HOST_RES = cloudDdbURL.replace('devicedb', 'relays').slice('https://'.length);
+    data.ARCH_RELAY_SERVICES_HOST = cloudDdbURL.replace('devicedb', 'relays');
+    data.SSL_CERTS_PATH = sslPathDefault;
+    data.LOCAL_DATABASE_STORAGE_DIRECTORY = localDatabaseDirectory;
 
     return data;
 }

@@ -118,6 +118,8 @@ update(){
     fi
 }
 panic(){
+    eval "$EXPIRENOW_TINY_WATCHDOG_CMD"
+    sleep 2
     insmod /lib/modules/4.2.0-rc8/extra/panic.ko
 }
 

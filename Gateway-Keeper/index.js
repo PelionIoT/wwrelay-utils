@@ -39,6 +39,10 @@ wss.on('connection', function connection(ws,req) {
       ws.send(line)
     }
 
+    if(line.indexOf('read') > -1 ) {
+      ws.send(line)
+    }
+
 	}).on('close', () => {
 	  console.log('Have a great day!');
 	  process.exit(0);

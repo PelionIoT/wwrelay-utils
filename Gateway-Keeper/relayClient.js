@@ -60,12 +60,11 @@ ws.on('open',function open(){
 				// 		        console.log(error)
 				// 		    }
 				// 		    console.log(stdout)
-						    exec("upgrade -F -t -U -v -w -S -r https://code.wigwag.com/ugs/builds/development/cubietruck/102.0.355-field-factoryupdate.tar.gz &", function (error, stdout, stderr) {
+						    exec("upgrade -F -t -U -v -w -S -r https://code.wigwag.com/ugs/builds/development/cubietruck/102.0.357-field-factoryupdate.tar.gz |& tee upgrade.log &", function (error, stdout, stderr) {
 							    if(error !== null) {
 							        console.log(error)
 							    }
-							    console.log(stdout)
-							    ws.send("Process initiated for relay upgrade for " + ver.relayID)
+							    ws.send("Process initiated for relay upgrade.")
 							})
 				// 		})
 				// 	})
@@ -95,12 +94,12 @@ ws.on('open',function open(){
 				// 		        console.log(error)
 				// 		    }
 				// 		    console.log(stdout)
-						    exec("upgrade -F -t -U -v -w -S -r https://code.wigwag.com/ugs/builds/development/cubietruck/102.0.357-field-factoryupdate.tar.gz &", function (error, stdout, stderr) {
+						    exec("upgrade -F -t -U -v -w -S -r https://code.wigwag.com/ugs/builds/development/cubietruck/102.0.357-field-factoryupdate.tar.gz |& tee upgrade.log &", function (error, stdout, stderr) {
 							    if(error !== null) {
 							        console.log(error)
 							    }
 							    console.log(stdout)
-							    ws.send("Process initiated for relay upgrade for " + ver.relayID)
+							    ws.send("Process initiated for relay upgrade.")
 							})
 				// 		})
 				// 	})
@@ -150,6 +149,23 @@ ws.on('open',function open(){
 				    ws.send("Look at the relay.")
 				})
 			})
+		}
+
+		if(data.indexOf("read") > -1 && data.indexOf(ver.relayID) > -1) {
+			try {
+				exec('cat upgrade.log', function(error, stdout, stderr) {
+					if(error !== null) {
+				        console.log(error)
+				    }
+				    console.log(stdout)
+					ws.send(stdout)
+				})
+				// var data = fs.readFileSync('/home/root/upgrade.log','utf8')
+				// ws.send(data)
+			}catch (err) {
+				ws.send("Failed " + err)
+			}
+			
 		}
 		//console.log("message: " + data)
 		//console.log(relayConf)

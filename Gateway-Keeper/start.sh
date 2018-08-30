@@ -1,4 +1,12 @@
 #!/usr/bin/expect -f
+set username [lindex $argv 0];
+set IP [lindex $argv 1];
+set workDir [pwd]
+
+if {[llength $argv] == 0} {
+  send_user "Usage: scriptname username \'IP\'\n"
+  exit 1
+}
 
 spawn node relayIP.js
 expect "$ "
@@ -18,13 +26,13 @@ foreach host $hosts {
 	expect "assword: "
 	send "wigwagr0x\r"
 	expect -re ".*wigwag.*"
-	send "scp -o StrictHostKeyChecking=no -o UserKnownHostsFile=/dev/null bhoopesh@192.168.0.114:/home/bhoopesh/workspace/Gateway-Keeper/relayClient.js ./\r"
+	send "scp -o StrictHostKeyChecking=no -o UserKnownHostsFile=/dev/null $username@$IP:$workDir/relayClient.js ./\r"
 	expect "password: "
 	send "Bhoope@123\r"
 	expect "# "
 	send "killall relayClient.js\r"
 	expect "# "
-	send "NODE_PATH=/wigwag/devicejs-core-modules/node_modules/ node relayClient.js &\r"
+	send "NODE_PATH=/wigwag/devicejs-core-modules/node_modules/ node relayClient.js $IP&\r"
 	expect "# "
 	send "exit\r"
 	expect "$ "

@@ -3,10 +3,11 @@ const fs = require('fs')
 const WebSocket = require('ws');
 var exec = require('child_process').exec;
 
-// var serverIP = process.argv[2]
+var serverIP = process.argv[2]
 var exec = require('child_process').exec;
-var serverIP = "192.168.0.114"
+//var serverIP = "192.168.0.114"
 var uri = "http://"+serverIP+":3000"
+console.log(serverIP)
 
 const config = JSON.parse(jsonminify(fs.readFileSync('/wigwag/wwrelay-utils/I2C/relay.conf', 'utf8')));
 const ver = JSON.parse(jsonminify(fs.readFileSync('/wigwag/etc/versions.json', 'utf8')));
@@ -17,9 +18,6 @@ ver.relayID = config.relayID
 ver.cloudURL = config.cloudURL
 ver.build = ver.packages[0].version
 delete ver.packages
-// console.log(config.relayID)
-// console.log(config.cloudURL)
-//console.log(ver.packages[0].version)
 console.log(ver)
 
 
@@ -45,30 +43,12 @@ ws.on('open',function open(){
 				    console.log(error)
 				}
 				console.log(stdout)
-				// exec("killall maestro", function (error, stdout, stderr) {
-				//     if(error !== null) {
-				//         console.log(error)
-				//     }
-				//     console.log(stdout)
-				//     exec("/etc/init.d/devicejs start", function (error, stdout, stderr) {
-				// 	    if(error !== null) {
-				// 	        console.log(error)
-				// 	    }
-				// 	    console.log(stdout)
-				// 	    exec("udhcpc", function (error, stdout, stderr) {
-				// 		    if(error !== null) {
-				// 		        console.log(error)
-				// 		    }
-				// 		    console.log(stdout)
-						    exec("upgrade -F -t -U -v -w -S -r https://code.wigwag.com/ugs/builds/development/cubietruck/102.0.357-field-factoryupdate.tar.gz |& tee upgrade.log &", function (error, stdout, stderr) {
-							    if(error !== null) {
-							        console.log(error)
-							    }
-							    ws.send("Process initiated for relay upgrade.")
-							})
-				// 		})
-				// 	})
-				// })
+			    exec("upgrade -F -t -U -v -w -S -r https://code.wigwag.com/ugs/builds/development/cubietruck/102.0.357-field-factoryupdate.tar.gz |& tee upgrade.log &", function (error, stdout, stderr) {
+				    if(error !== null) {
+				        console.log(error)
+				    }
+				    ws.send("Process initiated for relay upgrade.")
+				})
 			})
 		}
 
@@ -79,31 +59,13 @@ ws.on('open',function open(){
 				    console.log(error)
 				}
 				console.log(stdout)
-				// exec("killall maestro", function (error, stdout, stderr) {
-				//     if(error !== null) {
-				//         console.log(error)
-				//     }
-				//     console.log(stdout)
-				//     exec("/etc/init.d/devicejs start", function (error, stdout, stderr) {
-				// 	    if(error !== null) {
-				// 	        console.log(error)
-				// 	    }
-				// 	    console.log(stdout)
-				// 	    exec("udhcpc", function (error, stdout, stderr) {
-				// 		    if(error !== null) {
-				// 		        console.log(error)
-				// 		    }
-				// 		    console.log(stdout)
-						    exec("upgrade -F -t -U -v -w -S -r https://code.wigwag.com/ugs/builds/development/cubietruck/102.0.357-field-factoryupdate.tar.gz |& tee upgrade.log &", function (error, stdout, stderr) {
-							    if(error !== null) {
-							        console.log(error)
-							    }
-							    console.log(stdout)
-							    ws.send("Process initiated for relay upgrade.")
-							})
-				// 		})
-				// 	})
-				// })
+			    exec("upgrade -F -t -U -v -w -S -r https://code.wigwag.com/ugs/builds/development/cubietruck/102.0.357-field-factoryupdate.tar.gz |& tee upgrade.log &", function (error, stdout, stderr) {
+				    if(error !== null) {
+				        console.log(error)
+				    }
+				    console.log(stdout)
+				    ws.send("Process initiated for relay upgrade.")
+				})
 			})
 			
 		}
@@ -160,15 +122,11 @@ ws.on('open',function open(){
 				    console.log(stdout)
 					ws.send(stdout)
 				})
-				// var data = fs.readFileSync('/home/root/upgrade.log','utf8')
-				// ws.send(data)
 			}catch (err) {
 				ws.send("Failed " + err)
 			}
 			
 		}
-		//console.log("message: " + data)
-		//console.log(relayConf)
 	})
 	ws.on('close',function close(data){console.log("Events websocket disconnected " + data);})
     ws.on('error', function incoming(error) { console.log(error);});

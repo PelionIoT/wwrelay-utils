@@ -388,7 +388,7 @@ jobs:
             "debug": true,
             "mapUnplacedDevices": true,
             "ignoreDevicesById" : [],
-            "siteID": "9546c7ad92d449e38e2c314021208fb7",
+            "relayID": "{{ARCH_RELAYID}}",
             "mbedAPIKey": "ak_1MDE1ZDUwYTFmYmM2MDI0MjBhMDExMTA5MDAwMDAwMDA015e967fe74802420a01390300000000aJOhYRqzTXINzN9Aw2OkV5WrG0YwgmKS",
             "spawnEdgeCore": false,
             "edgeExecCmd": ["/apps/mbed-cloud-edge-confidential-w/build/mcc-linux-x86/existing/bin/edge-core","/tmp/edge.sock","9101"],

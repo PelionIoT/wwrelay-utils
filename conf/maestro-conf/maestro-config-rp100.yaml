@@ -277,7 +277,7 @@ jobs:
         - "start"
         - "-conf=/wigwag/etc/devicejs/devicedb.yaml"  
    - job: "devicejs"
-     defer_running_status: 8000   # waits 8 seconds before marking this Job as RUNNING, which delays all dependencies
+     defer_running_status: 30000   # waits 8 seconds before marking this Job as RUNNING, which delays all dependencies
      depends_on:
         - "devicedb"
      container_template: "node_process"

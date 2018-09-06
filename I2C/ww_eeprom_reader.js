@@ -693,7 +693,7 @@ function main() {
                         return;
                     }
 
-                    if (result.BRAND == "WW" || result.BRAND == "WD") {
+                    // if (result.BRAND == "WW" || result.BRAND == "WD") {
                         hw = define_hardware(result);
                         result.hardware = hw;
 
@@ -716,11 +716,11 @@ function main() {
                         }, function(err) {
                             reject(err);
                         });
-                    } else {
-                        console.log("EEPROM is not configured properly.");
-                        reject(new Error('EEPROM is not configured properly.'));
-                        return;
-                    }
+                    // } else {
+                    //     console.log("EEPROM is not configured properly.");
+                    //     reject(new Error('EEPROM is not configured properly.'));
+                    //     return;
+                    // }
                 });
             } else { //eprom doesn't exist... must do other things.  Assume the relay.conf just exists in desired form
                 console.log("*** Software based Relay found ***");
@@ -734,7 +734,7 @@ function main() {
                     }
 
                     if (result) {
-                        if (result.BRAND == "WW" || result.BRAND == "WD") {
+                        // if (result.BRAND == "WW" || result.BRAND == "WD") {
                             hw = define_hardware(result);
                             result.hardware = hw;
                             var p = [];
@@ -756,10 +756,10 @@ function main() {
                             }, function(err) {
                                 reject(err);
                             });
-                        } else {
-                            console.log("EEPROM is not configured properly.");
-                            reject(new Error('EEPROM is not configured properly.'));
-                        }
+                        // } else {
+                        //     console.log("EEPROM is not configured properly.");
+                        //     reject(new Error('EEPROM is not configured properly.'));
+                        // }
                     }
                 });
             }

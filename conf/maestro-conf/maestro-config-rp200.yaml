@@ -225,7 +225,7 @@ static_file_generators:
    - name: "server_key"
      template: "{{ARCH_SERVER_KEY_PEM}}"
      output_file: "{{SSL_CERTS_PATH}}/server.key.pem"
-   - name: "client_cert"
+   - name: "server_cert"
      template: "{{ARCH_SERVER_CERT_PEM}}"
      output_file: "{{SSL_CERTS_PATH}}/server.cert.pem"
    - name: "ca_chain"

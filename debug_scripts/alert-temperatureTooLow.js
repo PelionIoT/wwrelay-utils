@@ -63,7 +63,7 @@ function startApp() {
 
     setInterval(function() {
         dev$.selectByID(resourceID).call('emit');
-    }, 30000);
+    }, 1000);
 }
 
 function getTemperatureSensor() {

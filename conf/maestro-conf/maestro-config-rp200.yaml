@@ -518,7 +518,7 @@ jobs:
      immutable: true  # don't store in DB
      exec_cmd: "${thisdir}/../../wigwag-core-modules/LEDController"
      container_template: "deviceJS_process"
-     composite_id: "user"
+     composite_id: "core"
      restart: true
      restart_limit: 5000
      restart_pause: 90
@@ -773,7 +773,7 @@ jobs:
      immutable: true  # don't store in DB
      exec_cmd: "${thisdir}/../../wigwag-core-modules/DevStateManager"
      container_template: "deviceJS_process"
-     composite_id: "user"
+     composite_id: "core"
      restart: true
      restart_limit: 5000
      restart_pause: 90

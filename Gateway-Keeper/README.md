@@ -76,3 +76,35 @@ GK> getAllRelays
 }
 
 ```
+
+## getRelay
+it will return a particular relayInfo
+
+```
+GK> getRelay WDRL00000V
+{
+    "relayID": "WDRL00000V",
+    "cloudURL": "https://dev.wigwag.io",
+    "build": "102.0.365",
+    "IP": "192.168.0.117"
+}
+```
+
+## upgradeAllRelays 
+it will start to upgrade all the relays in local netwrok 
+
+## upgradeRelay
+
+## led
+
+## restartAllMaestro
+
+## restartMaestro
+
+## getAllUpgrade
+
+## getUpgrade
+
+## killAllUpgrade
+
+## killUpgrade

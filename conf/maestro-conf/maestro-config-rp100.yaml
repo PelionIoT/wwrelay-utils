@@ -225,7 +225,7 @@ static_file_generators:
    - name: "server_key"
      template: "{{ARCH_SERVER_KEY_PEM}}"
      output_file: "{{SSL_CERTS_PATH}}/server.key.pem"
-   - name: "client_cert"
+   - name: "server_cert"
      template: "{{ARCH_SERVER_CERT_PEM}}"
      output_file: "{{SSL_CERTS_PATH}}/server.cert.pem"
    - name: "ca_chain"
@@ -277,7 +277,7 @@ jobs:
         - "start"
         - "-conf=/wigwag/etc/devicejs/devicedb.yaml"  
    - job: "devicejs"
-     defer_running_status: 8000   # waits 8 seconds before marking this Job as RUNNING, which delays all dependencies
+     defer_running_status: 30000   # waits 8 seconds before marking this Job as RUNNING, which delays all dependencies
      depends_on:
         - "devicedb"
      container_template: "node_process"
@@ -388,12 +388,14 @@ jobs:
             "debug": true,
             "mapUnplacedDevices": true,
             "ignoreDevicesById" : [],
-            "siteID": "9546c7ad92d449e38e2c314021208fb7",
+            "relayID": "{{ARCH_RELAYID}}",
             "mbedAPIKey": "ak_1MDE1ZDUwYTFmYmM2MDI0MjBhMDExMTA5MDAwMDAwMDA015e967fe74802420a01390300000000aJOhYRqzTXINzN9Aw2OkV5WrG0YwgmKS",
             "spawnEdgeCore": false,
             "edgeExecCmd": ["/apps/mbed-cloud-edge-confidential-w/build/mcc-linux-x86/existing/bin/edge-core","/tmp/edge.sock","9101"],
-            "clientKey": "{{ARCH_CLIENT_KEY_PEM}}",
-            "clientCert": "{{ARCH_CLIENT_CERT_PEM}}"
+            "ssl":{
+              "key":"{{SSL_CERTS_PATH}}/client.key.pem",
+              "cert":"{{SSL_CERTS_PATH}}/client.cert.pem"
+            }
         }
    - job: "core-interfaces"
      immutable: true  # don't store in DB
@@ -599,6 +601,7 @@ jobs:
           "macAddr": 126,
           "activityLength": 100,
           "logLevel": 1, //Available- info- 2, debug- 3, trace- 4, error- 0, warn- 1
+          "startControllerOnDiscovery": false,
           "nativeLogLevel": "WARN", //FATAL : 0, ERROR : 10, WARN : 20, ROUTING : 30, INFO : 40, DEBUG : 50, PACKET : 60, DUMP : 70, TRACE : 80, ALL :127
           "relayId": "{{ARCH_RELAYID}}",
           "platform": "{{ARCH_WW_PLATFORM}}", //Used to identify platform so that module can adapt and run automagically

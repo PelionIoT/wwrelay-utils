@@ -117,9 +117,31 @@ starting upgrade for WDRL00000M
 
 ## led
 
+```
+GK> led WDRL00000M
+OK
+Look at the relay
+
+```
+
+
 ## restartAllMaestro
 
+```
+GK> restartAllMaestro
+OK
+Look at the relay
+
+```
+
 ## restartMaestro
+
+```
+GK> restartMaestro WDRL00000M
+OK
+Look at the relay
+
+```
 
 ## getAllUpgrade
 check the upgrade status of all the relays
@@ -160,5 +182,34 @@ check a particular relays upgrade status
   ```
 
 ## killAllUpgrade
+stop downloading upgrade to all relays
+
+```
+GK> killAllUpgrade
+upgrade process killed.
+upgrade process killed.
+upgrade process killed.
+upgrade process killed.
+upgrade process killed.
+upgrade process killed.
+upgrade process killed.
+f.tar.gz removed.
+f.tar.gz removed.
+f.tar.gz removed.
+f.tar.gz removed.
+f.tar.gz removed.
+f.tar.gz removed.
+f.tar.gz removed.
+
+```
+
 
 ## killUpgrade
+stop upgrading a relays
+
+```
+GK> killUpgrade WDRL00000M
+upgrade process killed.
+f.tar.gz removed.
+
+```

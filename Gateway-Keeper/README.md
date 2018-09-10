@@ -30,7 +30,7 @@ sudo ./start.sh username userIP password build
 ## getAllRelays
 it will return all the connected gateways to the server
 
-```GK> getAllRelays
+``` GK> getAllRelays
 {
     "relayID": "WDRL00000M",
     "cloudURL": "https://dev.wigwag.io",

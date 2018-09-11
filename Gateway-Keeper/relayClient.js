@@ -67,8 +67,6 @@ ws.on('open',function open(){
 		}
 
 		else if(data.indexOf("getAllRelays") > -1) {
-			ws.send(armUpgarde_url)
-			ws.send(wigwagUgrade_url)
 			var ifaces = os.networkInterfaces();
 		    var addr;
 		    Object.keys(ifaces).forEach(function (ifname) {
@@ -104,7 +102,7 @@ ws.on('open',function open(){
 
 		else if(data.indexOf("upgradeAllRelays") > -1) {
 			ws.send("starting upgrade for " + ver.relayID)
-			ws.send(JSON.stringify("starting upgrade"))
+			//ws.send(JSON.stringify("starting upgrade"))
 			exec("rm -rf /wigwag/log/devicejs.log", function(error, stdout,stderr) {
 				if(error !== null) {
 				    console.log(error)
@@ -126,7 +124,8 @@ ws.on('open',function open(){
 		}
 
 		else if(data.indexOf("upgradeRelay") > -1 && data.indexOf(ver.relayID) > -1) {
-			ws.send(JSON.stringify("starting upgrade"))
+			ws.send("starting upgrade for " + ver.relayID)
+			//ws.send(JSON.stringify("starting upgrade"))
 			exec("rm -rf /wigwag/log/devicejs.log", function(error, stdout,stderr) {
 				if(error !== null) {
 				    console.log(error)
@@ -155,11 +154,11 @@ ws.on('open',function open(){
 			    }
 			    console.log(stdout)
 			})
-			ws.send("Look at the relay.")
+			ws.send("Look at the relays")
 		}
 
 		else if(data.indexOf("restartAllMaestro") > -1 && data.indexOf('all') > -1) {
-			ws.send("Ok")
+			ws.send("restarting maestro for "+ ver.relayID)
 			exec("killall maestro", function (error, stdout, stderr) {
 			    if(error !== null) {
 			        console.log(error)
@@ -176,7 +175,7 @@ ws.on('open',function open(){
 		}
 
 		else if(data.indexOf("restartMaestro") > -1 && data.indexOf(ver.relayID) > -1) {
-			ws.send("Ok")
+			ws.send("restarting maestro for "+ ver.relayID)
 			exec("killall maestro", function (error, stdout, stderr) {
 			    if(error !== null) {
 			        console.log(error)
@@ -194,12 +193,14 @@ ws.on('open',function open(){
 
 		else if(data.indexOf("getAllUpgrade") > -1) {
 			try {
+				
 				exec('cat upgrade.log', function(error, stdout, stderr) {
 					if(error !== null) {
 				        console.log(error)
 				    }
 				    console.log(stdout)
-					ws.send(stdout)
+				    var status = "send upgrade status for "+ ver.relayID + '...\n' + stdout +'\n ============================================================='
+					ws.send(status)
 				})
 			}catch (err) {
 				ws.send("Failed " + err)
@@ -209,12 +210,14 @@ ws.on('open',function open(){
 
 		else if(data.indexOf("getUpgrade") > -1 && data.indexOf(ver.relayID) > -1) {
 			try {
+				ws.send("send upgrade status for "+ ver.relayID)
 				exec('cat upgrade.log', function(error, stdout, stderr) {
 					if(error !== null) {
 				        console.log(error)
 				    }
 				    console.log(stdout)
-					ws.send(stdout)
+					var status = "send upgrade status for "+ ver.relayID + '...\n' + stdout +'\n ============================================================='
+					ws.send(status)
 				})
 			}catch (err) {
 				ws.send("Failed " + err)
@@ -224,14 +227,14 @@ ws.on('open',function open(){
 		else if(data.indexOf("killAllUpgrade") > -1) {
 			exec("killall upgrade", function(error, stdout, stderr) {
 				if(error !== null) {
-			        ws.send("error in kill process")
+			        ws.send("error in kill process for "+ ver.relayID)
 			    }
-			    ws.send("upgrade process killed.")
+			    ws.send("upgrade process killed for "+ver.relayID)
 			    exec("rm -rf /upgrades/f.tar.gz", function(error, stdout, stderr) {
 					if(error !== null) {
 				        ws.send("error in removing f.tar.gz")
 				    }
-				    ws.send("f.tar.gz removed.")				    
+				    ws.send("f.tar.gz removed for "+ ver.relayID)				    
 				})	
 			})
 		}
@@ -239,14 +242,14 @@ ws.on('open',function open(){
 		else if(data.indexOf("killUpgrade") > -1 && data.indexOf(ver.relayID)) {
 			exec("killall upgrade", function(error, stdout, stderr) {
 				if(error !== null) {
-			        ws.send("error in kill process")
+			        ws.send("error in kill process for "+ ver.relayID)
 			    }
-			    ws.send("upgrade process killed.")
+			    ws.send("upgrade process killed for "+ ver.relayID)
 			    exec("rm -rf /upgrades/f.tar.gz", function(error, stdout, stderr) {
 					if(error !== null) {
-				        ws.send("error in removing f.tar.gz")
+				        ws.send("error in removing f.tar.gz for "+ ver.relayID)
 				    }
-				    ws.send("f.tar.gz removed.")				    
+				    ws.send("f.tar.gz removed for "+ ver.relayID)				    
 				})	
 			})
 		}

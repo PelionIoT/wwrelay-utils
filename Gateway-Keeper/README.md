@@ -148,37 +148,55 @@ check the upgrade status of all the relays
 
 ```
 GK> getAllUpgrade
+send upgrade status for WDRL00000M...
   % Total    % Received % Xferd  Average Speed   Time    Time     Time  Current
                                  Dload  Upload   Total   Spent    Left  Speed
-  1  259M    1 3439k    0     0  64306      0  1:10:24  0:00:54  1:09:30 88650
+ 71  259M   71  184M    0     0  77907      0  0:58:07  0:41:24  0:16:42 79550
+=============================================================
+send upgrade status for WDRL00000K...
   % Total    % Received % Xferd  Average Speed   Time    Time     Time  Current
                                  Dload  Upload   Total   Spent    Left  Speed
-  0  259M    0 1743k    0     0  32586      0  2:18:57  0:00:54  2:18:03 42513
+ 42  259M   42  108M    0     0  45980      0  1:38:28  0:41:24  0:57:04 29124
+=============================================================
+send upgrade status for WDRL00000V...
   % Total    % Received % Xferd  Average Speed   Time    Time     Time  Current
                                  Dload  Upload   Total   Spent    Left  Speed
-  0  259M    0 2575k    0     0  48345      0  1:33:39  0:00:54  1:32:45 32781
+ 47  259M   47  122M    0     0  51773      0  1:27:27  0:41:25  0:46:03 62647
+=============================================================
+send upgrade status for WDRP000001...
   % Total    % Received % Xferd  Average Speed   Time    Time     Time  Current
                                  Dload  Upload   Total   Spent    Left  Speed
-  0  259M    0 2191k    0     0  40872      0  1:50:46  0:00:54  1:49:52 35758
+ 38  259M   38 99.6M    0     0  49256      0  1:31:55  0:35:19  0:56:36 76625
+=============================================================
+send upgrade status for WDRL00003C...
   % Total    % Received % Xferd  Average Speed   Time    Time     Time  Current
                                  Dload  Upload   Total   Spent    Left  Speed
-  0  259M    0 1935k    0     0  36293      0  2:04:45  0:00:54  2:03:51 35016
+ 37  259M   37 98.1M    0     0  41371      0  1:49:26  0:41:25  1:08:01 41559
+=============================================================
+send upgrade status for WDRP000001...
   % Total    % Received % Xferd  Average Speed   Time    Time     Time  Current
                                  Dload  Upload   Total   Spent    Left  Speed
-  1  259M    1 3135k    0     0  59054      0  1:16:40  0:00:54  1:15:46 62944
+ 49  259M   49  129M    0     0  54446      0  1:23:09  0:41:24  0:41:46 61533
+=============================================================
+send upgrade status for WDRL000038...
   % Total    % Received % Xferd  Average Speed   Time    Time     Time  Current
                                  Dload  Upload   Total   Spent    Left  Speed
-  0  259M    0 2335k    0     0  43484      0  1:44:07  0:00:55  1:43:12 57375
+ 37  259M   37 96.4M    0     0  40699      0  1:51:15  0:41:24  1:09:50 35547
+=============================================================
 
 ```
 
 ## getUpgrade
 check a particular relays upgrade status 
 
-```GK> getUpgrade WDRL00000M
+```
+GK> getUpgrade WDRP000001
+send upgrade status for WDRP000001...
   % Total    % Received % Xferd  Average Speed   Time    Time     Time  Current
                                  Dload  Upload   Total   Spent    Left  Speed
-  1  259M    1 3439k    0     0  64306      0  1:10:24  0:00:54  1:09:30 88650
+  6  259M    6 17.4M    0     0   246k      0  0:17:57  0:01:12  0:16:45  283k
+ =============================================================
+
   ```
 
 ## killAllUpgrade

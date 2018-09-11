@@ -1,4 +1,10 @@
 #!/usr/bin/expect -f
+set build [lindex $argv 0];
+
+if {[llength $argv] == 0} {
+  send_user " \n Usage: sudo <scriptname> \[build number\] \n\n"
+  exit 1
+}
 
 spawn node relayIP.js
 expect "$ "
@@ -20,7 +26,7 @@ foreach host $hosts {
 	expect -re ".*wigwag.*"
 	send "rm -rf /wigwag/log/devicejs.log\r"
 	expect "# "
-	send "upgrade -F -t -U -v -w -S -r https://code.wigwag.com/ugs/builds/development/cubietruck/102.0.353-field-factoryupdate.tar.gz &\r"
+	send "upgra -F -t -U -v -w -S -r https://code.wigwag.com/ugs/builds/development/cubietruck/$build-field-factoryupdate.tar.gz &\r"
 	expect "# "
 	send "exit\r"
 	expect "$ "

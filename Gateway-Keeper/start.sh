@@ -1,14 +1,15 @@
 #!/usr/bin/expect -f
-set username [lindex $argv 0];
-set IP [lindex $argv 1];
-set password [lindex $argv 2];
-set build [lindex $argv 3];
+# set username [lindex $argv 0];
+# set IP [lindex $argv 1];
+# set password [lindex $argv 2];
+# set build [lindex $argv 3];
 set workDir [pwd]
 
-if {[llength $argv] == 0} {
-  send_user " \n Usage: sudo <scriptname> \[username\] \[IP\] \[password\] \[build\]\n\n"
-  exit 1
-}
+# username=$(whoami)
+# IP=$(ifconfig | grep -A 2 -E 'wlan|eth|wlp3s0|enp0s25' | grep -Eo 'inet (addr:)?([0-9]*\.){3}[0-9]*' | grep -Eo '([0-9]*\.){3}[0-9]*' | grep -v '127.0.0.1')
+# echo "Your IP is -- $IP"
+set IP [lindex $argv 0];
+set username [lindex $argv 1];
 
 spawn node relayIP.js
 expect "$ "
@@ -27,13 +28,38 @@ foreach host $hosts {
 	expect "assword: "
 	send "wigwagr0x\r"
 	expect -re ".*wigwag.*"
+	send "mkdir /home/maestro\r"
+	expect "# "
+	send "chown maestro:maestro /home/maestro\r"
+	expect "# "
+	send "exit\r"
+	expect "$ "
+	send "exit\r"
+	expect "$ "
+	spawn cat ~/.ssh/relay_rsa.pub | ssh -o StrictHostKeyChecking=no -o UserKnownHostsFile=/dev/null maestro@$host "mkdir -p ~/.ssh && cat >>  ~/.ssh/authorized_keys"
+	expect "assword: "
+	send "maestro\r"
+	expect "$ "
+	send "su -\r"
+	expect "assword: "
+	send "wigwagr0x\r"
+	expect -re ".*wigwag.*"
+	send "mkdir /home/maestro\r"
+	expect "# "
+	send "chown maestro:maestro /home/maestro\r"
+	expect "# "
+	send "exit\r"
+	expect "$ "
+	send "exit\r"
+	expect "$ "
+	spawn ssh -o StrictHostKeyChecking=no -o UserKnownHostsFile=/dev/null maestro@$host
+	send "cd /home/root\r"
+	expect "# "
 	send "scp -o StrictHostKeyChecking=no -o UserKnownHostsFile=/dev/null $username@$IP:$workDir/relayClient.js ./\r"
-	expect "password: "
-	send "$password\r"
 	expect "# "
 	send "killall relayClient.js\r"
 	expect "# "
-	send "NODE_PATH=/wigwag/devicejs-core-modules/node_modules/ node relayClient.js $IP $build&\r"
+	send "NODE_PATH=/wigwag/devicejs-core-modules/node_modules/ node relayClient.js $IP &\r"
 	expect "# "
 	send "exit\r"
 	expect "$ "

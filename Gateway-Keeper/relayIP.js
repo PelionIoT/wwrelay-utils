@@ -1,38 +1,44 @@
-const sudo = require('sudo');
-var fs = require('fs')
-fs.truncate('./samplelist', 0, function(){console.log('')})
-var file ='./samplelist'
+// const sudo = require('sudo');
+var fs = require('fs');
+var exec = require('child_process').exec;
+fs.truncate('./samplelist', 0, function(){ console.log(''); });
+var file ='./samplelist';
 
-var fd = fs.openSync(file, 'a')
+var fd = fs.openSync(file, 'a');
 
 var wstream = fs.createWriteStream(file, {
         fd: fd
     });
     wstream.on('error', function(err) {
         throw err;
-})
+});
 
 const IP_INDEX = 0;
 const MAC_ADDRESS_INDEX = 1;
 
-var IP = {}
+var IP = {};
 scan = callback => {
     console.log('Start scanning network');
 
-    const arpCommand = sudo(['arp-scan', '-l', '-q']);
+    const arpCommand = 'arp-scan -l -q';
     let bufferStream = '';
     let errorStream = '';
 
+    var child = exec(arpCommand, function(error, stdout, stderr) {
+        if (error !== null) {
+            console.error('Failed ', error);
+        }
+    });
 
-    arpCommand.stdout.on('data', data => {
+    child.stdout.on('data', data => {
         bufferStream += data;
     });
 
-    arpCommand.stderr.on('data', error => {
+    child.stderr.on('data', error => {
         errorStream += error;
     });
 
-    arpCommand.on('close', code => {
+    child.on('close', code => {
         console.log('Scan finished');
 
         if (code !== 0) {

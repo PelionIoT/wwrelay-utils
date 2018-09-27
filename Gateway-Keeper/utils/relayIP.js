@@ -1,8 +1,7 @@
-// const sudo = require('sudo');
 var fs = require('fs');
 var exec = require('child_process').exec;
-fs.truncate('./samplelist', 0, function(){ console.log(''); });
-var file ='./samplelist';
+fs.truncate('./.samplelist', 0, function(){ console.log(''); });
+var file ='./.samplelist';
 
 var fd = fs.openSync(file, 'a');
 

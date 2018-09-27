@@ -23,7 +23,7 @@ node index.js
 now send relayClient script to all of the gateways in local netwrok using other terminal  
 
 ```
-sudo ./start.sh username userIP password build
+./prepare.sh
 ```
 
 # Command
@@ -94,7 +94,7 @@ GK> getRelay WDRL00000V
 it will start to upgrade all the relays in local netwrok 
 
 ```
-GK> upgradeAllRelays
+GK> upgradeAllRelays [version number]
 starting upgrade for WDRL00000M
 starting upgrade for WDRP000001
 starting upgrade for WDRL00000K
@@ -110,7 +110,7 @@ starting upgrade for WDRL00000V
 start a relay upgrade 
 
 ```
-GK> upgradeRelay WDRL00000M
+GK> upgradeRelay [version number] WDRL00000M
 starting upgrade for WDRL00000M
 
 ```

@@ -1,0 +1,42 @@
+{
+	"getRelay": {
+        "Usage": "getRelay [relayID] \n\t\t Example: getRelay WDRL00000M ",
+        "Description": "it returns a object with relayID, cloudURL, build_version and IP for a single relay."
+    },
+    "getAllRelays": {
+        "Usage": "getAllRelays \n\t\t Example: getAllRelays",
+        "Description": "it returns a object with relayID, cloudURL, build_version and IP"
+    },
+    "upgradeRelay": {
+        "Usage": "upgradeRelay [relayID] [build_version]\n\t\t Example: upgradeRelay WDRL00000M  102.0.377",
+        "Description": "it start to download a build in a gateway and upgrade them."
+    },
+    "upgradeAllRelays": {
+        "Usage": "upgradeAllRelays \n\t\t Example: getAllRelays",
+        "Description": "it start to download a build in all gateway and upgrade them."
+    },
+    "restartMaestro": {
+        "Usage": "restartMaestro [relayID] \n\t\t Example: restartMaestro WDRL00000M",
+        "Description": "it restart maestro in a gateway."
+    },
+    "restartAllMaestro": {
+        "Usage": "restartAllMaestro \n\t\t Example: restartAllMaestro",
+        "Description": "it restart maestro in all gateways."
+    },
+    "getUpgrade": {
+        "Usage": "getUpgrade [relayID] \n\t\t Example: getUpgrade WDRL00000M",
+        "Description": "it returns the status of download build in a gateway."
+    },
+    "getAllUpgrade": {
+        "Usage": "getAllUpgrade \n\t\t Example: getAllUpgrade",
+        "Description": "t returns the status of download build in all gateway"
+    },
+    "killUpgrade": {
+        "Usage": "killUpgrade [relayID] \n\t\t Example: killUpgrade WDRL00000M",
+        "Description": "this command is to stop upgrade in a gateway."
+    },
+    "killAllUpgrade": {
+        "Usage": "killAllUpgrade \n\t\t Example: killAllUpgrade",
+        "Description": "this command is to stop upgrade in all gateway."
+    }
+}

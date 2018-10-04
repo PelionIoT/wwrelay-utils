@@ -10,11 +10,14 @@ var exec = require('child_process').exec;
 
 var url = null
 //var serverIP = "192.168.0.114"
-var uri = "http://"+serverIP+":3000"
+var uri = "http://"+serverIP+":3232"
 console.log(serverIP)
 
 const config = JSON.parse(jsonminify(fs.readFileSync('/wigwag/wwrelay-utils/I2C/relay.conf', 'utf8')));
 const ver = JSON.parse(jsonminify(fs.readFileSync('/wigwag/etc/versions.json', 'utf8')));
+
+var getBaseName = /^[Hh][Tt][Tt][Pp][Ss]?\:\/\/([^\.]+).*/;
+var cloudBaseName = getBaseName.exec(ver.cloudURL)
 
 
 delete ver.version
@@ -22,7 +25,38 @@ ver.relayID = config.relayID
 ver.cloudURL = config.cloudURL
 ver.build = ver.packages[0].version
 delete ver.packages
-console.log(ver)
+//console.log(ver)
+var ifaces = os.networkInterfaces();
+var addr;
+Object.keys(ifaces).forEach(function (ifname) {
+  	var alias = 0;
+
+  	ifaces[ifname].forEach(function (iface) {
+    if ('IPv4' !== iface.family || iface.internal !== false) {
+      // skip over internal (i.e. 127.0.0.1) and non-ipv4 addresses
+      return;
+    }
+
+    if (alias >= 1) {
+      // this single interface has multiple ipv4 addresses
+      	console.log(ifname + ':' + alias, iface.address);
+      	ver.IP = iface.address
+      //ws.send(ver)
+      	// ws.send(JSON.stringify(ver,null,4))
+
+    } else {
+        if(ifname === 'eth0' || ifname == 'wlan0') {
+          // this interface has only one ipv4 adress
+         console.log(ifname, iface.address);
+         ver.IP = iface.address
+      	//ws.send(ver)
+      	//ws.send(JSON.stringify(ver,null,4))
+         addr =  iface.address;
+      }
+    }
+    ++alias;
+  });
+			    });
 
 
 ws = new WebSocket(uri)
@@ -36,76 +70,52 @@ ws.on('open',function open(){
 				if(cliArgv[1] != ver.relayID) {
 					break;
 				}
-				var ifaces = os.networkInterfaces();
-			    var addr;
-			    Object.keys(ifaces).forEach(function (ifname) {
-			      var alias = 0;
-
-			      ifaces[ifname].forEach(function (iface) {
-			        if ('IPv4' !== iface.family || iface.internal !== false) {
-			          // skip over internal (i.e. 127.0.0.1) and non-ipv4 addresses
-			          return;
-			        }
-
-			        if (alias >= 1) {
-			          // this single interface has multiple ipv4 addresses
-			          console.log(ifname + ':' + alias, iface.address);
-			          ver.IP = iface.address
-			          //ws.send(ver)
-			          ws.send(JSON.stringify(ver,null,4))
-
-			        } else {
-			            if(ifname === 'eth0' || ifname == 'wlan0') {
-			              // this interface has only one ipv4 adress
-			             console.log(ifname, iface.address);
-			             ver.IP = iface.address
-			          	//ws.send(ver)
-			          	ws.send(JSON.stringify(ver,null,4))
-			             addr =  iface.address;
-			          }
-			        }
-			        ++alias;
-			      });
-			    });
+				ws.send(JSON.stringify(ver,null,4))
+				
 			break;
 
 			case "getAllRelays":
-				var ifaces = os.networkInterfaces();
-			    var addr;
-			    Object.keys(ifaces).forEach(function (ifname) {
-			      var alias = 0;
+			ws.send(JSON.stringify(ver,null,4))
+				// var ifaces = os.networkInterfaces();
+			 //    var addr;
+			 //    Object.keys(ifaces).forEach(function (ifname) {
+			 //      var alias = 0;
 
-			      ifaces[ifname].forEach(function (iface) {
-			        if ('IPv4' !== iface.family || iface.internal !== false) {
-			          // skip over internal (i.e. 127.0.0.1) and non-ipv4 addresses
-			          return;
-			        }
+			 //      ifaces[ifname].forEach(function (iface) {
+			 //        if ('IPv4' !== iface.family || iface.internal !== false) {
+			 //          // skip over internal (i.e. 127.0.0.1) and non-ipv4 addresses
+			 //          return;
+			 //        }
 
-			        if (alias >= 1) {
-			          // this single interface has multiple ipv4 addresses
-			          console.log(ifname + ':' + alias, iface.address);
-			          ver.IP = iface.address
-			          //ws.send(ver)
-			          ws.send(JSON.stringify(ver,null,4))
+			 //        if (alias >= 1) {
+			 //          // this single interface has multiple ipv4 addresses
+			 //          console.log(ifname + ':' + alias, iface.address);
+			 //          ver.IP = iface.address
+			 //          //ws.send(ver)
+			 //          ws.send(JSON.stringify(ver,null,4))
 
-			        } else {
-			            if(ifname === 'eth0' || ifname == 'wlan0') {
-			              // this interface has only one ipv4 adress
-			             console.log(ifname, iface.address);
-			             ver.IP = iface.address
-			          	//ws.send(ver)
-			          	ws.send(JSON.stringify(ver,null,4))
-			             addr =  iface.address;
-			          }
-			        }
-			        ++alias;
-			      });
-			    });
+			 //        } else {
+			 //            if(ifname === 'eth0' || ifname == 'wlan0') {
+			 //              // this interface has only one ipv4 adress
+			 //             console.log(ifname, iface.address);
+			 //             ver.IP = iface.address
+			 //          	//ws.send(ver)
+			 //          	ws.send(JSON.stringify(ver,null,4))
+			 //             addr =  iface.address;
+			 //          }
+			 //        }
+			 //        ++alias;
+			 //      });
+			 //    });
 			break;
 
 			case "upgradeAllRelays":
+				
 				if(!cliArgv[1]){
 					ws.send("Build_version is not defined")
+					break;
+				}
+				if(cliArgv[2] != cloudBaseName[1] || cliArgv[2] != 'all') {
 					break;
 				}
 				build_version = cliArgv[1]
@@ -271,7 +281,7 @@ ws.on('open',function open(){
 				        ws.send("error in kill process for "+ ver.relayID)
 				    }
 				    ws.send("upgrade process killed for "+ ver.relayID)
-				    exec("rm -rf /upgrades/f.tar.gz", function(error, stdout, stderr) {
+				    exec("rm -rf /upgrades/*", function(error, stdout, stderr) {
 						if(error !== null) {
 					        ws.send("error in removing f.tar.gz for "+ ver.relayID)
 					    }
@@ -280,8 +290,15 @@ ws.on('open',function open(){
 				})
 			break;
 
+			case "copyBuildAndUpgrade":
+				if((cliArgv[1] == ver.relayID  || cliArgv[1] == 'all') && (cliArgv[2] == cloudBaseName || cliArgv[2] == 'all')) {
+					msg = "SCPIP " + ver.IP
+					ws.send(msg)
+				}
+			break;
+
 			default:
-				
+				//ws.send("Unknown Command")	
 			break;
 		}
 	})

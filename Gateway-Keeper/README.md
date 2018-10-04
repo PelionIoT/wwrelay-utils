@@ -1,26 +1,30 @@
 # Gateway keeper
-control and upgrade all gateways in local network
+Control and upgrade all gateways in local network
 
-# Prerequisite
-install expect and arp-scan using
 
 # Install
 ```
-git clone wwrelay Repo
-cd  Gateway-keeper
-```
-```
+git clone https://github.com/WigWagCo/wwrelay-utils.git
+cd wwrelay-utils
+git checkout development
+cd Gateway-keeper
 npm install
 ```
 
 # Run
-start server it will open a repl prompt to excute command on it
+Start server it will open a repl prompt to excute command on it. you can start it with two way
+- When there is on buil file in your repo
 
 ```
-node index.js
+./index.sh [Build_version_number]
+```
+- When you alraedy have a build file in repo
+
+```
+./index.sh
 ```
 
-now send relayClient script to all of the gateways in local netwrok using other terminal  
+Send relayClient script to all of the gateways in local netwrok using other terminal  
 
 ```
 ./prepare.sh
@@ -28,7 +32,7 @@ now send relayClient script to all of the gateways in local netwrok using other 
 
 # Command
 ## getAllRelays
-it will return all the connected gateways to the server
+It will return all the connected gateways to the server
 
 ``` 
 GK> getAllRelays
@@ -78,7 +82,7 @@ GK> getAllRelays
 ```
 
 ## getRelay
-it will return a particular relayInfo
+It will return a particular relayInfo
 
 ```
 GK> getRelay WDRL00000V
@@ -91,10 +95,10 @@ GK> getRelay WDRL00000V
 ```
 
 ## upgradeAllRelays 
-it will start to upgrade all the relays in local netwrok 
+It will start to upgrade all the relays in local netwrok 
 
 ```
-GK> upgradeAllRelays [version number]
+GK> upgradeAllRelays [version number] [cloudbasename]
 starting upgrade for WDRL00000M
 starting upgrade for WDRP000001
 starting upgrade for WDRL00000K
@@ -107,7 +111,7 @@ starting upgrade for WDRL00000V
 
 
 ## upgradeRelay
-start a relay upgrade 
+Start a relay upgrade 
 
 ```
 GK> upgradeRelay [version number] WDRL00000M
@@ -144,7 +148,7 @@ Look at the relay
 ```
 
 ## getAllUpgrade
-check the upgrade status of all the relays
+Check the upgrade status of all the relays
 
 ```
 GK> getAllUpgrade
@@ -187,7 +191,7 @@ send upgrade status for WDRL000038...
 ```
 
 ## getUpgrade
-check a particular relays upgrade status 
+Check a particular relays upgrade status 
 
 ```
 GK> getUpgrade WDRP000001
@@ -200,7 +204,7 @@ send upgrade status for WDRP000001...
   ```
 
 ## killAllUpgrade
-stop downloading upgrade to all relays
+Stop downloading upgrade to all relays
 
 ```
 GK> killAllUpgrade
@@ -223,11 +227,34 @@ f.tar.gz removed.
 
 
 ## killUpgrade
-stop upgrading a relays
+Stop upgrading a relays
 
 ```
 GK> killUpgrade WDRL00000M
 upgrade process killed.
 f.tar.gz removed.
 
+```
+
+## copyBuildAndUpgrade
+Copy a build from your system to gateway and upgrade
+
+```
+GK> copyBuildAndUpgrade [all/relayID] [all/dev/demo/arm]
+      [RESULT OF expect-ssh-copy.sh]
+```
+
+# Help Command
+Add `-h` , `--h`, `--help` or '-help' after command for help
+
+## Example
+
+```
+GK> getAllRelays -h
+getAllRelays 
+         Usage: 
+                 getAllRelays 
+                 Example: getAllRelays 
+         Description: 
+                 it returns a object with relayID, cloudURL, build_version and IP
 ```

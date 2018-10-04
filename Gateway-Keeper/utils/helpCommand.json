@@ -38,5 +38,9 @@
     "killAllUpgrade": {
         "Usage": "killAllUpgrade \n\t\t Example: killAllUpgrade",
         "Description": "this command is to stop upgrade in all gateway."
+    },
+    "copyBuildAndUpgrade": {
+        "Usage":"copyBuildAndUpgrade [all/dev/arm/demo]",
+        "Description": "scp copy a build to gateways and start upgrade"
     }
 }

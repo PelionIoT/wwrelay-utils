@@ -7,7 +7,7 @@ set username [lindex $argv 1];
 spawn node utils/relayIP.js
 expect "$ "
 
-set i [open "samplelist"]
+set i [open ".samplelist"]
 set hosts [split [read -nonewline $i] "\n"]
 send_user "\n============================================================================================= \n"
 set timeout -1

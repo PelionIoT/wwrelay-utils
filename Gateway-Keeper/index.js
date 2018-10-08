@@ -33,7 +33,7 @@ program
 // }
 
 
-var allcommands = 'getRelay getAllRelays upgradeAllRelays upgradeRelay led restartAllMaestro restartMaestro getAllUpgrade getUpgrade killAllUpgrade killUpgrade copyBuildAndUpgrade '
+var allcommands = 'getRelay getAllRelays upgradeAllRelays upgradeRelay led restartAllMaestro restartMaestro getAllUpgrade getUpgrade killAllUpgrade killUpgrade copyBuildAndUpgrade downloadBuild clearBuild '
 
 function completer(line) {
     var completions = allcommands;
@@ -77,6 +77,7 @@ const rl = readline.createInterface({
     prompt: 'GK> ',
     completer: completer
 })
+
 cmdHistory(rl,process.env.HOME+'/.gk_history')
 
 var app = express();
@@ -89,10 +90,16 @@ wss.on('connection', function connection(ws,req) {
     ws.id = uuid.v4();
     ws.send(ws.id+"");
     ws.on('message', function incoming(data) {
+        //console.log(data)
         if(data.indexOf('SCPIP') > -1) {
-            //console.log('copy bild to IP '+ data)
-            IP = data.split(' ')[1]
-            cmd = "./debug_script/expect-ssh-copy.sh " + IP
+            var cliArgv = data.split(' ')
+            var IP = cliArgv[1]
+            var build = cliArgv[2]
+            if(data.indexOf("ARMSCPIP") > -1) {
+                cmd = "./debug_script/expect-ssh-copy.sh " + IP + " arm-" + build
+            } else {
+                cmd = "./debug_script/expect-ssh-copy.sh " + IP + " " + build
+            }
             exec(cmd,function(error, stdout, stderr) {
                 if(error) {
                     console.log('failed to copy')
@@ -116,7 +123,70 @@ rl.on('line', (line) => {
                         '\n\t',chalk.bold('Description:'),
                         '\n\t\t',help[command].Description) 
         }
-    } else { 
+    } else if(line.indexOf('downloadBuild') > -1){
+        var cliArgv = line.split(' ')
+        var build = cliArgv[1]
+        var cloudbasename = cliArgv[2]
+        let bufferStream = '';
+        let errorStream = '';
+        var command = ''
+        if(cloudbasename == 'arm') {
+            command = "sudo wget -O "+__dirname+"/build/arm-"+build+"-field-factoryupdate.tar.gz https://code.wigwag.com/ugs/builds/arm_development/cubietruck/"+build+"-field-factoryupdate.tar.gz --no-check-certificate"   
+        } else{
+            command = "sudo wget -O "+__dirname+"/build/"+build+"-field-factoryupdate.tar.gz https://code.wigwag.com/ugs/builds/development/cubietruck/"+build+"-field-factoryupdate.tar.gz --no-check-certificate"
+     
+        }
+        var child = exec(command, {maxBuffer: 1024 * 500},function(error, stdout, stderr) {
+            if(error) {
+                console.log('failed to copy ==> '+error)
+            }
+            //if (self.verbose) {
+            
+        //}
+        })
+        child.stdout.on('data', data => {
+                // console.log('[STR] stdout "%s"', String(data));
+                const getData = data.split(' ')
+                const status = getData.filter((c) => c.endsWith("%"));
+                const size = getData.filter((c) => c.endsWith("M"));
+                const eta = getData.filter((c) => c.endsWith("s"));
+                //console.log(status[0])
+                if(status[0] === undefined || size[0] === undefined || eta[0] === undefined)return 0;
+                //printProgress(status[0], size[0], eta[0], "102.0.380-field-factoryupdate.tar.gz")
+                //console.log('\u001b[2J\u001b[0;0H')
+                process.stdout.clearLine();
+                process.stdout.cursorTo(0);
+                process.stdout.write("[ Downloading Build "+ data + ' ]');
+                bufferStream += data;
+            });
+
+            child.stderr.on('data', error => {
+                //console.log('[STR] stdout "%s"', String(error));
+                var getData = error.split(' ')
+                var status = getData.filter((c) => c.endsWith("%"));
+                const size = getData.filter((c) => c.endsWith("M"));
+                const eta = getData.filter((c) => c.endsWith("s"));
+                //console.log(status[0])
+                if(status[0] === undefined || size[0] === undefined || eta[0] === undefined)return 0;
+                 //console.log('\u001b[2J\u001b[0;0H')
+                process.stdout.clearLine();
+                process.stdout.cursorTo(0);
+                process.stdout.write("[ Downloading Build "+ error + ' ]');
+                //printProgress(status[0], size[0], eta[0], "102.0.380-field-factoryupdate.tar.gz")
+                errorStream += error;
+            });
+            child.on('close', code => {
+                console.log("\nDownloading finished");
+            })
+    } else if(line.indexOf('clearBuild') > -1) {
+        var command = "rm -rf "+__dirname+"/build/*"
+        exec(command,function(error, stdout, stderr) {
+            if(error) {
+                console.log('failed to remove'+error)
+            }
+            console.log("Build folder is clean.")
+        })
+    }else { 
         wss.clients.forEach(function each(client) {
             client.send(line);
         });

@@ -16,9 +16,6 @@ console.log(serverIP)
 const config = JSON.parse(jsonminify(fs.readFileSync('/wigwag/wwrelay-utils/I2C/relay.conf', 'utf8')));
 const ver = JSON.parse(jsonminify(fs.readFileSync('/wigwag/etc/versions.json', 'utf8')));
 
-var getBaseName = /^[Hh][Tt][Tt][Pp][Ss]?\:\/\/([^\.]+).*/;
-var cloudBaseName = getBaseName.exec(ver.cloudURL)
-
 
 delete ver.version
 ver.relayID = config.relayID
@@ -26,6 +23,11 @@ ver.cloudURL = config.cloudURL
 ver.build = ver.packages[0].version
 delete ver.packages
 //console.log(ver)
+
+var getBaseName = /^[Hh][Tt][Tt][Pp][Ss]?\:\/\/([^\.]+).*/;
+var cloudBaseName = getBaseName.exec(ver.cloudURL)[1]
+
+
 var ifaces = os.networkInterfaces();
 var addr;
 Object.keys(ifaces).forEach(function (ifname) {
@@ -115,7 +117,7 @@ ws.on('open',function open(){
 					ws.send("Build_version is not defined")
 					break;
 				}
-				if(cliArgv[2] != cloudBaseName[1] || cliArgv[2] != 'all') {
+				if(cliArgv[2] != cloudBaseName || cliArgv[2] != 'all') {
 					break;
 				}
 				build_version = cliArgv[1]
@@ -292,7 +294,13 @@ ws.on('open',function open(){
 
 			case "copyBuildAndUpgrade":
 				if((cliArgv[1] == ver.relayID  || cliArgv[1] == 'all') && (cliArgv[2] == cloudBaseName || cliArgv[2] == 'all')) {
-					msg = "SCPIP " + ver.IP
+					var msg = ''
+					if(cloudBaseName == 'gateways-wigwag-int') {
+						msg = "ARMSCPIP " + ver.IP	+ " "+ cliArgv[3]
+					} else {
+						msg = "WWSCPIP " + ver.IP + " " + cliArgv[3]
+					}
+					
 					ws.send(msg)
 				}
 			break;

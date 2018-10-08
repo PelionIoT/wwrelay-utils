@@ -40,7 +40,15 @@
         "Description": "this command is to stop upgrade in all gateway."
     },
     "copyBuildAndUpgrade": {
-        "Usage":"copyBuildAndUpgrade [all/dev/arm/demo]",
+        "Usage":"copyBuildAndUpgrade [all/relayID] [all/cloudbasename] [] \n\t\t Example: copyBuildAndUpgrade all dev 102.0.389",
         "Description": "scp copy a build to gateways and start upgrade"
+    },
+    "downloadBuild": {
+        "Usage":"downloadBuild [build_version] \n\t\t Example: downloadBuild 102.0.377",
+        "Description": "download a build in your PC"
+    },
+    "clearBuild": {
+        "Usage":"clearBuild \n\t\t Example: clearBuild ",
+        "Description": "clear out all the builds in build folder"
     }
 }

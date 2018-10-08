@@ -35,63 +35,58 @@ Send relayClient script to all of the gateways in local netwrok using other term
 It will return all the connected gateways to the server
 
 ``` 
-GK> getAllRelays
-{
-    "relayID": "WDRL00000M",
-    "cloudURL": "https://dev.wigwag.io",
-    "build": "102.0.365",
-    "IP": "192.168.0.116"
-}
-{
-    "relayID": "WDRL00000K",
-    "cloudURL": "https://dev.wigwag.io",
-    "build": "102.0.365",
-    "IP": "192.168.0.118"
-}
-{
-    "relayID": "WDRP000001",
-    "cloudURL": "https://india.wigwag.io",
-    "build": "102.0.365",
-    "IP": "192.168.0.119"
-}
-{
-    "relayID": "WDRL000038",
+GK> getAllRelays                                                                                                                                                                                            
+{                                                                                                                                                                                                           
+    "relayID": "WDRP000001",                                                                                                                                                                                
+    "cloudURL": "https://india.wigwag.io",                                                                                                                                                                  
+    "build": "102.0.380",                                                                                                                                                                                   
+    "IP": "10.10.140.26"                                                                                                                                                                                    
+}                                                                                                                                                                                                           
+{                                                                                                                                                                                                           
+    "relayID": "WDRL000038",                                                                                                                                                                                
     "cloudURL": "https://devcloud.wigwag.io",
-    "build": "102.0.365",
-    "IP": "192.168.0.113"
+    "build": "102.0.377",
+    "IP": "10.10.140.238"
 }
 {
     "relayID": "WDRL00000V",
     "cloudURL": "https://dev.wigwag.io",
-    "build": "102.0.365",
-    "IP": "192.168.0.117"
+    "build": "102.0.377",
+    "IP": "10.10.140.64"
 }
 {
-    "relayID": "WDRL00003C",
-    "cloudURL": "https://demo.wigwag.io",
-    "build": "102.0.365",
-    "IP": "192.168.0.115"
+    "relayID": "WWRL000002",
+    "cloudURL": "https://gateways-wigwag-int.mbedcloudintegration.net",
+    "build": "102.0.380",
+    "IP": "10.10.140.28"
 }
 {
-    "relayID": "WDRP000001",
-    "cloudURL": "https://demo.wigwag.io",
-    "build": "102.0.365",
-    "IP": "192.168.0.112"
+    "relayID": "WDRL00000N",
+    "cloudURL": "https://dev.wigwag.io",
+    "build": "102.0.378",
+    "IP": "10.10.140.79"
 }
-
 ```
 
 ## getRelay
 It will return a particular relayInfo
 
 ```
-GK> getRelay WDRL00000V
+GK> getRelay WDRL00000N
 {
-    "relayID": "WDRL00000V",
+    "relayID": "WDRL00000N",
     "cloudURL": "https://dev.wigwag.io",
-    "build": "102.0.365",
-    "IP": "192.168.0.117"
+    "build": "102.0.378",
+    "IP": "10.10.140.79"
 }
+GK> getRelay WWRL000001
+{
+    "relayID": "WWRL000001",
+    "cloudURL": "https://gateways-wigwag-int.mbedcloudintegration.net",
+    "build": "102.0.380",
+    "IP": "10.10.140.27"
+}
+
 ```
 
 ## upgradeAllRelays 
@@ -240,8 +235,26 @@ f.tar.gz removed.
 Copy a build from your system to gateway and upgrade
 
 ```
-GK> copyBuildAndUpgrade [all/relayID] [all/dev/demo/arm]
+GK> copyBuildAndUpgrade [all/relayID] [all/cloudbasename] [build_version]
       [RESULT OF expect-ssh-copy.sh]
+```
+
+## downloadBuild 
+
+``` 
+GK> downloadBuild 102.0.380
+[ Downloading Build ... .......... 61% 7.97M 2m31s ]
+```
+for downloading arm build
+
+``` 
+GK> downloadBuild 102.0.380 arm
+[ Downloading Build ... .......... 61% 7.97M 2m31s ]
+```
+## clearBuild
+```
+GK> clearBuild
+Build folder is clean.
 ```
 
 # Help Command

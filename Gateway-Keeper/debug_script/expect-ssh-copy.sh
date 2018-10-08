@@ -2,6 +2,7 @@
 
 set workDir [pwd]
 set IP [lindex $argv 0];
+set BUILD [lindex $argv 1]
 
 # set username [lindex $argv 1];
 
@@ -13,7 +14,7 @@ set IP [lindex $argv 0];
 # send_user "\n============================================================================================= \n"
 # set timeout -1
 # foreach host $hosts {
-	spawn scp -o StrictHostKeyChecking=no -o UserKnownHostsFile=/dev/null $workDir/build/102.0.380-field-factoryupdate.tar.gz maestro@$IP:~
+	spawn scp -o StrictHostKeyChecking=no -o UserKnownHostsFile=/dev/null $workDir/build/$BUILD-field-factoryupdate.tar.gz maestro@$IP:~
 	set timeout 120
 	expect "assword: "
 	send "maestro\r"
@@ -26,11 +27,11 @@ set IP [lindex $argv 0];
 	expect "assword: "
 	send "wigwagr0x\r"
 	expect -re ".*wigwag.*"
-	send "mv /home/maestro/102.0.380-field-factoryupdate.tar.gz /upgrades/\r"
+	send "mv /home/maestro/$BUILD-field-factoryupdate.tar.gz /upgrades/\r"
 	expect "# "
 	send "cd /upgrades\r"
 	expect "# "
-	send "upgrade -F -t -U -v -w -S -r 102.0.380-field-factoryupdate.tar.gz &\r"
+	send "upgrade -F -t -U -v -w -S -r $BUILD-field-factoryupdate.tar.gz &\r"
 	expect "# "
 	send "exit\r"
 	expect "$ "

@@ -5,7 +5,6 @@ const uuid = require("uuid");
 const readline = require('readline');
 const fs = require('fs')
 const util = require('util')
-const program = require('commander');
 var exec = require('child_process').exec;
 var spawn = require('child_process').spawn;
 var help = require('./utils/helpCommand');
@@ -13,27 +12,8 @@ var chalk = require('chalk')
 
 var version = "1.0.0"
 
-program
-    .version(version)
-    .usage('[options] command {args...}')
-    .option('-b, --build [build number for download]', 'download a build for scp to all the relays')
-    .parse(process.argv);
 
-
-// if(program.build){
-//     var child = spawn('wget', ['-c', '-O', __dirname + "/build/" + program.build +"-field-factoryupdate.tar.gz" ,"https://code.wigwag.com/ugs/builds/development/cubietruck/"+program.build+"-field-factoryupdate.tar.gz"]);
-//     // cmd = "sudo wget -O "+__dirname+"/build/"+program.build+"-field-factoryupdate.tar.gz https://code.wigwag.com/ugs/builds/development/cubietruck/"+program.build+"-field-factoryupdate.tar.gz --no-check-certificate"
-//     // console.log(cmd)
-//     // exec(cmd, function(error, stdout, stderr) {
-//     //     if (error !== null) {
-//     //         console.error('Failed ', error);
-//     //     }
-//     //     console.log(stdout)
-//     // });
-// }
-
-
-var allcommands = 'getRelay getAllRelays upgradeAllRelays upgradeRelay led restartAllMaestro restartMaestro getAllUpgrade getUpgrade killAllUpgrade killUpgrade copyBuildAndUpgrade downloadBuild clearBuild '
+var allcommands = 'getRelay getAllRelays upgradeAllRelaysWithUrl upgradeRelayWithUrl led restartAllMaestro restartMaestro getAllUpgrade getUpgrade killAllUpgrade killUpgrade upgradeGateway downloadBuild clearBuild '
 
 function completer(line) {
     var completions = allcommands;
@@ -92,6 +72,8 @@ wss.on('connection', function connection(ws,req) {
     ws.on('message', function incoming(data) {
         //console.log(data)
         if(data.indexOf('SCPIP') > -1) {
+            process.stdout.write('Copying...')
+            let timer = setInterval(function() { process.stdout.write('.'); }, 500);
             var cliArgv = data.split(' ')
             var IP = cliArgv[1]
             var build = cliArgv[2]
@@ -104,6 +86,7 @@ wss.on('connection', function connection(ws,req) {
                 if(error) {
                     console.log('failed to copy')
                 }
+                clearInterval(timer)
                 console.log(stdout)
             })
         } else {
@@ -186,7 +169,33 @@ rl.on('line', (line) => {
             }
             console.log("Build folder is clean.")
         })
-    }else { 
+    }
+    // else if(line.indexOf('login') > -1) {
+    //     var cliArgv = line.split(' ')
+    //     var cmd = cliArgv[0]
+    //     var IP = cliArgv[1]
+    //     var command = __dirname+'/debug_script/relay-login.sh ' + IP
+    //     let bufferStream = '';
+    //     let errorStream = '';
+    //     var loginPrompt = exec(command, function(error, stdout, stderr) {
+    //         if(error) {
+    //             console.log('failed to copy ==> '+error)
+    //         } 
+    //     })
+    //     loginPrompt.stdout.on('data', data => {
+    //             process.stdout.write(data);
+    //             bufferStream += data;
+    //         });
+
+    //         loginPrompt.stderr.on('data', error => {
+    //             process.stdout.write(error);
+    //             errorStream += error;
+    //         });
+    //         loginPrompt.on('close', code => {
+    //             console.log("\n finished");
+    //         })
+    // }
+    else { 
         wss.clients.forEach(function each(client) {
             client.send(line);
         });

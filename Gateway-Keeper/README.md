@@ -142,11 +142,11 @@ Look at the relay
 
 ```
 
-## getAllUpgrade
+## upgradeAllRelaysWithUrl
 Check the upgrade status of all the relays
 
 ```
-GK> getAllUpgrade
+GK> upgradeAllRelaysWithUrl
 send upgrade status for WDRL00000M...
   % Total    % Received % Xferd  Average Speed   Time    Time     Time  Current
                                  Dload  Upload   Total   Spent    Left  Speed
@@ -185,11 +185,11 @@ send upgrade status for WDRL000038...
 
 ```
 
-## getUpgrade
+## upgradeRelayWithUrl
 Check a particular relays upgrade status 
 
 ```
-GK> getUpgrade WDRP000001
+GK> upgradeRelayWithUrl WDRP000001
 send upgrade status for WDRP000001...
   % Total    % Received % Xferd  Average Speed   Time    Time     Time  Current
                                  Dload  Upload   Total   Spent    Left  Speed
@@ -231,11 +231,11 @@ f.tar.gz removed.
 
 ```
 
-## copyBuildAndUpgrade
+## upgradeGateway
 Copy a build from your system to gateway and upgrade
 
 ```
-GK> copyBuildAndUpgrade [all/relayID] [all/cloudbasename] [build_version]
+GK> upgradeGateway [all/relayID] [all/cloudbasename] [build_version]
       [RESULT OF expect-ssh-copy.sh]
 ```
 

@@ -6,7 +6,6 @@ var exec = require('child_process').exec;
 
 var serverIP = process.argv[2]
 var build_version = null
-var exec = require('child_process').exec;
 
 var url = null
 //var serverIP = "192.168.0.114"
@@ -72,46 +71,14 @@ ws.on('open',function open(){
 				if(cliArgv[1] != ver.relayID) {
 					break;
 				}
-				ws.send(JSON.stringify(ver,null,4))
-				
+				ws.send(JSON.stringify(ver,null,4))				
 			break;
 
 			case "getAllRelays":
-			ws.send(JSON.stringify(ver,null,4))
-				// var ifaces = os.networkInterfaces();
-			 //    var addr;
-			 //    Object.keys(ifaces).forEach(function (ifname) {
-			 //      var alias = 0;
-
-			 //      ifaces[ifname].forEach(function (iface) {
-			 //        if ('IPv4' !== iface.family || iface.internal !== false) {
-			 //          // skip over internal (i.e. 127.0.0.1) and non-ipv4 addresses
-			 //          return;
-			 //        }
-
-			 //        if (alias >= 1) {
-			 //          // this single interface has multiple ipv4 addresses
-			 //          console.log(ifname + ':' + alias, iface.address);
-			 //          ver.IP = iface.address
-			 //          //ws.send(ver)
-			 //          ws.send(JSON.stringify(ver,null,4))
-
-			 //        } else {
-			 //            if(ifname === 'eth0' || ifname == 'wlan0') {
-			 //              // this interface has only one ipv4 adress
-			 //             console.log(ifname, iface.address);
-			 //             ver.IP = iface.address
-			 //          	//ws.send(ver)
-			 //          	ws.send(JSON.stringify(ver,null,4))
-			 //             addr =  iface.address;
-			 //          }
-			 //        }
-			 //        ++alias;
-			 //      });
-			 //    });
+				ws.send(JSON.stringify(ver,null,4))
 			break;
 
-			case "upgradeAllRelays":
+			case "upgradeAllRelaysWithUrl":
 				
 				if(!cliArgv[1]){
 					ws.send("Build_version is not defined")
@@ -142,7 +109,7 @@ ws.on('open',function open(){
 				})
 			break;
 
-			case "upgradeRelay":
+			case "upgradeRelayWithUrl":
 				if(!cliArgv[1]){
 					ws.send("build_version is not defined")
 					break;
@@ -292,7 +259,7 @@ ws.on('open',function open(){
 				})
 			break;
 
-			case "copyBuildAndUpgrade":
+			case "upgradeGateway":
 				if((cliArgv[1] == ver.relayID  || cliArgv[1] == 'all') && (cliArgv[2] == cloudBaseName || cliArgv[2] == 'all')) {
 					var msg = ''
 					if(cloudBaseName == 'gateways-wigwag-int') {

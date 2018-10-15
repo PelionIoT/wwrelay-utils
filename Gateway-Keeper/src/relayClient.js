@@ -26,6 +26,13 @@ delete ver.packages
 var getBaseName = /^[Hh][Tt][Tt][Pp][Ss]?\:\/\/([^\.]+).*/;
 var cloudBaseName = getBaseName.exec(ver.cloudURL)[1]
 
+var killCommand = "kill $(ps aux | grep 'relayClient' | grep -v " + process.pid +" | awk '{print $2}')"
+exec(killCommand, function(error, stdout,stderr) {
+	if(error !== null) {
+	    console.log(error)
+	}
+	console.log(stdout)	
+})
 
 var ifaces = os.networkInterfaces();
 var addr;
@@ -58,6 +65,7 @@ Object.keys(ifaces).forEach(function (ifname) {
     ++alias;
   });
 			    });
+
 
 function tryToConnect() {
 	setTimeout(function() {

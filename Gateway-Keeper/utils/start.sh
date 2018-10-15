@@ -46,7 +46,7 @@ foreach host $hosts {
 	expect "# "
 	send "killall relayClient.js\r"
 	expect "# "
-	send "NODE_PATH=/wigwag/devicejs-core-modules/node_modules/ node relayClient.js $IP &\r"
+	send "NODE_PATH=/wigwag/devicejs-core-modules/node_modules/ node relayClient.js $IP > /dev/null &\r"
 	expect "# "
 	send "exit\r"
 	expect "$ "

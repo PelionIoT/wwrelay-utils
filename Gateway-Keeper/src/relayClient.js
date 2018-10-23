@@ -29,52 +29,62 @@ var cloudBaseName = getBaseName.exec(ver.cloudURL)[1]
 var killCommand = "kill $(ps aux | grep 'relayClient' | grep -v " + process.pid +" | awk '{print $2}')"
 exec(killCommand, function(error, stdout,stderr) {
 	if(error !== null) {
-	    console.log(error)
+	    console.log(error);
 	}
-	console.log(stdout)	
-})
+	console.log(stdout);
+});
 
-var ifaces = os.networkInterfaces();
-var addr;
-Object.keys(ifaces).forEach(function (ifname) {
-  	var alias = 0;
+function getIP() {
+	var ifaces = os.networkInterfaces();
+	var addr;
+	Object.keys(ifaces).forEach(function (ifname) {
+	  	var alias = 0;
 
-  	ifaces[ifname].forEach(function (iface) {
-    if ('IPv4' !== iface.family || iface.internal !== false) {
-      // skip over internal (i.e. 127.0.0.1) and non-ipv4 addresses
-      return;
-    }
+	  	ifaces[ifname].forEach(function (iface) {
+	    if ('IPv4' !== iface.family || iface.internal !== false) {
+	      // skip over internal (i.e. 127.0.0.1) and non-ipv4 addresses
+	      return;
+	    }
 
-    if (alias >= 1) {
-      // this single interface has multiple ipv4 addresses
-      	console.log(ifname + ':' + alias, iface.address);
-      	ver.IP = iface.address
-      //ws.send(ver)
-      	// ws.send(JSON.stringify(ver,null,4))
+	    if (alias >= 1) {
+	      // this single interface has multiple ipv4 addresses
+	      	console.log(ifname + ':' + alias, iface.address);
+	      	ver.IP = iface.address
+	      //ws.send(ver)
+	      	// ws.send(JSON.stringify(ver,null,4))
 
-    } else {
-        if(ifname === 'eth0' || ifname == 'wlan0') {
-          // this interface has only one ipv4 adress
-         console.log(ifname, iface.address);
-         ver.IP = iface.address
-      	//ws.send(ver)
-      	//ws.send(JSON.stringify(ver,null,4))
-         addr =  iface.address;
-      }
-    }
-    ++alias;
-  });
-			    });
+	    } else {
+	        if(ifname === 'eth0' || ifname == 'wlan0') {
+	          // this interface has only one ipv4 adress
+	         console.log(ifname, iface.address);
+	         ver.IP = iface.address
+	      	//ws.send(ver)
+	      	//ws.send(JSON.stringify(ver,null,4))
+	         addr =  iface.address;
+	      }
+	    }
+	    ++alias;
+	  });
+	});
+}
+getIP();
 
+var connected = false;
+var inProgress = false;
 
 function tryToConnect() {
-	setTimeout(function() {
+	// setTimeout(function() {
         if(ws !== null) {
             ws.close();
+            delete ws;
         }
 		ws = new WebSocket(uri);
+		ws.removeEventListener('open');
 		ws.on('open',function open(){
-			console.log("opened")
+			connected = true;
+			inProgress = false;
+			console.log("opened");
+			ws.removeEventListener('message');
 			ws.on('message', function incoming(data) {
 				cliArgv = data.split(" ")
 				switch(cliArgv[0]) {
@@ -82,10 +92,12 @@ function tryToConnect() {
 						if(cliArgv[1] != ver.relayID) {
 							break;
 						}
+						getIP();
 						ws.send(JSON.stringify(ver,null,4))
 					break;
 
 					case "getAllRelays":
+						getIP();
 						ws.send(JSON.stringify(ver,null,4))
 					break;
 
@@ -293,19 +305,26 @@ function tryToConnect() {
 		ws.removeEventListener('close');
 		ws.on('close',function close(data) {
 			console.log("Events websocket disconnected " + data);
-			tryToConnect();
+			connected = false;
 		}
 		)
 		ws.removeEventListener('error');
 		ws.on('error', function incoming(error) {
 			console.log(error);
-			tryToConnect();
+			connected = false;
 		});
 		// ws.on('error', function incoming(error) { console.log(error);
 		//     ws.close('message',function incoming(data){ console.log(data);})
 		// });
-	}, 7000);
+	// }, 7000);
 }
+
+setInterval(function() {
+	if(!connected && !inProgress) {
+		inProgress = true;
+		tryToConnect();
+	}
+}, 10000);
 
 tryToConnect();
 // ws = new WebSocket(uri)

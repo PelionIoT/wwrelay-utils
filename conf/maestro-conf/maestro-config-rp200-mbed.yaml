@@ -375,6 +375,28 @@ jobs:
    #   restart_pause: 90
    #   config: |
    #      {}
+   - job: "MbedDeviceJSBridge"
+     immutable: true  # don't store in DB
+     exec_cmd: "${thisdir}/../../mbed/mbed-devicejs-bridge"
+     container_template: "deviceJS_process"
+     composite_id: "mbed"
+     restart: true
+     restart_limit: 5000
+     restart_pause: 90
+     config: |
+        {
+            "debug": true,
+            "mapUnplacedDevices": true,
+            "ignoreDevicesById" : [],
+            "relayID": "{{ARCH_RELAYID}}",
+            "mbedAPIKey": "ak_1MDE1ZDUwYTFmYmM2MDI0MjBhMDExMTA5MDAwMDAwMDA015e967fe74802420a01390300000000aJOhYRqzTXINzN9Aw2OkV5WrG0YwgmKS",
+            "spawnEdgeCore": false,
+            "edgeExecCmd": ["/apps/mbed-cloud-edge-confidential-w/build/mcc-linux-x86/existing/bin/edge-core","/tmp/edge.sock","9101"],
+            "ssl":{
+              "key":"{{SSL_CERTS_PATH}}/client.key.pem",
+              "cert":"{{SSL_CERTS_PATH}}/client.cert.pem"
+            }
+        }
    - job: "core-interfaces"
      immutable: true  # don't store in DB
      exec_cmd: "${thisdir}/../core-interfaces"

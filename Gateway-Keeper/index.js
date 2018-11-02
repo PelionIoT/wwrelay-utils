@@ -69,6 +69,7 @@ const wss = new WebSocket.Server({ server });
 wss.on('connection', function connection(ws,req) {
     ws.id = uuid.v4();
     ws.send(ws.id+"");
+
     ws.on('message', function incoming(data) {
         //console.log(data)
         if(data.indexOf('SCPIP') > -1) {
@@ -196,9 +197,28 @@ rl.on('line', (line) => {
     //         })
     // }
     else { 
-        wss.clients.forEach(function each(client) {
-            client.send(line);
-        });
+        console.log("Total webSocket is " + wss.clients.size)
+        if(wss.clients.size === 0) {
+            console.log(chalk.red.bold("NO CLIENT CONNECTED YET")) 
+        }  
+        var command = line.split(' ')[0]
+        var completions = allcommands.split(' ')
+        const hits = completions.filter((c) => c.toLowerCase().includes(command));
+        if(hits.length < 1){
+            wss.clients.forEach(function each(client) {
+                client.send(line);
+            });
+        } else {
+            hits.forEach(function(helpWithCompleter) {
+                if(help[helpWithCompleter]) {
+                    console.log(chalk.blue.bold(helpWithCompleter) ,
+                        '\n\t',chalk.bold('Usage:'),
+                        '\n\t\t',help[helpWithCompleter].Usage,
+                        '\n\t',chalk.bold('Description:'),
+                        '\n\t\t',help[helpWithCompleter].Description) 
+                }
+            })
+        }
     }
     // ws.send(line);
 }).on('close', () => {

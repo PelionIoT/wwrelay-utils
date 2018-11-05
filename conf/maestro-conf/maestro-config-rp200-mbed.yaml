@@ -17,7 +17,7 @@ network:
 processes:
     reaper_interval: 1500
 platform_readers:
-    - platform: "rp200-mbed"
+    - platform: "rp200_edge"
 # relaymq:
 #     host: "{{ARCH_relaymqHost}}"
 #     logging: true
@@ -228,6 +228,12 @@ static_file_generators:
    - name: "server_cert"
      template: "{{ARCH_SERVER_CERT_PEM}}"
      output_file: "{{SSL_CERTS_PATH}}/server.cert.pem"
+   - name: "intermediate_key"
+     template: "{{ARCH_INTERMEDIATE_KEY}}"
+     output_file: "{{SSL_CERTS_PATH}}/intermediate.key.pem"
+   - name: "intermediate_cert"
+     template: "{{ARCH_INTERMEDIATE_CERT}}"
+     output_file: "{{SSL_CERTS_PATH}}/intermediate.cert.pem"
    - name: "ca_chain"
      template: "{{ARCH_CA_CHAIN_PEM}}"
      output_file: "{{SSL_CERTS_PATH}}/ca-chain.cert.pem"

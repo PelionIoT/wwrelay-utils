@@ -10,31 +10,26 @@
 
     //Template file with handlebars for relay.config.json
     "relayTemplateFilePath": "/wigwag/devicejs-core-modules/Runner/template.config.json",
-
     //Config file used by Runner
     "relayConfigFilePath": "/wigwag/devicejs-core-modules/Runner/relay.config.json",
 
     //Template file with handlebars for config.json (of the relay-term)
     "relaytermTemplateFilePath": "/wigwag/wigwag-core-modules/relay-term/config/relayterm_template.config.json",
-
     //Config file used by relay-term
     "relaytermConfigFilePath": "/wigwag/wigwag-core-modules/relay-term/config/config.json",
 
     //Template file with handlebars to setup radio profile of this relay
     "rsmiTemplateFilePath": "/wigwag/devicejs-core-modules/rsmi/radioProfile.template.json",
-
     //RSMI config file used by Radio Status Monitoring Interface
     "rsmiConfigFilePath": "/wigwag/devicejs-core-modules/rsmi/radioProfile.config.json",
 
     //Template file with handlebars to setup devicejs conf
     "devicejsTemplateFilePath": "/wigwag/devicejs-core-modules/Runner/template.devicejs.conf",
-
     //Devicejs conf file used on devicejs start
     "devicejsConfigFilePath": "/wigwag/etc/devicejs/devicejs.conf",
 
     //Template file with handlebars to setup devicedb conf
     "devicedbTemplateFilePath": "/wigwag/devicejs-core-modules/Runner/template.devicedb.conf",
-
     //Devicedb conf file used on devicedb start
     "devicedbConfigFilePath": "/wigwag/etc/devicejs/devicedb.yaml",
 

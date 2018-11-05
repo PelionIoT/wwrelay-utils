@@ -53,35 +53,40 @@ class at24c16EepromHandler {
 					ee.batch = ee.batch || '1';
 					ee.month = ee.month || 'F';
 					ee.year = ee.year || '5';
-                    if(ee.cloudURL.indexOf('mbed') > -1) {
-                        fs.stat('./pal', function(err, stats) {
-                            if(err) {
-                                reject('Mbed gateway. Failed to get pal directory stats ', err);
-                                return;
-                            } 
-                            if(stats.isDirectory()) {
-                                execSync('cp -R ./pal ./mcc_config');
-                                execSync('tar -czvf mcc_config.tar.gz ./mcc_config');
-                                if(ee.mbed) {
-                                    delete ee.mbed;
-                                    ee.mcc_config = fs.readFileSync('./mcc_config.tar.gz', 'hex');
-                                    resolve(ee);
-                                } else {
-                                    reject('Mbed gateway. Did not find the mbed device certs and enrollment id!');
-                                    return;
-                                }
-                            } else {
-                                reject('Mbed gateway. Failed to locate pal directory!');
-                                return;
-                            }
-                        });
+                    if( (ee.cloudURL && ee.cloudURL.indexOf('mbed') > -1) || (ee.cloudAddress && ee.cloudAddress.indexOf('mbed') > -1)) {
+                    	//TODO- This is deleted on upgrade so refer this or find out if something exists in /userdata/mbed/mcc_config
+						if(!ee.mcc_config) {
+	                        fs.stat('./pal', function(err, stats) {
+	                            if(err) {
+	                                reject('Mbed gateway. Failed to get pal directory stats ', err);
+	                                return;
+	                            }
+	                            if(stats.isDirectory()) {
+	                                execSync('cp -R ./pal ./mcc_config');
+	                                execSync('tar -czvf mcc_config.tar.gz ./mcc_config');
+	                                // if(ee.mbed) {
+	                                    delete ee.mbed;
+	                                    ee.mcc_config = fs.readFileSync('./mcc_config.tar.gz', 'hex');
+	                                    resolve(ee);
+	                                // } else {
+	                                    // reject('Mbed gateway. Did not find the mbed device certs and enrollment id!');
+	                                    // return;
+	                                // }
+	                            } else {
+	                                reject('Mbed gateway. Failed to locate pal directory!');
+	                                return;
+	                            }
+	                        });
+	                    } else {
+	                    	resolve(ee);
+	                    }
                     } else {
                         resolve(ee);
                     }
 					// resolve(ee);
 				}
 				catch (e) {
-					reject('Could not open ' + program.args[0] + ' file', e);
+					reject('Could not open ' + program.args[0] + ' file', e + ' ', e.stack);
 
 				}
 			}
@@ -125,7 +130,7 @@ class at24c16EepromHandler {
 				reject(error);
 			});
 		});
-		
+
 	}
 
 	main_install() {
@@ -163,7 +168,7 @@ class at24c256EepromHandler {
 				reject(err);
 				process.exit(1);
 				return;
-			} 
+			}
 			if(_.isEqual(ee, readEeprom)) {
 				console.log('\nVerification successfully\n');
 				resolve();
@@ -184,34 +189,39 @@ class at24c256EepromHandler {
 			else {
 				try {
 					let ee = JSON.parse(jsonminify(fs.readFileSync(program.args[0], 'utf8')));
-                    if(ee.cloudURL.indexOf('mbed') > -1) {
-                        fs.stat('./pal', function(err, stats) {
-                            if(err) {
-                                reject('Mbed gateway. Failed to get pal directory stats ', err);
-                                return;
-                            } 
-                            if(stats.isDirectory()) {
-                                execSync('cp -R ./pal ./mcc_config');
-                                execSync('tar -czvf mcc_config.tar.gz ./mcc_config');
-                                if(ee.mbed) {
-                                    delete ee.mbed;
-                                    ee.mcc_config = fs.readFileSync('./mcc_config.tar.gz', 'hex');
-                                    resolve(ee);
-                                } else {
-                                    reject('Mbed gateway. Did not find the mbed device certs and enrollment id!');
-                                    return;
-                                }
-                            } else {
-                                reject('Mbed gateway. Failed to locate pal directory!');
-                                return;
-                            }
-                        });
+                    if( (ee.cloudURL && ee.cloudURL.indexOf('mbed') > -1) || (ee.cloudAddress && ee.cloudAddress.indexOf('mbed') > -1)) {
+                    	//TODO- This is deleted on upgrade so refer this or find out if something exists in /userdata/mbed/mcc_config
+                        if(!ee.mcc_config) {
+	                        fs.stat('./pal', function(err, stats) {
+	                            if(err) {
+	                                reject('Mbed gateway. Failed to get pal directory stats ', err);
+	                                return;
+	                            }
+	                            if(stats.isDirectory()) {
+	                                execSync('cp -R ./pal ./mcc_config');
+	                                execSync('tar -czvf mcc_config.tar.gz ./mcc_config');
+	                                // if(ee.mbed) {
+	                                    delete ee.mbed;
+	                                    ee.mcc_config = fs.readFileSync('./mcc_config.tar.gz', 'hex');
+	                                    resolve(ee);
+	                                // } else {
+	                                    // reject('Mbed gateway. Did not find the mbed device certs and enrollment id!');
+	                                    // return;
+	                                // }
+	                            } else {
+	                                reject('Mbed gateway. Failed to locate pal directory!');
+	                                return;
+	                            }
+	                        });
+	                    } else {
+	                    	resolve(ee);
+	                    }
                     } else {
                         resolve(ee);
                     }
 				}
 				catch (e) {
-					reject('Could not open ' + program.args[0] + ' file', e);
+					reject('Could not open ' + program.args[0] + ' file', e + ' ', e.stack);
 
 				}
 			}
@@ -312,7 +322,7 @@ class at24c256EepromHandler {
 }
 
 
-//To check which hardware we are on check if eeprom file exists then use new eeprom handlers 
+//To check which hardware we are on check if eeprom file exists then use new eeprom handlers
 if(fs.existsSync(at24c256EepromFilePath)) {
 	let rp200Eeprom = new at24c256EepromHandler();
 	if(program.erase) {

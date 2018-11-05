@@ -194,7 +194,7 @@ function createHandlebarsDataForRSMI(eeprom) {
 
 function createHandlebarsRelayTerm(eeprom) {
     var data = {};
-    data.ARCH_RELAY_SERVICES_HOST = eeprom.gatewayServiceURL;
+    data.ARCH_RELAY_SERVICES_HOST = eeprom.gatewayServicesAddress;
     data.SSL_CERTS_PATH = sslPathDefault;
     return data;
 }
@@ -202,7 +202,7 @@ function createHandlebarsRelayTerm(eeprom) {
 function createHandlebarsDevicejsConf(eeprom) {
     var data = {};
 
-    data.ARCH_RELAY_SERVICES_HOST = eeprom.gatewayServiceURL;
+    data.ARCH_RELAY_SERVICES_HOST = eeprom.gatewayServicesAddress;
     data.LOCAL_DEVICEDB_PORT = databasePort;
     data.SSL_CERTS_PATH = sslPathDefault;
 
@@ -213,8 +213,8 @@ function createHandlebarsDevicedbConf(eeprom) {
     var data = {};
 
     data.LOCAL_DEVICEDB_PORT = databasePort;
-    data.ARCH_RELAY_SERVICES_HOST_RES = eeprom.gatewayServiceURL.slice('https://'.length);
-    data.ARCH_RELAY_SERVICES_HOST = eeprom.gatewayServiceURL;
+    data.ARCH_RELAY_SERVICES_HOST_RES = eeprom.gatewayServicesAddress.slice('https://'.length);
+    data.ARCH_RELAY_SERVICES_HOST = eeprom.gatewayServicesAddress;
     data.SSL_CERTS_PATH = sslPathDefault;
     data.LOCAL_DATABASE_STORAGE_DIRECTORY = localDatabaseDirectory;
 

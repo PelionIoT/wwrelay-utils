@@ -1,143 +1,143 @@
 {
-    "logger":{
-        "type":"global",
-        "sinkaddress":"/tmp/grease.socket",
-        "config":"${thisdir}/relay_logger.conf.json"
-    },
-    "container_templates":{
-        "example_container":{
-            "capabilities":{
-                "NET_BIND_SERVICE":"permitted"
-            },
-            "cgroup_limits":{
+	"logger":{
+		"type":"global",
+		"sinkaddress":"/tmp/grease.socket",
+		"config":"${thisdir}/relay_logger.conf.json"
+	},
+	"container_templates":{
+		"example_container":{
+			"capabilities":{
+				"NET_BIND_SERVICE":"permitted"
+			},
+			"cgroup_limits":{
 
-            },
-            "chroot_prefix":"/tmp/devjs_container"
-        }
-    },
-    "deviceJSConfig":"{{devicejsConfFile}}",
-    "defaults":{
+			},
+			"chroot_prefix":"/tmp/devjs_container"
+		}
+	},
+	"deviceJSConfig":"{{devicejsConfFile}}",
+	"defaults":{
         "default_user":"*",        // means whoever runs it
         "default_group":"*"        // means whatever group runs it
-    },
-    "HOOK":{
-        "LEDController":{
-            "startWithRunner":true,
-            "config":{
-                "ledBrightness":5,
-                "ledColorProfile":"{{ledconfig}}",
-                "ledDriverSocketPath": "/var/deviceOSkeepalive"
-            }
-        }
-    },
-    "process_groups":{
-        "core":{
-            "limits":{
-                "cgroup_limits":{
+   },
+   "HOOK":{
+   	"LEDController":{
+   		"startWithRunner":true,
+   		"config":{
+   			"ledBrightness":5,
+   			"ledColorProfile":"{{ledconfig}}",
+   			"ledDriverSocketPath": "/var/deviceOSkeepalive"
+   		}
+   	}
+   },
+   "process_groups":{
+   	"core":{
+   		"limits":{
+   			"cgroup_limits":{
 
-                },
-                "capabilties":{
+   			},
+   			"capabilties":{
 
-                }
-            },
-            "node_args":[
+   			}
+   		},
+   		"node_args":[
                 // "--max-executable-size=96",
                 "--max-old-space-size=128",
                 "--max-semi-space-size=1",
                 "--nouse-idle-notification"
-            ],
-            "restart":{
-                "limit":5000,
-                "timeout":90000
-            },
-            "modules":{
+           ],
+   		"restart":{
+   			"limit":5000,
+   			"timeout":90000
+   		},
+   		"modules":{
 
-            },
-            "deviceJSCore":{
-                "root":"/wigwag/devicejs-ng",
-                "opts":[
+   		},
+   		"deviceJSCore":{
+   			"root":"/wigwag/devicejs-ng",
+   			"opts":[
 
-                ],
+   			],
                 "execWaitTimeMS":30000                // I need this to wait this long for now
-            }
-        },
-        "db":{
-            "restart":{
-                "limit":5000,
-                "timeout":2000
-            },
-            "enable": false,
-            "execPath":"/usr/bin/devicedb",
-            "configFile":"{{devicedbConfFile}}"
-        },
-        "all-modules":{
-            "limits":{
+           }
+      },
+      "db":{
+      	"restart":{
+      		"limit":5000,
+      		"timeout":2000
+      	},
+      	"enable": false,
+      	"execPath":"/usr/bin/devicedb",
+      	"configFile":"{{devicedbConfFile}}"
+      },
+      "all-modules":{
+      	"limits":{
                 "limit_group":""                // cgroup limits here - TBD
-            },
-            "node_args":[
+           },
+           "node_args":[
                 // "--max-executable-size=96",
                 "--max-old-space-size=128",
                 "--max-semi-space-size=1"
-            ],
+           ],
             "restart":{ // not required,but options are:
                 "timeout":90000, // the timeout between restarts will still take affect
                 "limit":5000
-            },
-            "env":{
-                "NODE_PATH":"${NODE_PATH}:${thisdir}/../node_modules:/wigwag/devicejs-core-modules/IPStack/node_modules"
-            },
-            "modules":[
-                {
-                    "path":"${thisdir}/../wigwag-devices",
-                    "config":{
-                        "cloudURL":"{{cloudurl}}",
-                        "ssl":{
-                            "key":"{{sslCertsPath}}/client.key.pem",
-                            "cert":"{{sslCertsPath}}/client.cert.pem",
-                            "ca":[
-                                "{{sslCertsPath}}/ca.cert.pem",
-                                "{{sslCertsPath}}/intermediate.cert.pem"
-                            ]
-                        },
-                        "apiKey":"{{apikey}}",
-                        "udpSourcePort":3000,
-                        "udpDestinationPort":3001,
-                        "platform":"{{wwplatform}}",
-                        "sixlbr":{
-                            "ifname":"Witap0",
-                            "wsnNet":"bbbb::100",
-                            "sixlbr":{
-                                "tundev":"Witap0",
-                                "use_raw_ethernet":false,
-                                "log_level":[
-                                    "error"
-                                ],
-                                "platform":"{{wwplatform}}",
-                                "siodev":"tty6lbr",
-                                "siodev_secondary":"ttyUSB1",
-                                "sixBMAC":"{{sixbmac}}",
-                                "baudrate":115200,
-                                "slip_delay":0,
-                                "watchdog_interval": 0,
-                                "ww_encryption":true,
-                                "firmware_path_mc1322":"/home/wigwag/workspace/devicejs/core/",
-                                "firmware_file_prefix":"slip-radio_econotag",
-                                "reset_GPIO_path_firmware_mc1322":"/sys/class/gpio/gpio105/value",
-                                "erase_GPIO_path_firmware_mc1322":"/sys/class/gpio/gpio103/value",
-                                "reset_GPIO_path_firmware_cc2530":"{{sixlbrreset}}",
-                                "relay_version":7,
-                                "nvm_data":{
-                                    "channel":20,
-                                    "rpl_dio_intdoubl":1,
-                                    "rpl_dio_intmin":12,
-                                    "rpl_default_lifetime":4,
-                                    "rpl_lifetime_unit":100,
-                                    "rpl_version_id":247
-                                }
-                            }
-                        }
-                    }
-                }, 
+           },
+           "env":{
+           	"NODE_PATH":"${NODE_PATH}:${thisdir}/../node_modules:/wigwag/devicejs-core-modules/IPStack/node_modules"
+           },
+           "modules":[
+           	{
+           		"path":"${thisdir}/../wigwag-devices",
+           		"config":{
+           			"cloudURL":"{{cloudurl}}",
+           			"ssl":{
+           				"key":"{{sslCertsPath}}/client.key.pem",
+           				"cert":"{{sslCertsPath}}/client.cert.pem",
+           				"ca":[
+           					"{{sslCertsPath}}/ca.cert.pem",
+           					"{{sslCertsPath}}/intermediate.cert.pem"
+           				]
+           			},
+           			"apiKey":"{{apikey}}",
+           			"udpSourcePort":3000,
+           			"udpDestinationPort":3001,
+           			"platform":"{{wwplatform}}",
+           			"sixlbr":{
+           				"ifname":"Witap0",
+           				"wsnNet":"bbbb::100",
+           				"sixlbr":{
+           					"tundev":"Witap0",
+           					"use_raw_ethernet":false,
+           					"log_level":[
+           						"error"
+           					],
+           					"platform":"{{wwplatform}}",
+           					"siodev":"tty6lbr",
+           					"siodev_secondary":"ttyUSB1",
+           					"sixBMAC":"{{sixbmac}}",
+           					"baudrate":115200,
+           					"slip_delay":0,
+           					"watchdog_interval": 0,
+           					"ww_encryption":true,
+           					"firmware_path_mc1322":"/home/wigwag/workspace/devicejs/core/",
+           					"firmware_file_prefix":"slip-radio_econotag",
+           					"reset_GPIO_path_firmware_mc1322":"/sys/class/gpio/gpio105/value",
+           					"erase_GPIO_path_firmware_mc1322":"/sys/class/gpio/gpio103/value",
+           					"reset_GPIO_path_firmware_cc2530":"{{sixlbrreset}}",
+           					"relay_version":7,
+           					"nvm_data":{
+           						"channel":20,
+           						"rpl_dio_intdoubl":1,
+           						"rpl_dio_intmin":12,
+           						"rpl_default_lifetime":4,
+           						"rpl_lifetime_unit":100,
+           						"rpl_version_id":247
+           					}
+           				}
+           			}
+           		}
+           	}, 
                 // {
                 //     "path":"${thisdir}/../core-lighting",
                 //     "config":{
@@ -151,33 +151,33 @@
                 //     }
                 // },
                 {
-                    "path":"${thisdir}/../core-interfaces",
-                    "config":{
+                	"path":"${thisdir}/../core-interfaces",
+                	"config":{
 
-                    }
+                	}
                 },
                 {
-                    "path":"${thisdir}/../ww-zwave",
-                    "config":{
-                        "serialInterfaceOptions":{
-                            "siodev":"/dev/ttyZwave",
-                            "baudrate":115200,
-                            "dataBits":8,
-                            "stopBits":1
-                        },
-                        "platform":"{{wwplatform}}"
-                    }
+                	"path":"${thisdir}/../ww-zwave",
+                	"config":{
+                		"serialInterfaceOptions":{
+                			"siodev":"/dev/ttyZwave",
+                			"baudrate":115200,
+                			"dataBits":8,
+                			"stopBits":1
+                		},
+                		"platform":"{{wwplatform}}"
+                	}
                 },
                 {
-                    "path":"${thisdir}/../Enocean",
-                    "config":{
-                        "serialInterfaceOptions": { 
-                            "siodev": "/dev/ttyEnocean",
-                            "baudrate": 57600,
-                            "dataBits": 8,
-                            "stopBits": 1,
-                            "parity": "none"
-                        },
+                	"path":"${thisdir}/../Enocean",
+                	"config":{
+                		"serialInterfaceOptions": { 
+                			"siodev": "/dev/ttyEnocean",
+                			"baudrate": 57600,
+                			"dataBits": 8,
+                			"stopBits": 1,
+                			"parity": "none"
+                		},
                         "logLevel": 2, //Available- info- 2, debug- 3, trace- 4, error- 0, warn- 1
                         "relayId": "{{apikey}}",
                         "platform": "{{wwplatform}}", //Used to identify platform so that module can adapt and run automagically
@@ -185,25 +185,25 @@
                         "requestAckTimeout": 500, //Timeout if no data received on request (in ms)
                         "supportedEEPDirectory": "controllers/supportedEEPControllers", //Relative path to directory where all the resouce recipes are or will be defined,
                         "resourceTypePrefix": "Core/Devices/Enocean"
-                    }
-                },
-                {
-                    "path":"${thisdir}/../IPStack",
-                    "config":{
-                        "wan":[
-                            "eth0",
-                            "eth1",
-                            "wlan0"
-                        ],
-                        "dhcp":"on",
-                        "static":{
-                            "ipaddress":"10.10.20.31",
-                            "mask":"255.255.255.0",
-                            "gateway":"10.10.20.1"
-                        },
-                        "ethernetMAC":"{{ethernetmac}}"
-                    }
-                },
+                   }
+              },
+              {
+              	"path":"${thisdir}/../IPStack",
+              	"config":{
+              		"wan":[
+              			"eth0",
+              			"eth1",
+              			"wlan0"
+              		],
+              		"dhcp":"on",
+              		"static":{
+              			"ipaddress":"10.10.20.31",
+              			"mask":"255.255.255.0",
+              			"gateway":"10.10.20.1"
+              		},
+              		"ethernetMAC":"{{ethernetmac}}"
+              	}
+              },
                 // {
                 //     "path":"${thisdir}/../../wigwag-core-modules/MDNS",
                 //     "config":{
@@ -213,127 +213,162 @@
                 //     }
                 // },
                 {
-                    "path":"${thisdir}/../../wigwag-core-modules/VirtualDeviceDriver",
-                    "config": {
-                        "deviceControllersDirectory": "templates",
-                        "hideTemplates": [ "VideoCamera" ],
-                        "logLevel": 1
-                    }
+                	"path":"${thisdir}/../../wigwag-core-modules/VirtualDeviceDriver",
+                	"config": {
+                		"deviceControllersDirectory": "templates",
+                		"hideTemplates": [ "VideoCamera" ],
+                		"logLevel": 1
+                	}
                 }
-            ]
-        },
-        "zigbee":{
-            "limits":{
+           ]
+},
+"mbed-bridge":{
+	"limits":{
                 "limit_group":""                // cgroup limits here - TBD
-            },
-            "node_args":[
+           },
+           "node_args":[
                 // "--max-executable-size=96",
                 "--max-old-space-size=128",
                 "--max-semi-space-size=1"
-            ],
+           ],
+            "restart":{ // not required,but options are:
+                "timeout":15000, // the timeout between restarts will still take affect
+                "limit":5000
+           },
+           "env":{
+           	"NODE_PATH":"${NODE_PATH}:${thisdir}/../node_modules:/wigwag/mbed/mbed-devicejs-bridge/node_modules"
+           },
+           "modules":[
+           	{
+           		"path":"/wigwag/mbed/mbed-devicejs-bridge",
+           		"config":{
+           			"debug": true,
+                        //    "useDefaults": true,         // default is true
+                        "mapUnplacedDevices": true,  // default is true
+                        "ignoreDevicesById" : [],    // list of any deviceIDs not to map
+                       "relayID":"{{apikey}}",    // This is the Relay ID. This should be populated by 
+                        // maestro using the meta variable: {{ARCH_relayID}}
+                        "mbedAPIKey": "ak_1MDE1ZDUwYTFmYmM2MDI0MjBhMDExMTA5MDAwMDAwMDA015e967fe74802420a01390300000000aJOhYRqzTXINzN9Aw2OkV5WrG0YwgmKS",
+                        "spawnEdgeCore": false,
+                        // If true, then we must provide a path to edge-core, with needed options
+                        // Note: this is not a final production method. In production, edge-core will be started by Maestro
+                        "edgeExecCmd": ["/wigwag/mbed/mbed-cloud-edge-confidential-w/build/mcc-linux-x86/existing/bin/edge-core","9100","9101"]
+                   }           
+              }
+         ]
+      },
+      "zigbee":{
+      	"limits":{
+                "limit_group":""                // cgroup limits here - TBD
+           },
+           "node_args":[
+                // "--max-executable-size=96",
+                "--max-old-space-size=128",
+                "--max-semi-space-size=1"
+           ],
             "restart":{ // not required,but options are:
                 "timeout":90000, // the timeout between restarts will still take affect
                 "limit":5000
-            },
-            "env":{
-                "NODE_PATH":"${NODE_PATH}:${thisdir}/../node_modules"
-            },
-            "modules":[
-                {
-                    "path":"${thisdir}/../zigbeeHA",
-                    "config":{
-                        "siodev":"/dev/ttyZigbee",
-                        "devType":0,
-                        "newNwk":false,
-                        "channelMask":25,
-                        "baudRate":115200,
-                        "log_level":1,
-                        "networkRefreshDuration": 0,
-                        "panIdSelection":"randomInRange",
-                        "panId":23,
-                        "platform":"{{wwplatform}}",
+           },
+           "env":{
+           	"NODE_PATH":"${NODE_PATH}:${thisdir}/../node_modules"
+           },
+           "modules":[
+           	{
+           		"path":"${thisdir}/../zigbeeHA",
+           		"config":{
+           			"siodev":"/dev/ttyZigbee",
+           			"devType":0,
+           			"newNwk":false,
+           			"channelMask":25,
+           			"baudRate":115200,
+           			"log_level":1,
+           			"networkRefreshDuration": 0,
+           			"panIdSelection":"randomInRange",
+           			"panId":23,
+           			"platform":"{{wwplatform}}",
                         "logLevel": 2 //Available- info- 2, debug- 3, trace- 4, error- 0, warn- 1
-                    }
-                }
-            ]
-        },
-        "modbus":{
-            "limits":{
+                   }
+              }
+         ]
+      },
+      "modbus":{
+      	"limits":{
                 "limit_group":""                // cgroup limits here - TBD
-            },
-            "node_args":[
+           },
+           "node_args":[
                 // "--max-executable-size=96",
                 "--max-old-space-size=128",
                 "--max-semi-space-size=1"
-            ],
+           ],
             "restart":{ // not required,but options are:
                 "timeout":90000, // the timeout between restarts will still take affect
                 "limit":5000
-            },
-            "env":{
-                "NODE_PATH":"${NODE_PATH}:${thisdir}/../node_modules"
-            },
-            "modules":[
-                {
-                    "path":"${thisdir}/../ModbusRTU",
-                    "config":{
+           },
+           "env":{
+           	"NODE_PATH":"${NODE_PATH}:${thisdir}/../node_modules"
+           },
+           "modules":[
+           	{
+           		"path":"${thisdir}/../ModbusRTU",
+           		"config":{
                         "serialInterfaceOptions":{ //Serial communication setup parameters
-                            "siodev":"/dev/ttymodbus",
-                            "baudrate":19200,
-                            "dataBits":8,
-                            "stopBits":1,
-                            "parity":"none",
-                            "endPacketTimeout":25
+                        	"siodev":"/dev/ttymodbus",
+                        	"baudrate":19200,
+                        	"dataBits":8,
+                        	"stopBits":1,
+                        	"parity":"none",
+                        	"endPacketTimeout":25
                         },
                         "logLevel":1,   //Available- info- 2,debug- 3,trace- 4,error- 0,warn- 1
                         "relayId": "{{apikey}}",
                         "platform":"{{wwplatform}}",    //Used to identify platform so that module can adapt and run automagically
-                        "maxTransportRetries":1, //Transport layer retries, message retries are default to 3 so total retries will be 4
-                        "requestAckTimeout":100,  //Timeout if no data received on request (in ms)
-                        "throttleRate": 50,
+                        "maxTransportRetries":3, //Transport layer retries, message retries are default to 3 so total retries will be 4
+                        "requestAckTimeout":2000,  //Timeout if no data received on request (in ms)
+                        "throttleRate": 100,
                         "modbusResourceId":"ModbusDriver", //ID on which the Modbus module will be registered with DeviceJS
                         "supportedResourceTypesDirectory":"controllers/supportedResourceTypes", //Directory where all the resouces are or will be defined,
                         "runtimeResourceTypesDirectory":"controllers/runtimeResourceTypes",
                         "simulate":false, //Should be false in production, if true it will run even if there is no terminal connected
                         "schedulerIntervalResolution":500    //in ms, interval in which it will check if a resource command needs to be polled. Minimum 500ms.
                                                             //Define polling interval of device controller at this resolution
-                    }
-                }
-            ]
-        },
-        "bacnet":{
-            "limits":{
+                                                       }
+                                                  }
+                                             ]
+      },
+      "bacnet":{
+      	"limits":{
                 "limit_group":""                // cgroup limits here - TBD
-            },
-            "node_args":[
+           },
+           "node_args":[
                 // "--max-executable-size=96",
                 "--max-old-space-size=128",
                 "--max-semi-space-size=1"
-            ],
+           ],
             "restart":{ // not required,but options are:
                 "timeout":90000, // the timeout between restarts will still take affect
                 "limit":5000
-            },
-            "env":{
-                "NODE_PATH":"${NODE_PATH}:${thisdir}/../node_modules"
-            },
-            "modules":[
-                {
-                    "path":"${thisdir}/../BACnet",
-                    "config":{
+           },
+           "env":{
+           	"NODE_PATH":"${NODE_PATH}:${thisdir}/../node_modules"
+           },
+           "modules":[
+           	{
+           		"path":"${thisdir}/../BACnet",
+           		"config":{
                         "serialInterfaceOptions": { //Used to setup comms with BACnet device
-                            "siodev": "/dev/ttybacnet",
-                            "baudrate": 76800,
-                            "dataBits": 8,
-                            "parity": "none",
-                            "stopBits": 1
+                        	"siodev": "/dev/ttybacnet",
+                        	"baudrate": 76800,
+                        	"dataBits": 8,
+                        	"parity": "none",
+                        	"stopBits": 1
                         },
                         "socketInterfaceOptions": {
-                            "sockPort": 7871,
-                            "sockAddr": "127.0.0.1",
-                            "lib": "/wigwag/system",
-                            "program": "bin",
-                            "exe": "bacportal"
+                        	"sockPort": 7871,
+                        	"sockAddr": "127.0.0.1",
+                        	"lib": "/wigwag/system",
+                        	"program": "bin",
+                        	"exe": "bacportal"
                         },
                         "macAddr": 126,
                         "activityLength": 100,
@@ -346,27 +381,27 @@
                         "bacnetResourceId": "BacnetDriver",
                         "stateManagerIntervalResolution": 12000,
                         "supportedRecipesDirectory": "controllers/supportedResourceRecipes" //Relative path to directory where all the resouce recipes are or will be defined,
-                    }
-                }
-            ]
-        },
-        "user":{
-            "limits":{
-                "limit_group":""
-            },
-            "node_args":[
+                   }
+              }
+         ]
+      },
+      "user":{
+      	"limits":{
+      		"limit_group":""
+      	},
+      	"node_args":[
                 // "--max-executable-size=96",
                 "--max-old-space-size=128",
                 "--max-semi-space-size=1"
-            ],
-            "restart":{
-                "limit":5000,
-                "timeout":90000
-            },
-            "env":{
-                "NODE_PATH":"${NODE_PATH}:${thisdir}/../../devicejs-core-modules/node_modules"
-            },
-            "modules":[
+           ],
+      	"restart":{
+      		"limit":5000,
+      		"timeout":90000
+      	},
+      	"env":{
+      		"NODE_PATH":"${NODE_PATH}:${thisdir}/../../devicejs-core-modules/node_modules"
+      	},
+      	"modules":[
                 // {
                 //     "path":"${thisdir}/../../wigwag-core-modules/RuleEngine",
                 //     "config":{
@@ -383,41 +418,50 @@
                 //     }
                 // },
                 {
-                    "path":"${thisdir}/../../wigwag-core-modules/RelayStatsSender",
-                    "config":{
-                        "cloudAddress":"{{cloudurl}}",
-                        "relayID":"{{apikey}}",
-                        "ssl":{
-                            "key":"{{sslCertsPath}}/client.key.pem",
-                            "cert":"{{sslCertsPath}}/client.cert.pem",
-                            "ca":[
-                                "{{sslCertsPath}}/ca.cert.pem",
-                                "{{sslCertsPath}}/intermediate.cert.pem"
-                            ]
-                        },
-                        "versionsFile":"{{relayFirmwareVersionFile}}",
-                        "factoryVersionsFile": "{{factoryFirmwareVersionFile}}",
-                        "userVersionsFile": "{{userFirmwareVersionFile}}",
-                        "upgradeVersionsFile": "{{upgradeFirmwareVersionFile}}",
-                        "relayInfo": {
-                            "pairingCode": "{{pairingCode}}",
-                            "serialNumber": "{{apikey}}",
-                            "hardwareVersion": "{{hardwareVersion}}",
-                            "radioConfig": "{{radioConfig}}",
-                            "ledConfig": "{{ledConfig}}",
-                            "cloudServer": "{{cloudurl}}",
-                            "devicejsServer": "{{clouddevicejsurl}}",
-                            "devicedbServer": "{{cloudddburl}}",
-                            "partitionScheme": "{{partitionScheme}}",
-                            "ethernetMac": "{{ethernetmac}}"   
-                        }
-                    }
+                	"path":"${thisdir}/../../wigwag-core-modules/RelayStatsSender",
+                	"config":{
+                		"cloudAddress":"{{cloudurl}}",
+                		"relayID":"{{apikey}}",
+                		"ssl":{
+                			"key":"{{sslCertsPath}}/client.key.pem",
+                			"cert":"{{sslCertsPath}}/client.cert.pem",
+                			"ca":[
+                				"{{sslCertsPath}}/ca.cert.pem",
+                				"{{sslCertsPath}}/intermediate.cert.pem"
+                			]
+                		},
+                		"versionsFile":"{{relayFirmwareVersionFile}}",
+                		"factoryVersionsFile": "{{factoryFirmwareVersionFile}}",
+                		"userVersionsFile": "{{userFirmwareVersionFile}}",
+                		"upgradeVersionsFile": "{{upgradeFirmwareVersionFile}}",
+                		"relayInfo": {
+                			"pairingCode": "{{pairingCode}}",
+                			"serialNumber": "{{apikey}}",
+                			"hardwareVersion": "{{hardwareVersion}}",
+                			"radioConfig": "{{radioConfig}}",
+                			"ledConfig": "{{ledConfig}}",
+                			"cloudServer": "{{cloudurl}}",
+                			"devicejsServer": "{{clouddevicejsurl}}",
+                			"devicedbServer": "{{cloudddburl}}",
+                			"partitionScheme": "{{partitionScheme}}",
+                			"ethernetMac": "{{ethernetmac}}"   
+                		}
+                	}
                 },
                 {
-                    "path":"${thisdir}/../../wigwag-core-modules/SchedulerEngine",
-                    "config":{
+                	"path":"${thisdir}/../../wigwag-core-modules/SchedulerEngine",
+                	"config":{
                         "logLevel": 2 //Available- error- 0, warn- 1, info- 2, debug- 3, trace- 4
-                    }
+                   }
+                },
+                {
+                  "path":"${thisdir}/../../wigwag-core-modules/onsite-enterprise-server",
+                  "config": {
+                      "prodPort": "3131",
+                      "modelDefinitions": "/api/models",
+                      "logRequests": false,
+                      "logLevel": 2
+                  }
                 },
                 // {
                 //     "path":"${thisdir}/../AppServer",
@@ -493,60 +537,60 @@
                 //     }
                 // },
                 {
-                    "path":"${thisdir}/../../wigwag-core-modules/DevStateManager",
-                    "config": {
-                        "logLevel": 2,
-                        "pollingResolution": 500,
-                        "defaultPollingRate": 51000,
-                        "maxPollingCycles": 65535,
-                        "pollingSchemes": {
-                            "fast": {
-                                "interval": 21500,
-                                "interfaces": [
-                                    "Facades/MediaStream",
-                                    "Facades/HasTemperature",
-                                    "Facades/ThermostatGStatus",
-                                    "Facades/ThermostatSupplyTemperature",
-                                    "Facades/ThermostatReturnTemperature",
-                                    "Facades/ThermostatW1Status",
-                                    "Facades/ThermostatW2Status",
-                                    "Facades/ThermostatY1Status",
-                                    "Facades/ThermostatY2Status"
-                                ]  
-                            },
-                            "medium": {
-                                "interval": 293500,
-                                "interfaces": [
-                                    "Facades/ThermostatMode",
-                                    "Facades/OccupiedCoolTemperatureLevel",
-                                    "Facades/OccupiedHeatTemperatureLevel",
-                                    "Facades/UnoccupiedCoolTemperatureLevel",
-                                    "Facades/UnoccupiedHeatTemperatureLevel",
-                                    "Facades/ThermostatFanMode",
-                                    "Facades/OccupancyMode"
-                                ]
-                            },
-                            "slow": {
-                                "interval": 900000,
-                                "interfaces": [
-                                ]
-                            },
-                            "never": {
-                                "interval": 0,
-                                "interfaces": [
-                                    "Facades/KeypadLockLevel",
-                                    "Facades/TemperatureDisplayMode",
-                                    "Facades/ThermostatDeadband",
-                                    "Facades/Humidity",
-                                    "Facades/HasMotion",
-                                    "Facades/UnoccupiedAutoTemperatureLevel",
-                                    "Facades/OccupiedAutoTemperatureLevel"
-                                ]
-                            }
-                        }
-                    }
+                	"path":"${thisdir}/../../wigwag-core-modules/DevStateManager",
+                	"config": {
+                		"logLevel": 2,
+                		"pollingResolution": 500,
+                		"defaultPollingRate": 51000,
+                		"maxPollingCycles": 65535,
+                		"pollingSchemes": {
+                			"fast": {
+                				"interval": 21500,
+                				"interfaces": [
+                					"Facades/MediaStream",
+                					"Facades/HasTemperature",
+                					"Facades/ThermostatGStatus",
+                					"Facades/ThermostatSupplyTemperature",
+                					"Facades/ThermostatReturnTemperature",
+                					"Facades/ThermostatW1Status",
+                					"Facades/ThermostatW2Status",
+                					"Facades/ThermostatY1Status",
+                					"Facades/ThermostatY2Status"
+                				]  
+                			},
+                			"medium": {
+                				"interval": 293500,
+                				"interfaces": [
+                					"Facades/ThermostatMode",
+                					"Facades/OccupiedCoolTemperatureLevel",
+                					"Facades/OccupiedHeatTemperatureLevel",
+                					"Facades/UnoccupiedCoolTemperatureLevel",
+                					"Facades/UnoccupiedHeatTemperatureLevel",
+                					"Facades/ThermostatFanMode",
+                					"Facades/OccupancyMode"
+                				]
+                			},
+                			"slow": {
+                				"interval": 900000,
+                				"interfaces": [
+                				]
+                			},
+                			"never": {
+                				"interval": 0,
+                				"interfaces": [
+                					"Facades/KeypadLockLevel",
+                					"Facades/TemperatureDisplayMode",
+                					"Facades/ThermostatDeadband",
+                					"Facades/Humidity",
+                					"Facades/HasMotion",
+                					"Facades/UnoccupiedAutoTemperatureLevel",
+                					"Facades/OccupiedAutoTemperatureLevel"
+                				]
+                			}
+                		}
+                	}
                 }
-            ]
+           ]
         }
     }
 }

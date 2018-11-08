@@ -73,6 +73,9 @@ zpl_qrcode(){
 #_p "^BQN,2,4^FH^FDHM,A^FH^FDU+00A1 in UTF8 = _C2_A1^FS"
 }
 
+
+
+
 zpl_print(){
 	TEXT="$1"
 	_p "^FD$TEXT^FS"

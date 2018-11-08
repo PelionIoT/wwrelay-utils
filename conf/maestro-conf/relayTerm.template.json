@@ -1,5 +1,5 @@
 {
-	"cloud": "{{ARCH_CLOUD_URL}}/relay-term",
+	"cloud": "{{ARCH_RELAY_SERVICES_HOST}}/relay-term",
 	"noValidate": true,
 	"certificate": "{{SSL_CERTS_PATH}}/client.cert.pem",
 	"key": "{{SSL_CERTS_PATH}}/client.key.pem"

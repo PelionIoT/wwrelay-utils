@@ -14,11 +14,30 @@
 ### END INIT INFO
 WIGWAGROOT="/wigwag"
 
-START_SOFTWARE="runner" # runner or maestro
+START_SOFTWARE="maestro" # runner or maestro
 
 MAESTRO_DIR="${WIGWAGROOT}/system/bin"
-MAESTRO_CONFIG="${WIGWAGROOT}/wwrelay-utils/maestro-conf/wwrelay-config.yaml"
-MAESTRO_START_CMD="./maestro -config ${MAESTRO_CONFIG}"
+GREASE_STATIC_LIB="${WIGWAGROOT}/system/lib"
+MAESTRO_CONFIG_RP100="${WIGWAGROOT}/wwrelay-utils/conf/maestro-conf/maestro-config-rp100.yaml"
+MAESTRO_CONFIG_RP200="${WIGWAGROOT}/wwrelay-utils/conf/maestro-conf/maestro-config-rp200.yaml"
+MAESTRO_CONFIG_RP100_MBED="${WIGWAGROOT}/wwrelay-utils/conf/maestro-conf/maestro-config-rp100-mbed.yaml"
+MAESTRO_CONFIG_RP200_MBED="${WIGWAGROOT}/wwrelay-utils/conf/maestro-conf/maestro-config-rp200-mbed.yaml"
+eeprog /dev/i2c-1 0x55 -f -r 0:10 2> /dev/null
+	if [[ $? -eq 0 ]]; then
+		if [ ! -e /userdata/etc/mbed ]; then
+			MAESTRO_CONFIG=$MAESTRO_CONFIG_RP100_MBED
+		else
+			MAESTRO_CONFIG=$MAESTRO_CONFIG_RP100
+		fi
+	else
+		if [ ! -e /userdata/etc/mbed ]; then
+			MAESTRO_CONFIG=$MAESTRO_CONFIG_RP200_MBED
+		else
+			MAESTRO_CONFIG=$MAESTRO_CONFIG_RP200
+		fi
+	fi
+
+MAESTRO_START_CMD="$MAESTRO_DIR/maestro -config ${MAESTRO_CONFIG}"
 MAESTRO_STOP_CMD="echo Need_Stop_Command"
 
 
@@ -26,12 +45,13 @@ RUNNER_DIR="${WIGWAGROOT}/devicejs-core-modules/Runner"
 RUNNER_START_CMD="./start -c ./relay.config.json"
 RUNNER_STOP_CMD="echo Need_Stop_Command"
 
-export NODE_PATH=${WIGWAGROOT}/devicejs-core-modules/node_modules 
+export NODE_PATH=${WIGWAGROOT}/devicejs-core-modules/node_modules
 
 RUNNER_LOG="${WIGWAGROOT}/log/runner.log"
 WWRELAY_LOG=${WIGWAGLOGROOT}"/wwrelay.log"
 
 MAESTRO_RUNTIME_LOG="${WIGWAGROOT}/log/maestro-runtime.log"
+#MAESTRO_RUNTIME_LOG="/dev/null"
 PIDROOT="/var/run"
 maestroOK=$PIDROOT"/maestroOK"
 
@@ -46,9 +66,7 @@ config_cpu_scaling() {
 
 stop_devjs() {
 	if [[ $START_SOFTWARE = "maestro" ]]; then
-		pushd $MAESTRO_DIR
 		$MAESTRO_STOP_CMD > $MAESTRO_RUNTIME_LOG 2>&1
-		popd
 	else
 		pushd $RUNNER_DIR
 		$RUNNER_STOP_CMD > $RUNNER_LOG 2>&1
@@ -67,9 +85,10 @@ START() {
 		# fi
 		if [[ $START_SOFTWARE = "maestro" ]]; then
 			ulimit -c unlimited
-			pushd $MAESTRO_DIR
-			$MAESTRO_START_CMD > $MAESTRO_RUNTIME_LOG 2>&1 &
-			popd
+			LD_LIBRARY_PATH=$GREASE_STATIC_LIB:/$LD_LIBRARY_PATH
+			export LD_LIBRARY_PATH
+			echo "starting maestro"
+			$MAESTRO_START_CMD >> $MAESTRO_RUNTIME_LOG 2>&1 &
 		else
 			if [ -e $RUNNER_LOG ]; then
 				mv $RUNNER_LOG $RUNNER_LOG.1

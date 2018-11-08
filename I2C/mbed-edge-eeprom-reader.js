@@ -59,8 +59,6 @@ var devjsconf = null;
 var relaytermConf = null;
 var secConfObj = null;
 var radioModuleConf = null;
-var cloudDevicejsURL = null;
-var cloudDdbURL = null;
 var databasePort = null;
 
 var cloudURL = null;
@@ -125,148 +123,65 @@ function read(ray, obj, callback) {
     });
 }
 
-function define_hardware(res) {
-    var GPIOpath = "/sys/class/gpio/";
-    var LEDspath = "/sys/class/leds";
-    // var hardwareProfile = new Object();
-    // var radioProfile = new Object();
-    hw = new Object();
-    hw.gpioProfile = new Object();
-    hw.radioProfile = new Object();
-    hw.radioModule = new Object();
-    //console.log("Here iam and res hwadwareverssion: " + res.hardwareVersion.toString());
-    switch (res.hardwareVersion.toString()) {
-        case "0.0.0":
-            hw.gpioProfile.RelayType = "software";
-            hw.radioProfile.hasSM_SBMC = false; //Solder_Module 6BEE MC13224
-            hw.radioProfile.hasSM_5304 = false; //Solder_Module Zwave 5304
-            hw.radioProfile.hasSM_U880 = false; //Solder_Module U880
-            hw.radioProfile.hasSM_BT = false; //Solder_Module Bluetooth
-            hw.radioProfile.SBMC_TTY = "/dev/ttyUSB0"
-            break;
-        case "0.0.1":
-        case "0.0.2":
-        case "0.0.4":
-        case "0.0.5":
-        case "0.0.6":
-        case "0.0.7":
-        case "0.0.8":
-            hw.gpioProfile.NumberOfInputs = 1;
-            hw.gpioProfile.NumberOfOutputs = 11;
-            hw.gpioProfile.RelayType = "hardware";
-            hw.gpioProfile.RED_OFF = GPIOpath + "gpio11_pb8";
-            hw.gpioProfile.BUTTON = GPIOpath + "gpio12_ph12";
-            hw.gpioProfile.TopRed = LEDspath + "/red";
-            hw.gpioProfile.TopBlue = LEDspath + "/blue";
-            hw.gpioProfile.TopGreen = LEDspath + "/green";
-            hw.radioProfile.hasSM_SBMC = true; //Solder_Module 6BEE MC13224
-            hw.radioProfile.hasSM_5304 = false; //Solder_Module Zwave 5304
-            hw.radioProfile.hasSM_U880 = false; //Solder_Module U880
-            hw.radioProfile.hasSM_BT = false; //Solder_Module Bluetooth
-            hw.radioProfile.SBMC_TTY = "/dev/ttyS4";
-            hw.radioProfile.CC2530_TTY = "/dev/ttyS1";
-            hw.radioProfile.SBMC_ERASE = GPIOpath + "gpio3_pd2";
-            hw.radioProfile.SBMC_RESET = GPIOpath + "gpio98/value";
-            hw.radioProfile.SBMC_RTS = GPIOpath + "gpio2_pd1";
-            hw.radioProfile.ZWAVE_TTY = "/dev/ttyS5";
-            hw.radioProfile.ZWAVE_ERASE = GPIOpath + "gpio4_pd3";
-            hw.radioProfile.ZIGBEEHA_TTY = "/dev/ttyS6";
-            hw.radioProfile.CC2530_RESET = GPIOpath + "gpio5_pd4";
-            hw.radioProfile.CC2530_DBG_DATA = GPIOpath + "gpio7_pd6";
-            hw.radioProfile.CC2530_DBG_CLK = GPIOpath + "gpio6_pd5";
-            break;
+// function createHandlebarsData(eeprom, platform) {
+//     var data = {};
 
-        case "0.0.9":
-        case "0.1.0":
-        case "0.1.1":
-        default:
-            hw.gpioProfile.NumberOfInputs = 1;
-            hw.gpioProfile.NumberOfOutputs = 11;
-            hw.gpioProfile.RelayType = "hardware";
-            hw.gpioProfile.RED_OFF = GPIOpath + "gpio11_pb8";
-            hw.gpioProfile.BUTTON = GPIOpath + "gpio12_ph12";
-            hw.gpioProfile.TopRed = LEDspath + "/red";
-            hw.gpioProfile.TopBlue = LEDspath + "/blue";
-            hw.gpioProfile.TopGreen = LEDspath + "/green";
-            hw.radioProfile.hasSM_SBMC = true; //Solder_Module 6BEE MC13224
-            hw.radioProfile.hasSM_5304 = false; //Solder_Module Zwave 5304
-            hw.radioProfile.hasSM_U880 = false; //Solder_Module U880
-            hw.radioProfile.hasSM_BT = false; //Solder_Module Bluetooth
-            hw.radioProfile.SBMC_TTY = "/dev/ttyS4";
-            hw.radioProfile.CC2530_TTY = "/dev/ttyS1";
-            hw.radioProfile.SBMC_ERASE = GPIOpath + "gpio3_pd2";
-            hw.radioProfile.SBMC_RESET = GPIOpath + "gpio98/value";
-            hw.radioProfile.SBMC_RTS = GPIOpath + "gpio2_pd1";
-            hw.radioProfile.ZWAVE_TTY = "/dev/ttyS5";
-            hw.radioProfile.ZWAVE_ERASE = GPIOpath + "gpio4_pd3";
-            hw.radioProfile.ZIGBEEHA_TTY = "/dev/ttyS6";
-            hw.radioProfile.CC2530_RESET = GPIOpath + "gpio5_pd4";
-            hw.radioProfile.CC2530_DBG_DATA = GPIOpath + "gpio7_pd6";
-            hw.radioProfile.CC2530_DBG_CLK = GPIOpath + "gpio6_pd5";
-            break;
-    }
-    return hw;
-}
+//     data.apikey = eeprom.serialNumber;
+//     data.apisecret = eeprom.relaySecret || "17c0c7bd1c7f8a360288ef56b4230ede";  //not used by any service, just random data
+//     data.cloudurl = eeprom.cloudURL;
+//     // data.cloudurl_relays = eeprom.cloudURL.substring(0, eeprom.cloudURL.indexOf('.')) + '-relays' + eeprom.cloudURL.substring(eeprom.cloudURL.indexOf('.'));
+//     // data.pairingCode = eeprom.pairingCode;
+//     data.cloudddburl = cloudDdbURL;
+//     data.clouddevicejsurl = cloudDevicejsURL;
+//     data.hardwareVersion = eeprom.hardwareVersion;
+//     data.radioConfig = eeprom.radioConfig;
+//     data.zwavetty = eeprom.hardware.radioProfile.ZWAVE_TTY;
+//     data.zigbeehatty = eeprom.hardware.radioProfile.ZIGBEEHA_TTY;
+//     data.sixlbrtty = eeprom.hardware.radioProfile.SBMC_TTY.split("/")[2];
+//     data.sixlbrreset = eeprom.hardware.radioProfile.SBMC_RESET;
+//     data.ethernetmac = eeprom.ethernetMAC.string;
 
-function createHandlebarsData(eeprom, platform) {
-    var data = {};
+//     if(typeof eeprom.sixBMAC === 'undefined') { //Generate sixBMAC from ethernet MAC by inserting 0,1 in middle 
+//     	var sixBMAC = {};
+//     	eeprom.sixBMAC = JSON.parse(JSON.stringify(eeprom.ethernetMAC.array));
+//     	eeprom.sixBMAC.splice(3, 0, 0);
+//     	eeprom.sixBMAC.splice(4, 0, 1);
+// 	    sixBMAC.string = MACarray2string(eeprom.sixBMAC);
+// 	    sixBMAC.array = eeprom.sixBMAC;
+// 	    eeprom.sixBMAC = sixBMAC;
+//     }
 
-    data.apikey = eeprom.relayID;
-    data.apisecret = eeprom.relaySecret || "17c0c7bd1c7f8a360288ef56b4230ede";  //not used by any service, just random data
-    data.cloudurl = eeprom.cloudURL;
-    data.cloudurl_relays = eeprom.cloudURL.substring(0, eeprom.cloudURL.indexOf('.')) + '-relays' + eeprom.cloudURL.substring(eeprom.cloudURL.indexOf('.'));
-    data.pairingCode = eeprom.pairingCode;
-    data.cloudddburl = cloudDdbURL;
-    data.clouddevicejsurl = cloudDevicejsURL;
-    data.hardwareVersion = eeprom.hardwareVersion;
-    data.radioConfig = eeprom.radioConfig;
-    data.zwavetty = eeprom.hardware.radioProfile.ZWAVE_TTY;
-    data.zigbeehatty = eeprom.hardware.radioProfile.ZIGBEEHA_TTY;
-    data.sixlbrtty = eeprom.hardware.radioProfile.SBMC_TTY.split("/")[2];
-    data.sixlbrreset = eeprom.hardware.radioProfile.SBMC_RESET;
-    data.ethernetmac = eeprom.ethernetMAC.string;
-
-    if(typeof eeprom.sixBMAC === 'undefined') { //Generate sixBMAC from ethernet MAC by inserting 0,1 in middle 
-    	var sixBMAC = {};
-    	eeprom.sixBMAC = JSON.parse(JSON.stringify(eeprom.ethernetMAC.array));
-    	eeprom.sixBMAC.splice(3, 0, 0);
-    	eeprom.sixBMAC.splice(4, 0, 1);
-	    sixBMAC.string = MACarray2string(eeprom.sixBMAC);
-	    sixBMAC.array = eeprom.sixBMAC;
-	    eeprom.sixBMAC = sixBMAC;
-    }
-
-    data.sixbmac = eeprom.sixBMAC.string;
-    data.wwplatform = platform;
-    data.databasePort = databasePort;
-    data.sslCertsPath = sslPathDefault;
-    data.relayFirmwareVersionFile = relayFirmwareVersionFile;
-    data.factoryFirmwareVersionFile = factoryFirmwareVersionFile;
-    data.upgradeFirmwareVersionFile = upgradeFirmwareVersionFile;
-    data.userFirmwareVersionFile = userFirmwareVersionFile;
-    data.devicejsConfFile = devicejs_conf_file;
-    data.devicedbConfFile = devicedb_conf_file;
-    var _temps = null;
-    try {
-        _temps = execSync('fdisk -l ' + certsMemoryBlock + ' | xargs | awk \'{print $3}\'');
-    } catch (e) {
-        console.error("FAILED to run check for MMC", e);
-    }
-    if (_temps) {
-        if (Buffer.isBuffer(_temps)) _temps = _temps.toString();
-        data.partitionScheme = (_temps === '50\n') ? '8Gb' : '4Gb';
-    }
-    if (typeof eeprom.ledConfig !== 'undefined' &&
-        ((eeprom.ledConfig == '01') || (eeprom.ledConfig == '00') ||
-            (eeprom.ledConfig == '--') || (eeprom.ledConfig == 'xx'))) {
-        data.ledconfig = 'RGB';
-    } else {
-        data.ledconfig = 'RBG';
-    }
-    if (eeprom && eeprom.ledConfig)
-        data.ledConfig = data.ledconfig + '(' + eeprom.ledConfig.toString() + ')';
-    return data;
-}
+//     data.sixbmac = eeprom.sixBMAC.string;
+//     data.wwplatform = platform;
+//     data.databasePort = databasePort;
+//     data.sslCertsPath = sslPathDefault;
+//     data.relayFirmwareVersionFile = relayFirmwareVersionFile;
+//     data.factoryFirmwareVersionFile = factoryFirmwareVersionFile;
+//     data.upgradeFirmwareVersionFile = upgradeFirmwareVersionFile;
+//     data.userFirmwareVersionFile = userFirmwareVersionFile;
+//     data.devicejsConfFile = devicejs_conf_file;
+//     data.devicedbConfFile = devicedb_conf_file;
+//     var _temps = null;
+//     try {
+//         _temps = execSync('fdisk -l ' + certsMemoryBlock + ' | xargs | awk \'{print $3}\'');
+//     } catch (e) {
+//         console.error("FAILED to run check for MMC", e);
+//     }
+//     if (_temps) {
+//         if (Buffer.isBuffer(_temps)) _temps = _temps.toString();
+//         data.partitionScheme = (_temps === '50\n') ? '8Gb' : '4Gb';
+//     }
+//     if (typeof eeprom.ledConfig !== 'undefined' &&
+//         ((eeprom.ledConfig == '01') || (eeprom.ledConfig == '00') ||
+//             (eeprom.ledConfig == '--') || (eeprom.ledConfig == 'xx'))) {
+//         data.ledconfig = 'RGB';
+//     } else {
+//         data.ledconfig = 'RBG';
+//     }
+//     if (eeprom && eeprom.ledConfig)
+//         data.ledConfig = data.ledconfig + '(' + eeprom.ledConfig.toString() + ')';
+//     return data;
+//}
 
 function createHandlebarsDataForRSMI(eeprom) {
     var data = {};
@@ -277,10 +192,17 @@ function createHandlebarsDataForRSMI(eeprom) {
     return data;
 }
 
+function createHandlebarsRelayTerm(eeprom) {
+    var data = {};
+    data.ARCH_RELAY_SERVICES_HOST = eeprom.gatewayServicesAddress;
+    data.SSL_CERTS_PATH = sslPathDefault;
+    return data;
+}
+
 function createHandlebarsDevicejsConf(eeprom) {
     var data = {};
 
-    data.ARCH_RELAY_SERVICES_HOST = cloudDdbURL.replace('devicedb', 'relays');
+    data.ARCH_RELAY_SERVICES_HOST = eeprom.gatewayServicesAddress;
     data.LOCAL_DEVICEDB_PORT = databasePort;
     data.SSL_CERTS_PATH = sslPathDefault;
 
@@ -290,12 +212,9 @@ function createHandlebarsDevicejsConf(eeprom) {
 function createHandlebarsDevicedbConf(eeprom) {
     var data = {};
 
-    // data.clouddbid = '*' + cloudDdbURL.slice(cloudDdbURL.indexOf('.'));
-    // data.cloudddburl = cloudDdbURL.slice('https://'.length);
-    // data.cloudhistoryhosturl = 
     data.LOCAL_DEVICEDB_PORT = databasePort;
-    data.ARCH_RELAY_SERVICES_HOST_RES = cloudDdbURL.replace('devicedb', 'relays').slice('https://'.length);
-    data.ARCH_RELAY_SERVICES_HOST = cloudDdbURL.replace('devicedb', 'relays');
+    data.ARCH_RELAY_SERVICES_HOST_RES = eeprom.gatewayServicesAddress.slice('https://'.length);
+    data.ARCH_RELAY_SERVICES_HOST = eeprom.gatewayServicesAddress;
     data.SSL_CERTS_PATH = sslPathDefault;
     data.LOCAL_DATABASE_STORAGE_DIRECTORY = localDatabaseDirectory;
 
@@ -385,33 +304,23 @@ function eeprom2relay(uuid_eeprom, callback) {
     var sixBMAC = {};
     var CI = require(uuid_eeprom);
 
-    R.BRAND = CI.relayID.substring(0, 2);
-    R.DEVICE = CI.relayID.substring(2, 4);
-    R.UUID = CI.relayID.substring(4, 10);
-    R.hardwareVersion = CI.hardwareVersion;
-    R.firmwareVersion = "-----";
-    R.radioConfig = CI.radioConfig;
-    R.year = CI.year;
-    R.month = CI.month;
-    R.batch = CI.batch;
-    ethernetMAC.string = MACarray2string(CI.ethernetMAC);
-    ethernetMAC.array = CI.ethernetMAC;
-    if(typeof CI.sixBMAC === 'undefined') { //Generate sixBMAC from ethernet MAC by inserting 0,1 in middle 
-    	CI.sixBMAC = JSON.parse(JSON.stringify(ethernetMAC.array));
-    	CI.sixBMAC.splice(3, 0, 0);
-    	CI.sixBMAC.splice(4, 0, 1);
-    }
-    sixBMAC.string = MACarray2string(CI.sixBMAC);
-    sixBMAC.array = CI.sixBMAC;
-    R.ethernetMAC = ethernetMAC;
-    R.sixBMAC = sixBMAC;
-    R.relaySecret = CI.relaySecret || "17c0c7bd1c7f8a360288ef56b4230ede"; //not used by any service, just random data
-    R.pairingCode = CI.pairingCode;
-    R.relayID = CI.relayID;
-    R.ssl = CI.ssl;
+    R = CI;
     cloudURL = R.cloudURL = CI.cloudURL || cloudURL;
-    cloudDevicejsURL = R.devicejsCloudURL = CI.devicejsCloudURL || cloudDevicejsURL;
-    cloudDdbURL = R.devicedbCloudURL = CI.devicedbCloudURL || cloudDdbURL;
+    if(CI.ethernetMAC) {
+        ethernetMAC.string = MACarray2string(CI.ethernetMAC);
+        ethernetMAC.array = CI.ethernetMAC;
+        R.ethernetMAC = ethernetMAC;
+    }
+    if(CI.sixBMAC) {
+        if(typeof CI.sixBMAC === 'undefined') { //Generate sixBMAC from ethernet MAC by inserting 0,1 in middle 
+        	CI.sixBMAC = JSON.parse(JSON.stringify(ethernetMAC.array));
+        	CI.sixBMAC.splice(3, 0, 0);
+        	CI.sixBMAC.splice(4, 0, 1);
+        }
+        sixBMAC.string = MACarray2string(CI.sixBMAC);
+        sixBMAC.array = CI.sixBMAC;
+        R.sixBMAC = sixBMAC;
+    }
     callback(null, R);
 }
 
@@ -605,30 +514,30 @@ function generateDevicedbConf(eeprom) {
     });
 }
 
-function generateRelayConf(eeprom, platform) {
-    return new Promise(function(resolve, reject) {
-        //replace the handlebars
-        var template = handleBars.compile(JSON.stringify(devjsconf));
-        var data = createHandlebarsData(eeprom, platform + eeprom.hardwareVersion.toString());
-        var conf = JSON.parse(template(data));
+// function generateRelayConf(eeprom, platform) {
+//     return new Promise(function(resolve, reject) {
+//         //replace the handlebars
+//         var template = handleBars.compile(JSON.stringify(devjsconf));
+//         var data = createHandlebarsData(eeprom, platform + eeprom.hardwareVersion.toString());
+//         var conf = JSON.parse(template(data));
 
-        write_JSON2file(relay_conf_json_file, conf, overwrite_conf, function(err, suc) {
-            if (err) {
-                console.error("Error Writing file ", relay_conf_json_file, err);
-                reject(err);
-            } else {
-                console.log(suc + ': wrote ' + relay_conf_json_file + ' file successfully');
-                resolve();
-            }
-        });
-    });
-}
+//         write_JSON2file(relay_conf_json_file, conf, overwrite_conf, function(err, suc) {
+//             if (err) {
+//                 console.error("Error Writing file ", relay_conf_json_file, err);
+//                 reject(err);
+//             } else {
+//                 console.log(suc + ': wrote ' + relay_conf_json_file + ' file successfully');
+//                 resolve();
+//             }
+//         });
+//     });
+// }
 
 function generateRelayTermConf(eeprom, platform) {
     return new Promise(function(resolve, reject) {
         //replace the handlebars
         var template = handleBars.compile(JSON.stringify(relaytermConf));
-        var data = createHandlebarsData(eeprom, platform + eeprom.hardwareVersion.toString());
+        var data = createHandlebarsRelayTerm(eeprom, platform + eeprom.hardwareVersion.toString());
         var conf = JSON.parse(template(data));
 
         write_JSON2file(relayterm_conf_json_file, conf, overwrite_conf, function(err, suc) {
@@ -694,15 +603,15 @@ function main() {
                     }
 
                     // if (result.BRAND == "WW" || result.BRAND == "WD") {
-                        hw = define_hardware(result);
-                        result.hardware = hw;
+                        // hw = define_hardware(result);
+                        // result.hardware = hw;
 
                         var p = [];
 
                         p.push(writeSecurity());
                         p.push(generateDevicedbConf(result));
                         p.push(generateDevicejsConf(result));
-                        p.push(generateRelayConf(result, "wwgateway_v"));
+                        // p.push(generateRelayConf(result, "wwgateway_v"));
                         p.push(generateRelayTermConf(result));
                         p.push(generateHardwareConf(result));
 
@@ -727,39 +636,26 @@ function main() {
                 softwareBasedRelay = true;
 
                 eeprom2relay(sw_eeprom_file, function(err, result) {
-                    // console.log('Read EEPROM- ' + JSON.stringify(result));
-                    if (typeof result.BRAND === 'undefined') {
-                        reject(new Error('No relay ID found, please re-configure EEPROM'));
-                        return;
-                    }
-
                     if (result) {
-                        // if (result.BRAND == "WW" || result.BRAND == "WD") {
-                            hw = define_hardware(result);
-                            result.hardware = hw;
-                            var p = [];
+                        var p = [];
 
-                            p.push(generateSSL(result.ssl));
-                            p.push(generateDevicedbConf(result));
-                            p.push(generateDevicejsConf(result));
-                            p.push(generateRelayConf(result, "softrelay"));
-                            p.push(generateRelayTermConf(result));
-                            p.push(generateHardwareConf(result));
+                        p.push(generateSSL(result.ssl));
+                        p.push(generateDevicedbConf(result));
+                        p.push(generateDevicejsConf(result));
+                        // p.push(generateRelayConf(result, "softrelay"));
+                        p.push(generateRelayTermConf(result));
+                        p.push(generateHardwareConf(result));
 
-                            if (radioProfile_template_conf_file) {
-                                p.push(generateRadioProfileConf(result));
-                            }
+                        if (radioProfile_template_conf_file) {
+                            p.push(generateRadioProfileConf(result));
+                        }
 
-                            Promise.all(p).then(function(result) {
-                                console.log('EEPROM reader successful');
-                                resolve();
-                            }, function(err) {
-                                reject(err);
-                            });
-                        // } else {
-                        //     console.log("EEPROM is not configured properly.");
-                        //     reject(new Error('EEPROM is not configured properly.'));
-                        // }
+                        Promise.all(p).then(function(result) {
+                            console.log('EEPROM reader successful');
+                            resolve();
+                        }, function(err) {
+                            reject(err);
+                        });
                     }
                 });
             }
@@ -788,23 +684,21 @@ function parseReadEeprom(ee) {
 	try {
 	    var ethernetMAC = {};
 	    var sixBMAC = {};
-	    ee.BRAND = ee.relayID.substring(0, 2);
-	    ee.DEVICE = ee.relayID.substring(2, 4);
-	    ee.UUID = ee.relayID.substring(4, 10);
-	    ethernetMAC.string = MACarray2string(ee.ethernetMAC);
-	    ethernetMAC.array = ee.ethernetMAC;
-	    if(typeof ee.sixBMAC === 'undefined') { //Generate sixBMAC from ethernet MAC by inserting 0,1 in middle 
-	    	ee.sixBMAC = JSON.parse(JSON.stringify(ethernetMAC.array));
-	    	ee.sixBMAC.splice(3, 0, 0);
-	    	ee.sixBMAC.splice(4, 0, 1);
-	    }
-	    sixBMAC.string = MACarray2string(ee.sixBMAC);
-	    sixBMAC.array = ee.sixBMAC;
-	    ee.ethernetMAC = ethernetMAC;
-	    ee.sixBMAC = sixBMAC;
-	    cloudURL = ee.cloudURL = ee.cloudURL || cloudURL;
-	    cloudDevicejsURL = ee.devicejsCloudURL = ee.devicejsCloudURL || cloudDevicejsURL;
-	    cloudDdbURL = ee.devicedbCloudURL = ee.devicedbCloudURL || cloudDdbURL;
+        if(ee.ethernetMAC) {
+    	    ethernetMAC.string = MACarray2string(ee.ethernetMAC);
+    	    ethernetMAC.array = ee.ethernetMAC;
+    	    if(typeof ee.sixBMAC === 'undefined') { //Generate sixBMAC from ethernet MAC by inserting 0,1 in middle 
+    	    	ee.sixBMAC = JSON.parse(JSON.stringify(ethernetMAC.array));
+    	    	ee.sixBMAC.splice(3, 0, 0);
+    	    	ee.sixBMAC.splice(4, 0, 1);
+    	    }
+    	    sixBMAC.string = MACarray2string(ee.sixBMAC);
+    	    sixBMAC.array = ee.sixBMAC;
+    	    ee.ethernetMAC = ethernetMAC;
+    	    ee.sixBMAC = sixBMAC;
+        }
+
+	    cloudURL = ee.cloudAddress = ee.cloudAddress || cloudURL;
 	} catch(err) {
 		console.log('Failed to parseReadEeprom ', err);
 		if(err.stack) {
@@ -823,15 +717,15 @@ function main_at24c256() {
             console.log('Read EEPROM- ' + JSON.stringify(result));
 
             try {
-	            hw = define_hardware(result);
-	            result.hardware = hw;
+	            // hw = define_hardware(result);
+	            // result.hardware = hw;
 
 	            var p = [];
 
 	            p.push(generateSSL(result.ssl));
 	            p.push(generateDevicedbConf(result));
 	            p.push(generateDevicejsConf(result));
-	            p.push(generateRelayConf(result, "wwgateway_v"));
+	            // p.push(generateRelayConf(result, "wwgateway_v"));
 	            p.push(generateRelayTermConf(result));
 	            p.push(generateHardwareConf(result));
 
@@ -914,23 +808,23 @@ if (program.eepromFile) {
     console.log('Using eepromFile- ', sw_eeprom_file);
 }
 
-if (program.templateFile) {
-    template_conf_file = program.templateFile;
-    console.log('Using templateFile- ', template_conf_file);
-    try {
-        devjsconf = JSON.parse(jsonminify(fs.readFileSync(template_conf_file, 'utf8')));
-    } catch (e) {
-        console.error('Could not open template file', e);
-        process.exit(1);
-    }
+// if (program.templateFile) {
+//     template_conf_file = program.templateFile;
+//     console.log('Using templateFile- ', template_conf_file);
+//     try {
+//         devjsconf = JSON.parse(jsonminify(fs.readFileSync(template_conf_file, 'utf8')));
+//     } catch (e) {
+//         console.error('Could not open template file', e);
+//         process.exit(1);
+//     }
 
-    if (program.relayConfFile) {
-        relay_conf_json_file = program.relayConfFile;
-        console.log('Using relayConfFile- ', relay_conf_json_file);
-    } else {
-        console.error('Please specify the relay.config.json file path');
-        process.exit(1);
-    }
+    // if (program.relayConfFile) {
+    //     relay_conf_json_file = program.relayConfFile;
+    //     console.log('Using relayConfFile- ', relay_conf_json_file);
+    // } else {
+    //     console.error('Please specify the relay.config.json file path');
+    //     process.exit(1);
+    // }
 
     if (program.relaytermtemplateFile) {
         relayterm_template_conf_file = program.relaytermtemplateFile;
@@ -975,10 +869,10 @@ if (program.templateFile) {
         console.error('Please specify radio profile template file');
         process.exit(1);
     }
-} else {
-    console.error('Please specify relay template file');
-    process.exit(1);
-}
+// } else {
+//     console.error('Please specify relay template file');
+//     process.exit(1);
+// }
 
 if (program.overwrite) {
     overwrite_conf = program.overwrite === true;

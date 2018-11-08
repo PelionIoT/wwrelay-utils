@@ -1,0 +1,19 @@
+{
+  "name": "gateway-keeper",
+  "version": "0.0.1",
+  "description": "monitor and maintain gateways in local network",
+  "main": "index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "author": "Bhoopesh Singh",
+  "license": "ISC",
+  "dependencies": {
+    "chalk": "^2.4.1",
+    "express": "^4.16.3",
+    "jsonminify": "^0.4.1",
+    "uuid": "^3.3.2",
+    "wget": "0.0.1",
+    "ws": "^6.0.0"
+  }
+}

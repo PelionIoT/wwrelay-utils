@@ -124,11 +124,10 @@ diskstorage.prototype._readStore = function(path) {
 	});
 }
 
-diskstorage.prototype._writeStore = function(path, data) {
+diskstorage.prototype._writeStore = function(path, data, options) {
 	var self = this;
-	options = "utf8";
 	return new Promise(function(resolve, reject) {
-		fs.writeFileSync(path, data, options);
+		fs.writeFileSync(path, data, options || 'utf8');
 		resolve();
 	});
 }
@@ -181,9 +180,9 @@ diskstorage.prototype.destroyFile = function(relativePath) {
 	return this._eraseStore(self.mountPoint + "/" + self.sp + "/" + relativePath);
 }
 
-diskstorage.prototype.setFile = function(relativePath, data) {
+diskstorage.prototype.setFile = function(relativePath, data, options) {
 	var self = this;
-	return this._writeStore(self.mountPoint + "/" + self.sp + "/" + relativePath, data);
+	return this._writeStore(self.mountPoint + "/" + self.sp + "/" + relativePath, data, options);
 }
 
 diskstorage.prototype.disconnect = function() {

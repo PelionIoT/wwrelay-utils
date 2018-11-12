@@ -5,8 +5,8 @@
 # Provides:             wwrelay
 # Required-Start:       $remote_fs $time
 # Required-Stop:        $remote_fs $time
-# Should-Start:         
-# Should-Stop:          
+# Should-Start:
+# Should-Stop:
 # Default-Start:        2 3 4 5
 # Default-Stop:         0 1 6
 # Short-Description:    System logger
@@ -25,6 +25,7 @@ WWRELAY_LOG=${WIGWAGLOGROOT}"/wwrelay.log"
 GPIO_LOG=${WIGWAGLOGROOT}"/log/gpio.log"
 DBDIR="/userdata/etc/devicejs/db"
 RELAY_SETUP_FILE=${WIGWAGROOT}"/wwrelay-utils/I2C/relaySetup.json"
+MBED_SETUP_FILE=${WIGWAGROOT}"/wwrelay-utils/I2C/mbedEdgeGatewaySetup.json"
 RELAYTERMSTARTER=${WIGWAGROOT}"/wigwag-core-modules/relay-term/bin/relay-term"
 RELAYTERM=${WIGWAGROOT}"/wigwag-core-modules/relay-term/src/index.js"
 RELAYTERMCONF=${WIGWAGROOT}"/wigwag-core-modules/relay-term/config/config.json"
@@ -139,7 +140,7 @@ _eepromBurned(){
 		fi
 	else
 		#need to read the eeporom at24 here, but lets just skip until I can see what burned one looks like
-		
+
 		echo 1
 	fi
 }
@@ -178,14 +179,20 @@ start(){
 		eepromSet=1;
 		cd ${WIGWAGROOT}/wwrelay-utils/I2C
 		pwd
-		/usr/bin/node ./ww_eeprom_reader.js -c $RELAY_SETUP_FILE >> $WWRELAY_LOG 2>&1
-		#/usr/bin/node ./ww_eeprom_reader.js -c $RELAY_SETUP_FILE 
+		if [ ! -e /userdata/etc/mbed ]; then
+			_log "Detected edge-gw. Reading edge eeprom..."
+			/usr/bin/node ./mbed-edge-eeprom-reader.js -c $MBED_SETUP_FILE >> $WWRELAY_LOG 2>&1
+		else
+			_log "Detected wigwag gateway. Reading ww eeprom..."
+			/usr/bin/node ./ww_eeprom_reader.js -c $RELAY_SETUP_FILE >> $WWRELAY_LOG 2>&1
+		fi
+		#/usr/bin/node ./ww_eeprom_reader.js -c $RELAY_SETUP_FILE
 		OUT=$?
 		if [ $OUT -eq 0 ]; then
 
 			stillgood=$(_runnerWritten)
 			if [[ $stillgood -eq 1 ]]; then
-				success 
+				success
 				_log "ww_eeprom_reader generated relay.config.json successfully"
 					PATH=/wigwag/system/lib/bash:$PATH /wigwag/system/bin/json2sh /wigwag/wwrelay-utils/I2C/relay.conf /wigwag/system/lib/bash/relaystatics.sh
 			else

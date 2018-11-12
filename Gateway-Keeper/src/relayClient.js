@@ -306,9 +306,9 @@ function tryToConnect() {
 							command = cliArgv.join(" ")
 							exec(command, function(error, stdout, stderr) {
 								if(error !== null) {
-							        ws.send("Error in running for " + ver.relayID + ".logs " + error)
+							        ws.send("Error in running for " + ver.relayID + ".\n " + error)
 							    } else{
-							    	ws.send("Command ran succesfully for " + ver.relayID + ".logs "+ stdout)
+							    	ws.send("Command ran succesfully for " + ver.relayID + ".\n "+ stdout)
 								}
 							})
 						}

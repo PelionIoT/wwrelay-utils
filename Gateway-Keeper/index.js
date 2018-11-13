@@ -10,10 +10,14 @@ var spawn = require('child_process').spawn;
 var help = require('./utils/helpCommand');
 var chalk = require('chalk')
 
+connectedClinet = []
+
 var version = "1.0.0"
 
 
-var allcommands = 'getRelay getAllRelays upgradeAllRelaysWithUrl upgradeRelayWithUrl led restartAllMaestro restartMaestro getAllUpgrade getUpgrade killAllUpgrade killUpgrade upgradeGateway downloadBuild clearBuild '
+var allcommands = 'getRelay getAllRelays upgradeAllRelaysWithUrl upgradeRelayWithUrl runCommandOnGW  led'
++' restartAllMaestro restartMaestro getAllUpgrade getUpgrade killAllUpgrade killUpgrade upgradeGateway'
++' downloadBuild clearBuild '
 
 function completer(line) {
     var completions = allcommands;
@@ -68,7 +72,7 @@ const wss = new WebSocket.Server({ server });
 
 wss.on('connection', function connection(ws,req) {
     ws.id = uuid.v4();
-    ws.send(ws.id+"");
+    ws.send(ws.id+"_id");
 
     ws.on('message', function incoming(data) {
         //console.log(data)
@@ -90,14 +94,24 @@ wss.on('connection', function connection(ws,req) {
                 clearInterval(timer)
                 console.log(stdout)
             })
-        } else {
+        } else if(data.indexOf('openInfo') > -1){
+                connectedClinet.push(JSON.parse(data.split(':-')[1]))
+        } else if(data.indexOf('closeInfo') > -1) {
+            for(var i = 0; i <= connectedClinet.length - 1; i++) {
+                console.log(JSON.parse(data.split(':-')[1]))
+                if(connectedClinet[i].relayID == JSON.parse(data.split(':-')[1]).relayID) {
+                    connectedClinet.splice(i, 1); 
+                }
+            }
+        }else {
             console.log(data)
         }
     })
 });
 
-rl.prompt()
+// rl.prompt()
 rl.on('line', (line) => {
+    console.log(chalk.yellow.bold("Total webSocket is " + wss.clients.size))
     if(line.indexOf('-h') > -1) {
         var command = line.split(' ')[0]
         if(help[command]) {
@@ -105,7 +119,8 @@ rl.on('line', (line) => {
                         '\n\t',chalk.bold('Usage:'),
                         '\n\t\t',help[command].Usage,
                         '\n\t',chalk.bold('Description:'),
-                        '\n\t\t',help[command].Description) 
+                        '\n\t\t',help[command].Description)
+            rl.prompt()
         }
     } else if(line.indexOf('downloadBuild') > -1){
         var cliArgv = line.split(' ')
@@ -122,7 +137,8 @@ rl.on('line', (line) => {
         }
         var child = exec(command, {maxBuffer: 1024 * 500},function(error, stdout, stderr) {
             if(error) {
-                console.log('failed to copy ==> '+error)
+                console.log(chalk.red.bold('failed to copy ==> '+error))
+                //console.log('failed to copy ==> '+error)
             }
             //if (self.verbose) {
             
@@ -140,7 +156,7 @@ rl.on('line', (line) => {
                 //console.log('\u001b[2J\u001b[0;0H')
                 process.stdout.clearLine();
                 process.stdout.cursorTo(0);
-                process.stdout.write("[ Downloading Build "+ data + ' ]');
+                process.stdout.write("[ Downloading Build                                        "+ data + ' ]');
                 bufferStream += data;
             });
 
@@ -155,12 +171,13 @@ rl.on('line', (line) => {
                  //console.log('\u001b[2J\u001b[0;0H')
                 process.stdout.clearLine();
                 process.stdout.cursorTo(0);
-                process.stdout.write("[ Downloading Build "+ error + ' ]');
+                process.stdout.write("[ Downloading Build                                        "+ error + ' ]');
                 //printProgress(status[0], size[0], eta[0], "102.0.380-field-factoryupdate.tar.gz")
                 errorStream += error;
             });
             child.on('close', code => {
-                console.log("\nDownloading finished");
+                console.log(chalk.blue.bold("\nDownloading finished"))
+                rl.prompt()
             })
     } else if(line.indexOf('clearBuild') > -1) {
         var command = "rm -rf "+__dirname+"/build/*"
@@ -169,6 +186,7 @@ rl.on('line', (line) => {
                 console.log('failed to remove'+error)
             }
             console.log("Build folder is clean.")
+            rl.prompt()
         })
     }
     // else if(line.indexOf('login') > -1) {
@@ -197,17 +215,80 @@ rl.on('line', (line) => {
     //         })
     // }
     else { 
-        console.log("Total webSocket is " + wss.clients.size)
+        // console.log(chalk.yellow.bold("Total webSocket is " + wss.clients.size))
         if(wss.clients.size === 0) {
             console.log(chalk.red.bold("NO CLIENT CONNECTED YET")) 
+            rl.prompt()
         }  
         var command = line.split(' ')[0]
         var completions = allcommands.split(' ')
         const hits = completions.filter((c) => c.toLowerCase().includes(command));
         if(hits.length < 1){
-            wss.clients.forEach(function each(client) {
-                client.send(line);
-            });
+            cliArgv = line.split(" ")
+            switch(cliArgv[0]) {
+                case "getRelay":
+                    var arrayFound = connectedClinet.filter(function(item) {
+                        return item.relayID == cliArgv[1];
+                    });
+                    if(arrayFound.length > 0) {
+                        wss.clients.forEach(function each(client) {
+                            client.send(line);
+                        });    
+                    } else {
+                         console.log(chalk.red.bold("NO SUCH RELAY"))
+                         rl.prompt()
+                    }
+                break;
+
+                case "restartMaestro":
+                    var arrayFound = connectedClinet.filter(function(item) {
+                        return item.relayID == cliArgv[1];
+                    });
+                    if(arrayFound.length > 0) {
+                        wss.clients.forEach(function each(client) {
+                            client.send(line);
+                        });    
+                    } else {
+                         console.log(chalk.red.bold("NO SUCH RELAY"))
+                         rl.prompt()
+                    }
+                break;
+
+                case "upgradeGateway":
+                    var arrayFound = connectedClinet.filter(function(item) {
+                        return (item.relayID == cliArgv[1] || cliArgv[1] === 'all');
+                    });
+                    if(arrayFound.length > 0) {
+                        wss.clients.forEach(function each(client) {
+                            client.send(line);
+                        });    
+                    } else {
+                         console.log(chalk.red.bold("NO SUCH RELAY"))
+                         rl.prompt()
+                    }    
+                break;
+
+                case "runCommandOnGW":
+                    var arrayFound = connectedClinet.filter(function(item) {
+                        return (item.relayID == cliArgv[1] || cliArgv[1] === 'all');
+                    });
+                    if(arrayFound.length > 0) {
+                        wss.clients.forEach(function each(client) {
+                            client.send(line);
+                        });    
+                    } else {
+                        console.log(chalk.red.bold("NO SUCH RELAY"))
+                        rl.prompt()
+                    }    
+                break;
+
+                default:
+                    wss.clients.forEach(function each(client) {
+                        client.send(line);
+                    });
+                break;
+            }
+
         } else {
             hits.forEach(function(helpWithCompleter) {
                 if(help[helpWithCompleter]) {
@@ -218,11 +299,12 @@ rl.on('line', (line) => {
                         '\n\t\t',help[helpWithCompleter].Description) 
                 }
             })
+            rl.prompt()
         }
     }
     // ws.send(line);
 }).on('close', () => {
-    console.log('Have a great day!');
+    console.log(chalk.blue.bold('\nHave a great day!'));
     process.exit(0);
 });
 
@@ -232,4 +314,5 @@ rl.on('line', (line) => {
 
 server.listen(port, () => {
   console.log(`Server active on port: ${server.address().port}`);
+  rl.prompt()
 });

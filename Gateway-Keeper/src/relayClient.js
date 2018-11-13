@@ -86,6 +86,9 @@ function tryToConnect() {
 			console.log("opened");
 			ws.removeEventListener('message');
 			ws.on('message', function incoming(data) {
+				if(data.indexOf('_id') > -1) {
+					ws.send("openInfo:- "+JSON.stringify(ver,null,4))
+				}
 				cliArgv = data.split(" ")
 				switch(cliArgv[0]) {
 					case "getRelay":
@@ -295,6 +298,23 @@ function tryToConnect() {
 						}
 					break;
 
+					case "runCommandOnGW":
+						if((cliArgv[1] == ver.relayID  || cliArgv[1] == 'all')) {
+							cliArgv.shift()  // skip node.exe
+							cliArgv.shift()  // skip name of js file
+
+							command = cliArgv.join(" ")
+							exec(command, function(error, stdout, stderr) {
+								if(error !== null) {
+							        ws.send("Error in running for " + ver.relayID + ".\n " + error)
+							    } else{
+							    	ws.send("Command ran succesfully for " + ver.relayID + ".\n "+ stdout)
+								}
+							})
+						}
+						
+					break;
+
 					default:
 						//ws.send("Unknown Command")
 					break;
@@ -304,15 +324,22 @@ function tryToConnect() {
 
 		ws.removeEventListener('close');
 		ws.on('close',function close(data) {
+			ws.send("closeInfo:- "+JSON.stringify(ver,null,4))
 			console.log("Events websocket disconnected " + data);
 			connected = false;
 		}
 		)
 		ws.removeEventListener('error');
 		ws.on('error', function incoming(error) {
+			ws.send("closeInfo:- "+JSON.stringify(ver,null,4))
 			console.log(error);
 			connected = false;
 		});
+
+		process.on('SIGINT', function() {
+			ws.send("closeInfo:- "+JSON.stringify(ver,null,4))
+			process.exit()	
+		})
 		// ws.on('error', function incoming(error) { console.log(error);
 		//     ws.close('message',function incoming(data){ console.log(data);})
 		// });

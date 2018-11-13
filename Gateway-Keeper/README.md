@@ -242,14 +242,17 @@ GK> upgradeGateway [all/relayID] [all/cloudbasename] [build_version]
 ## downloadBuild 
 
 ``` 
-GK> downloadBuild 102.0.380
-[ Downloading Build ... .......... 61% 7.97M 2m31s ]
+GK> downloadBuild 102.0.313
+[sudo] password for bhoopesh: 
+[ Downloading Build                                        ......... 99% 15.7M 1s ]
+Downloading finished
 ```
 for downloading arm build
 
 ``` 
 GK> downloadBuild 102.0.380 arm
-[ Downloading Build ... .......... 61% 7.97M 2m31s ]
+[ Downloading Build                                        ......... 99% 15.7M 1s ]
+Downloading finished
 ```
 ## clearBuild
 ```

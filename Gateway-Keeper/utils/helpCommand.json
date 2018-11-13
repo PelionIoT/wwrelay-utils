@@ -52,7 +52,11 @@
         "Description": "clear out all the builds in build folder"
     },
     "runCommandOnGW": {
-        "Usage": "runCommandOnGW [relayID/all] [command to be run] \t\t\t Example: runCommandOnGW WDRL00000M info",
+        "Usage": "runCommandOnGW [relayID/all] [command to be run] \n\t\t Example: runCommandOnGW WDRL00000M info",
         "Description": "run command to the gateway"
+    },
+    "uploadClientToGW": {
+        "Usage": "uploadClientToGW \n\t\t Example : uploadClientToGW",
+        "Description": "start client to all gateways in the network"
     }
 }

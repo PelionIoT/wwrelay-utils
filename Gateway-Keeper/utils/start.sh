@@ -44,8 +44,6 @@ foreach host $hosts {
 	expect -re ".*wigwag.*"
 	send "mv /home/maestro/relayClient.js ./\r"
 	expect "# "
-	send "killall relayClient.js\r"
-	expect "# "
 	send "NODE_PATH=/wigwag/devicejs-core-modules/node_modules/ node relayClient.js $IP > /dev/null &\r"
 	expect "# "
 	send "exit\r"

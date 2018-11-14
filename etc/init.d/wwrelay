@@ -179,7 +179,7 @@ start(){
 		eepromSet=1;
 		cd ${WIGWAGROOT}/wwrelay-utils/I2C
 		pwd
-		if [ ! -e /userdata/etc/mbed ]; then
+		if [ -d /userdata/etc/mbed ]; then
 			_log "Detected edge-gw. Reading edge eeprom..."
 			/usr/bin/node ./mbed-edge-eeprom-reader.js -c $MBED_SETUP_FILE >> $WWRELAY_LOG 2>&1
 		else

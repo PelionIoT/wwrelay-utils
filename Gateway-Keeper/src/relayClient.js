@@ -87,6 +87,7 @@ function tryToConnect() {
 			ws.removeEventListener('message');
 			ws.on('message', function incoming(data) {
 				if(data.indexOf('_id') > -1) {
+					ver.clientID = data.split("_")[0]
 					ws.send("openInfo:- "+JSON.stringify(ver,null,4))
 				}
 				cliArgv = data.split(" ")
@@ -166,19 +167,6 @@ function tryToConnect() {
 							    ws.send("Process initiated for relay upgrade for " + ver.relayID)
 							})
 						})
-					break;
-
-					case "led":
-						if(cliArgv[1] != ver.relayID) {
-							break;
-						}
-						exec("led r g b", function (error, stdout, stderr) {
-						    if(error !== null) {
-						        console.log(error)
-						    }
-						    console.log(stdout)
-						})
-						ws.send("Look at the relays")
 					break;
 
 					case "restartAllMaestro":
@@ -324,14 +312,14 @@ function tryToConnect() {
 
 		ws.removeEventListener('close');
 		ws.on('close',function close(data) {
-			ws.send("closeInfo:- "+JSON.stringify(ver,null,4))
+			//ws.send("closeInfo:- "+JSON.stringify(ver,null,4))
 			console.log("Events websocket disconnected " + data);
 			connected = false;
 		}
 		)
 		ws.removeEventListener('error');
 		ws.on('error', function incoming(error) {
-			ws.send("closeInfo:- "+JSON.stringify(ver,null,4))
+			//ws.send("closeInfo:- "+JSON.stringify(ver,null,4))
 			console.log(error);
 			connected = false;
 		});
@@ -346,12 +334,12 @@ function tryToConnect() {
 	// }, 7000);
 }
 
-setInterval(function() {
-	if(!connected && !inProgress) {
-		inProgress = true;
-		tryToConnect();
-	}
-}, 10000);
+// setInterval(function() {
+// 	if(!connected && !inProgress) {
+// 		inProgress = true;
+// 		tryToConnect();
+// 	}
+// }, 10000);
 
 tryToConnect();
 // ws = new WebSocket(uri)

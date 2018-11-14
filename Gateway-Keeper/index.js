@@ -17,7 +17,7 @@ var version = "1.0.0"
 
 var allcommands = 'getRelay getAllRelays upgradeAllRelaysWithUrl upgradeRelayWithUrl runCommandOnGW  led'
 +' restartAllMaestro restartMaestro getAllUpgrade getUpgrade killAllUpgrade killUpgrade upgradeGateway'
-+' downloadBuild clearBuild '
++' downloadBuild clearBuild uploadClientToGW '
 
 function completer(line) {
     var completions = allcommands;
@@ -145,40 +145,33 @@ rl.on('line', (line) => {
         //}
         })
         child.stdout.on('data', data => {
-                // console.log('[STR] stdout "%s"', String(data));
-                const getData = data.split(' ')
-                const status = getData.filter((c) => c.endsWith("%"));
-                const size = getData.filter((c) => c.endsWith("M"));
-                const eta = getData.filter((c) => c.endsWith("s"));
-                //console.log(status[0])
-                if(status[0] === undefined || size[0] === undefined || eta[0] === undefined)return 0;
-                //printProgress(status[0], size[0], eta[0], "102.0.380-field-factoryupdate.tar.gz")
-                //console.log('\u001b[2J\u001b[0;0H')
-                process.stdout.clearLine();
-                process.stdout.cursorTo(0);
-                process.stdout.write("[ Downloading Build                                        "+ data + ' ]');
-                bufferStream += data;
-            });
+            const getData = data.split(' ')
+            const status = getData.filter((c) => c.endsWith("%"));
+            const size = getData.filter((c) => c.endsWith("M"));
+            const eta = getData.filter((c) => c.endsWith("s"));
+            if(status[0] === undefined || size[0] === undefined || eta[0] === undefined)return 0;
+            process.stdout.clearLine();
+            process.stdout.cursorTo(0);
+            process.stdout.write("[ Downloading Build "+build+"-field-factoryupdate.tar.gz                                       "+ data + ' ]');
+            bufferStream += data;
+        });
 
-            child.stderr.on('data', error => {
-                //console.log('[STR] stdout "%s"', String(error));
-                var getData = error.split(' ')
-                var status = getData.filter((c) => c.endsWith("%"));
-                const size = getData.filter((c) => c.endsWith("M"));
-                const eta = getData.filter((c) => c.endsWith("s"));
-                //console.log(status[0])
-                if(status[0] === undefined || size[0] === undefined || eta[0] === undefined)return 0;
-                 //console.log('\u001b[2J\u001b[0;0H')
-                process.stdout.clearLine();
-                process.stdout.cursorTo(0);
-                process.stdout.write("[ Downloading Build                                        "+ error + ' ]');
-                //printProgress(status[0], size[0], eta[0], "102.0.380-field-factoryupdate.tar.gz")
-                errorStream += error;
-            });
-            child.on('close', code => {
-                console.log(chalk.blue.bold("\nDownloading finished"))
-                rl.prompt()
-            })
+        child.stderr.on('data', error => {
+            var getData = error.split(' ')
+            var status = getData.filter((c) => c.endsWith("%"));
+            const size = getData.filter((c) => c.endsWith("M"));
+            const eta = getData.filter((c) => c.endsWith("s"));
+            //console.log(status[0])
+            if(status[0] === undefined || size[0] === undefined || eta[0] === undefined)return 0;
+            process.stdout.clearLine();
+            process.stdout.cursorTo(0);
+            process.stdout.write("[ Downloading Build "+build+"-field-factoryupdate.tar.gz                                       "+ error + ' ]');
+            errorStream += error;
+        });
+        child.on('close', code => {
+            console.log(chalk.blue.bold("\nDownloading finished"))
+            rl.prompt()
+        })
     } else if(line.indexOf('clearBuild') > -1) {
         var command = "rm -rf "+__dirname+"/build/*"
         exec(command,function(error, stdout, stderr) {
@@ -189,33 +182,21 @@ rl.on('line', (line) => {
             rl.prompt()
         })
     }
-    // else if(line.indexOf('login') > -1) {
-    //     var cliArgv = line.split(' ')
-    //     var cmd = cliArgv[0]
-    //     var IP = cliArgv[1]
-    //     var command = __dirname+'/debug_script/relay-login.sh ' + IP
-    //     let bufferStream = '';
-    //     let errorStream = '';
-    //     var loginPrompt = exec(command, function(error, stdout, stderr) {
-    //         if(error) {
-    //             console.log('failed to copy ==> '+error)
-    //         } 
-    //     })
-    //     loginPrompt.stdout.on('data', data => {
-    //             process.stdout.write(data);
-    //             bufferStream += data;
-    //         });
-
-    //         loginPrompt.stderr.on('data', error => {
-    //             process.stdout.write(error);
-    //             errorStream += error;
-    //         });
-    //         loginPrompt.on('close', code => {
-    //             console.log("\n finished");
-    //         })
-    // }
-    else { 
-        // console.log(chalk.yellow.bold("Total webSocket is " + wss.clients.size))
+    else if(line.indexOf('login') > -1) {
+        var cliArgv = line.split(' ')
+        var cmd = cliArgv[0]
+        var IP = cliArgv[1]
+        var command = `tmux new-window | tmux send-keys -t "$pane" '${__dirname}/debug_script/relay-login.sh ${IP}' Enter`
+        let bufferStream = '';
+        let errorStream = '';
+        var loginPrompt = exec(command, function(error, stdout, stderr) {
+            if(error) {
+                console.log('Error' + error)
+            }
+            console.log("LOGIN SUCCESS");
+            rl.prompt()
+        })
+    } else { 
         if(wss.clients.size === 0) {
             console.log(chalk.red.bold("NO CLIENT CONNECTED YET")) 
             rl.prompt()
@@ -282,6 +263,47 @@ rl.on('line', (line) => {
                     }    
                 break;
 
+                case "upgradeRelayWithUrl":
+                    var arrayFound = connectedClinet.filter(function(item) {
+                        return item.relayID == cliArgv[1];
+                    });
+                    if(arrayFound.length > 0) {
+                        wss.clients.forEach(function each(client) {
+                            client.send(line);
+                        });    
+                    } else {
+                        console.log(chalk.red.bold("NO SUCH RELAY"))
+                        rl.prompt()
+                    }    
+                break;
+
+                case "getUpgrade":
+                    var arrayFound = connectedClinet.filter(function(item) {
+                        return item.relayID == cliArgv[1];
+                    });
+                    if(arrayFound.length > 0) {
+                        wss.clients.forEach(function each(client) {
+                            client.send(line);
+                        });    
+                    } else {
+                        console.log(chalk.red.bold("NO SUCH RELAY"))
+                        rl.prompt()
+                    }
+                break;  
+
+                // case "uploadClientToGW":
+                //     process.stdout.write('Uploading...')
+                //     let timer = setInterval(function() { process.stdout.write('.'); }, 500);
+                //     exec('./prepare.sh',function(error, stdout, stderr) {
+                //         if(error) {
+                //             console.log(chalk.red.bold("Error") + error)
+                //         } else{
+                //             clearInterval(timer)
+                //             console.log(chalk.green.bold("DONE"))
+                //         }
+                //     })
+                // break;
+
                 default:
                     wss.clients.forEach(function each(client) {
                         client.send(line);
@@ -307,6 +329,21 @@ rl.on('line', (line) => {
     console.log(chalk.blue.bold('\nHave a great day!'));
     process.exit(0);
 });
+
+// setInterval(function() {
+//     if(wss.clients.size === 0) {
+
+//     }else {
+//         wss.clients.forEach(function each(client) {
+//             for(var i = 0; i <= connectedClinet.length - 1; i++) {
+//                 if(connectedClinet[i].clientID !== client.id) {
+//                     connectedClinet.splice(i, 1); 
+//                 }
+//             }
+//         });
+//     }
+// },2000)
+
 
 // app.get('/uri', function (req, res) {
 // 	res.status(200).send("command received")

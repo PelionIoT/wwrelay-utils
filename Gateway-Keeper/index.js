@@ -330,19 +330,39 @@ rl.on('line', (line) => {
     process.exit(0);
 });
 
-// setInterval(function() {
-//     if(wss.clients.size === 0) {
+setInterval(function() {
+    var wsClients = []
+    var relayClients = []
+    if(wss.clients.size === 0) {
 
-//     }else {
-//         wss.clients.forEach(function each(client) {
-//             for(var i = 0; i <= connectedClinet.length - 1; i++) {
-//                 if(connectedClinet[i].clientID !== client.id) {
-//                     connectedClinet.splice(i, 1); 
-//                 }
-//             }
-//         });
-//     }
-// },2000)
+    }else {
+        try{
+            wss.clients.forEach(function each(client) {
+                wsClients.push(client.id)
+            });
+            connectedClinet.forEach(function(rClients){
+                relayClients.push(rClients.clientID)
+            })
+        } catch(err) {
+            console.log("Error")
+        } finally {
+            wsClients = wsClients.sort()
+            relayClients = relayClients.sort()
+
+            for(i = 0; i < relayClients.length; i++) {
+                if(wsClients[i] !== relayClients[i]) {
+                    //console.log(relayClients[i])
+                    for(var j = 0; j <= connectedClinet.length - 1; j++) {
+                        if(connectedClinet[j].clientID == relayClients[i]) {
+                            connectedClinet.splice(j, 1); 
+                        }
+                    }
+                    break; 
+                }
+            }
+        }
+    }
+},5000)
 
 
 // app.get('/uri', function (req, res) {

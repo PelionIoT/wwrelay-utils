@@ -192,7 +192,7 @@ firmware(){
 }
 
 account(){
-	if [ -d /userdata/mbed]; then
+	if [ -d /userdata/mbed ]; then
 		SN=$serialNumber
 		DID=$deviceID
 		CLOUDURL=$cloudAddress

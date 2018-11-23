@@ -1,4 +1,5 @@
 #!/bin/bash
+# This has to be on ext4 fs USB stick. NTFS is not detected by our gateway
 # /etc/init.d/deviceOS-watchdog humanhalt
 # /etc/init.d/deviceOS-watchdog humanhalt
 

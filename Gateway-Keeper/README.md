@@ -1,8 +1,11 @@
 # Gateway keeper
 Control and upgrade all gateways in local network
 
+## Prerequest
+Always run in super user mode
 
-# Install
+
+## Install
 ```
 git clone https://github.com/WigWagCo/wwrelay-utils.git
 cd wwrelay-utils
@@ -11,27 +14,27 @@ cd Gateway-keeper
 npm install
 ```
 
-# Run
+## Run
 Start server it will open a repl prompt to excute command on it. you can start it with two way
 - When there is on buil file in your repo
 
 ```
-./index.sh [Build_version_number]
+sudo ./index.sh [Build_version_number]
 ```
 - When you alraedy have a build file in repo
 
 ```
-./index.sh
+sudo ./index.sh
 ```
 
 Send relayClient script to all of the gateways in local netwrok using other terminal  
 
 ```
-./prepare.sh
+GK> uploadClientToGW
 ```
 
-# Command
-## getAllRelays
+## Command
+### getAllRelays
 It will return all the connected gateways to the server
 
 ``` 
@@ -68,7 +71,7 @@ GK> getAllRelays
 }
 ```
 
-## getRelay
+### getRelay
 It will return a particular relayInfo
 
 ```
@@ -89,7 +92,7 @@ GK> getRelay WWRL000001
 
 ```
 
-## upgradeAllRelays 
+### upgradeAllRelays 
 It will start to upgrade all the relays in local netwrok 
 
 ```
@@ -105,7 +108,7 @@ starting upgrade for WDRL00000V
 ```
 
 
-## upgradeRelay
+### upgradeRelay
 Start a relay upgrade 
 
 ```
@@ -114,7 +117,7 @@ starting upgrade for WDRL00000M
 
 ```
 
-## led
+### led
 
 ```
 GK> led WDRL00000M
@@ -124,7 +127,7 @@ Look at the relay
 ```
 
 
-## restartAllMaestro
+### restartAllMaestro
 
 ```
 GK> restartAllMaestro
@@ -133,7 +136,7 @@ Look at the relay
 
 ```
 
-## restartMaestro
+### restartMaestro
 
 ```
 GK> restartMaestro WDRL00000M
@@ -142,7 +145,7 @@ Look at the relay
 
 ```
 
-## upgradeAllRelaysWithUrl
+### upgradeAllRelaysWithUrl
 Check the upgrade status of all the relays
 
 ```
@@ -198,7 +201,7 @@ send upgrade status for WDRP000001...
 
   ```
 
-## killAllUpgrade
+### killAllUpgrade
 Stop downloading upgrade to all relays
 
 ```
@@ -221,7 +224,7 @@ f.tar.gz removed.
 ```
 
 
-## killUpgrade
+### killUpgrade
 Stop upgrading a relays
 
 ```
@@ -231,7 +234,7 @@ f.tar.gz removed.
 
 ```
 
-## upgradeGateway
+### upgradeGateway
 Copy a build from your system to gateway and upgrade
 
 ```
@@ -239,7 +242,7 @@ GK> upgradeGateway [all/relayID] [all/cloudbasename] [build_version]
       [RESULT OF expect-ssh-copy.sh]
 ```
 
-## downloadBuild 
+### downloadBuild 
 
 ``` 
 GK> downloadBuild 102.0.313
@@ -254,16 +257,16 @@ GK> downloadBuild 102.0.380 arm
 [ Downloading Build                                        ......... 99% 15.7M 1s ]
 Downloading finished
 ```
-## clearBuild
+### clearBuild
 ```
 GK> clearBuild
 Build folder is clean.
 ```
 
-# Help Command
+## Help Command
 Add `-h` , `--h`, `--help` or '-help' after command for help
 
-## Example
+### Example
 
 ```
 GK> getAllRelays -h

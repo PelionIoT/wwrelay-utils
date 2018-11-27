@@ -208,12 +208,13 @@ rl.on('line', (line) => {
     else if(line.indexOf('login') > -1) {
         var cliArgv = line.split(' ')
         var IP = cliArgv[1]
-        var command = `tmux new-window | tmux send-keys -t "$pane" '${__dirname}/debug_script/relay-login.sh ${IP}' Enter`
+        var command = `gnome-terminal -e 'sh -c "${__dirname}/debug_script/relay-login.sh ${IP};exec bash"'`
+        // var command = `tmux new-window | tmux send-keys -t "$pane" '${__dirname}/debug_script/relay-login.sh ${IP}' Enter`
         exec(command, function(error, stdout, stderr) {
             if(error) {
-                console.log('Error')
+                console.log(chalk.red('Error'))
             } else{
-                console.log("LOGIN SUCCESS");
+                console.log(chalk.green("LOGING IN ..."));
             }
             rl.prompt()
         })

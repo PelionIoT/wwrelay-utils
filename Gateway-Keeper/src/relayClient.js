@@ -17,8 +17,8 @@ const ver = JSON.parse(jsonminify(fs.readFileSync('/wigwag/etc/versions.json', '
 
 var ws = null;
 delete ver.version
-ver.relayID = config.relayID
-ver.cloudURL = config.cloudURL
+ver.relayID = config.relayID || config.serialNumber
+ver.cloudURL = config.cloudURL || config.cloudAddress
 ver.build = ver.packages[0].version
 delete ver.packages
 //console.log(ver)
@@ -169,43 +169,6 @@ function tryToConnect() {
 					})
 				break;
 
-				case "restartAllMaestro":
-					ws.send("restarting maestro for "+ ver.relayID)
-					exec("killall maestro", function (error, stdout, stderr) {
-					    if(error !== null) {
-					        console.log(error)
-					    }
-					    console.log(stdout)
-					    exec("/etc/init.d/devicejs start", function (error, stdout, stderr) {
-						    if(error !== null) {
-						        console.log(error)
-						    }
-						    console.log(stdout)
-						    ws.send("Look at the relay.")
-						})
-					})
-				break;
-
-				case "restartMaestro":
-					if(cliArgv[1] != ver.relayID) {
-						break;
-					}
-					ws.send("restarting maestro for "+ ver.relayID)
-					exec("killall maestro", function (error, stdout, stderr) {
-					    if(error !== null) {
-					        console.log(error)
-					    }
-					    console.log(stdout)
-					    exec("/etc/init.d/devicejs start", function (error, stdout, stderr) {
-						    if(error !== null) {
-						        console.log(error)
-						    }
-						    console.log(stdout)
-						    ws.send("Look at the relay.")
-						})
-					})
-				break;
-
 				case "getAllUpgrade":
 					try {
 						exec('cat upgrade.log', function(error, stdout, stderr) {
@@ -238,39 +201,6 @@ function tryToConnect() {
 					}catch (err) {
 						ws.send("Failed " + err)
 					}
-				break;
-
-				case "killAllUpgrade":
-					exec("killall upgrade", function(error, stdout, stderr) {
-						if(error !== null) {
-					        ws.send("error in kill process for "+ ver.relayID)
-					    }
-					    ws.send("upgrade process killed for "+ver.relayID)
-					    exec("rm -rf /upgrades/f.tar.gz", function(error, stdout, stderr) {
-							if(error !== null) {
-						        ws.send("error in removing f.tar.gz")
-						    }
-						    ws.send("f.tar.gz removed for "+ ver.relayID)
-						})
-					})
-				break;
-
-				case "killUpgrade":
-					if(cliArgv[1] != ver.relayID) {
-						break;
-					}
-					exec("killall upgrade", function(error, stdout, stderr) {
-						if(error !== null) {
-					        ws.send("error in kill process for "+ ver.relayID)
-					    }
-					    ws.send("upgrade process killed for "+ ver.relayID)
-					    exec("rm -rf /upgrades/*", function(error, stdout, stderr) {
-							if(error !== null) {
-						        ws.send("error in removing f.tar.gz for "+ ver.relayID)
-						    }
-						    ws.send("f.tar.gz removed for "+ ver.relayID)
-						})
-					})
 				break;
 
 				case "upgradeGateway":

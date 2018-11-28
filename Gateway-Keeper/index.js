@@ -15,9 +15,8 @@ connectedClinet = []
 var version = "1.0.0"
 
 
-var allcommands = 'getRelay getAllRelays upgradeAllRelaysWithUrl upgradeRelayWithUrl runCommandOnGW  led'
-+' restartAllMaestro restartMaestro getAllUpgrade getUpgrade killAllUpgrade killUpgrade upgradeGateway'
-+' downloadBuild clearBuild uploadClientToGW '
+var allcommands = 'getRelay getAllRelays upgradeAllRelaysWithUrl upgradeRelayWithUrl runCommandOnGW '
++'getAllUpgrade getUpgrade upgradeGateway downloadBuild clearBuild uploadClientToGW login '
 
 var sigint_count = 0;
 var sigint_timeout;
@@ -38,8 +37,31 @@ function completer(line) {
     var completions = allcommands;
     completions = completions.split(' ');
     const hits = completions.filter((c) => c.startsWith(line));
-    // show all completions if none found
     return [hits.length ? hits : completions, line];
+}
+
+var unknownCommandHelp = function(command) {
+    var completions = allcommands.split(' ');
+    const hits = completions.filter((c) => c.toLowerCase().includes(command));
+    if(hits.length < 1){
+        console.log('Unknown command: ', command, "(did not match with any command)")
+    }else{
+        hits.forEach(function(helpWithCompleter) {
+            if(helpCommand[helpWithCompleter]) {
+                console.log(chalk.blue.bold(helpWithCompleter) ,
+                '\n\t',chalk.bold('Usage:'),
+                '\n\t\t',help[helpWithCompleter].Usage,
+                '\n\t',chalk.bold('Description:'),
+                '\n\t\t',help[helpWithCompleter].Description) 
+            } else {
+                console.log(chalk.blue.bold(helpWithCompleter) ,
+                '\n\t',chalk.bold('Usage:'),
+                '\n\t\t','',
+                '\n\t',chalk.bold('Description:'),
+                '\n\t\t','') 
+            }
+        })
+    }
 }
 
 var cmdHistory = function (rpl, file) {
@@ -60,12 +82,10 @@ var cmdHistory = function (rpl, file) {
         throw err;
     });
     rpl.addListener('line', function(code) {
-        if (code && code !== '.history'/* && inputflag == false && code !== 'yes' && code !== 'no'*/) {
+        if (code && code !== '.history') {
           wstream.write(code + '\n');
         } else {
-            // console.log('pop ', repl.rli);
-          // rpl.rli.historyIndex++;
-          // rpl.rli.history.pop();
+
         }
     });
 }
@@ -120,6 +140,9 @@ wss.on('connection', function connection(ws,req) {
             }
         }else {
             console.log(data)
+            setTimeout(function() {
+                rl.prompt()
+            }, 1000);
         }
     })
 });
@@ -199,22 +222,21 @@ rl.on('line', (line) => {
     }
     else if(line.indexOf('login') > -1) {
         var cliArgv = line.split(' ')
-        var cmd = cliArgv[0]
         var IP = cliArgv[1]
-        var command = `tmux new-window | tmux send-keys -t "$pane" '${__dirname}/debug_script/relay-login.sh ${IP}' Enter`
-        let bufferStream = '';
-        let errorStream = '';
-        var loginPrompt = exec(command, function(error, stdout, stderr) {
+        var command = `gnome-terminal -e 'sh -c "${__dirname}/debug_script/relay-login.sh ${IP};exec bash"'`
+        // var command = `tmux new-window | tmux send-keys -t "$pane" '${__dirname}/debug_script/relay-login.sh ${IP}' Enter`
+        exec(command, function(error, stdout, stderr) {
             if(error) {
-                console.log('Error' + error)
+                console.log(chalk.red('Error'))
+            } else{
+                console.log(chalk.green("LOGING IN ..."));
             }
-            console.log("LOGIN SUCCESS");
             rl.prompt()
         })
     } else { 
         if(wss.clients.size === 0) {
             console.log(chalk.red.bold("NO CLIENT CONNECTED YET")) 
-            rl.prompt()
+            //rl.prompt()
         }  
         var command = line.split(' ')[0]
         var completions = allcommands.split(' ')
@@ -236,19 +258,12 @@ rl.on('line', (line) => {
                     }
                 break;
 
-                case "restartMaestro":
-                    var arrayFound = connectedClinet.filter(function(item) {
-                        return item.relayID == cliArgv[1];
-                    });
-                    if(arrayFound.length > 0) {
-                        wss.clients.forEach(function each(client) {
-                            client.send(line);
-                        });    
-                    } else {
-                         console.log(chalk.red.bold("NO SUCH RELAY"))
-                         rl.prompt()
-                    }
+                case "getAllRelays":
+                    wss.clients.forEach(function each(client) {
+                        client.send(line);
+                    });   
                 break;
+
 
                 case "upgradeGateway":
                     var arrayFound = connectedClinet.filter(function(item) {
@@ -271,7 +286,8 @@ rl.on('line', (line) => {
                     if(arrayFound.length > 0) {
                         wss.clients.forEach(function each(client) {
                             client.send(line);
-                        });    
+                        });
+                        rl.prompt()  
                     } else {
                         console.log(chalk.red.bold("NO SUCH RELAY"))
                         rl.prompt()
@@ -292,6 +308,12 @@ rl.on('line', (line) => {
                     }    
                 break;
 
+                case "upgradeAllRelaysWithUrl":
+                    wss.clients.forEach(function each(client) {
+                        client.send(line);
+                    });   
+                break;
+
                 case "getUpgrade":
                     var arrayFound = connectedClinet.filter(function(item) {
                         return item.relayID == cliArgv[1];
@@ -306,23 +328,30 @@ rl.on('line', (line) => {
                     }
                 break;  
 
-                // case "uploadClientToGW":
-                //     process.stdout.write('Uploading...')
-                //     let timer = setInterval(function() { process.stdout.write('.'); }, 500);
-                //     exec('./prepare.sh',function(error, stdout, stderr) {
-                //         if(error) {
-                //             console.log(chalk.red.bold("Error") + error)
-                //         } else{
-                //             clearInterval(timer)
-                //             console.log(chalk.green.bold("DONE"))
-                //         }
-                //     })
-                // break;
-
-                default:
+                case "getAllUpgrade":
                     wss.clients.forEach(function each(client) {
                         client.send(line);
-                    });
+                    });   
+                break;
+
+                case "uploadClientToGW":
+                    process.stdout.write('Uploading...')
+                    let timer = setInterval(function() { process.stdout.write('.'); }, 500);
+                    exec('./prepare.sh',function(error, stdout, stderr) {
+                        if(error) {
+                            console.log(chalk.red.bold("Error in Uploading"))
+                        }
+                        else{
+                            console.log(chalk.green.bold("\nDONE"))    
+                        }
+                        clearInterval(timer)
+                        rl.prompt()
+                    })
+                break;
+
+                default:
+                   unknownCommandHelp(cliArgv[0])
+                   rl.prompt()
                 break;
             }
 
@@ -378,11 +407,6 @@ setInterval(function() {
         }
     }
 },5000)
-
-
-// app.get('/uri', function (req, res) {
-// 	res.status(200).send("command received")
-// });
 
 server.listen(port, () => {
   console.log(`Server active on port: ${server.address().port}`);

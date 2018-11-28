@@ -17,8 +17,8 @@ const ver = JSON.parse(jsonminify(fs.readFileSync('/wigwag/etc/versions.json', '
 
 var ws = null;
 delete ver.version
-ver.relayID = config.relayID
-ver.cloudURL = config.cloudURL
+ver.relayID = config.relayID || config.serialNumber
+ver.cloudURL = config.cloudURL || config.cloudAddress
 ver.build = ver.packages[0].version
 delete ver.packages
 //console.log(ver)

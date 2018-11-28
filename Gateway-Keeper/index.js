@@ -19,6 +19,21 @@ var allcommands = 'getRelay getAllRelays upgradeAllRelaysWithUrl upgradeRelayWit
 +' restartAllMaestro restartMaestro getAllUpgrade getUpgrade killAllUpgrade killUpgrade upgradeGateway'
 +' downloadBuild clearBuild uploadClientToGW '
 
+var sigint_count = 0;
+var sigint_timeout;
+process.on('SIGINT', function() {
+    console.log('To exit, do it continously for 5 times...');
+    sigint_count++;
+    if(sigint_count > 5) {
+        console.log('Goodbye');
+        process.exit(0);
+    }
+    clearTimeout(sigint_timeout);
+    sigint_timeout = setTimeout(function() {
+        sigint_count = 0;
+    }, 4000);
+});
+
 function completer(line) {
     var completions = allcommands;
     completions = completions.split(' ');

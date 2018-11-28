@@ -20,18 +20,19 @@ var allcommands = 'getRelay getAllRelays upgradeAllRelaysWithUrl upgradeRelayWit
 
 var sigint_count = 0;
 var sigint_timeout;
-process.on('SIGINT', function() {
+function gotSigInt() {
     console.log('To exit, do it continously for 5 times...');
     sigint_count++;
     if(sigint_count > 5) {
-        console.log('Goodbye');
+        console.log(chalk.blue.bold('\nHave a great day! Goodbye'));
         process.exit(0);
     }
     clearTimeout(sigint_timeout);
     sigint_timeout = setTimeout(function() {
         sigint_count = 0;
     }, 4000);
-});
+}
+process.on('SIGINT', gotSigInt);
 
 function completer(line) {
     var completions = allcommands;
@@ -370,8 +371,7 @@ rl.on('line', (line) => {
     }
     // ws.send(line);
 }).on('close', () => {
-    console.log(chalk.blue.bold('\nHave a great day!'));
-    process.exit(0);
+    gotSigInt();
 });
 
 setInterval(function() {

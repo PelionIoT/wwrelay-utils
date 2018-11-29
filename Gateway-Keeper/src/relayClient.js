@@ -6,25 +6,33 @@ var exec = require('child_process').exec;
 
 var serverIP = process.argv[2]
 var build_version = null
+var getBaseName = /^[Hh][Tt][Tt][Pp][Ss]?\:\/\/([^\.]+).*/;
 
 var url = null
+var relayInfo = {}
 //var serverIP = "192.168.0.114"
 var uri = "http://"+serverIP+":3232"
 console.log(serverIP)
 
-const config = JSON.parse(jsonminify(fs.readFileSync('/wigwag/wwrelay-utils/I2C/relay.conf', 'utf8')));
-const ver = JSON.parse(jsonminify(fs.readFileSync('/wigwag/etc/versions.json', 'utf8')));
+try{
+	const config = JSON.parse(jsonminify(fs.readFileSync('/wigwag/wwrelay-utils/I2C/relay.conf', 'utf8')));
+	const ver = JSON.parse(jsonminify(fs.readFileSync('/wigwag/etc/versions.json', 'utf8')));
+	var ws = null;
+	delete ver.version
+	relayInfo.relayID = config.relayID
+	relayInfo.cloudURL = config.cloudURL
+	relayInfo.build = ver.packages[0].version
+	delete ver.packages
+	var cloudBaseName = getBaseName.exec(relayInfo.cloudURL)[1]
+	//console.log(ver)
+} catch(err) {
+	relayInfo.relayID = "unknownID"
+	relayInfo.cloudURL = "https://unknown.wigwag.io"
+	relayInfo.build = "0.0.0"
+	var cloudBaseName = getBaseName.exec(relayInfo.cloudURL)[1]
+}
 
-var ws = null;
-delete ver.version
-ver.relayID = config.relayID
-ver.cloudURL = config.cloudURL
-ver.build = ver.packages[0].version
-delete ver.packages
-//console.log(ver)
-
-var getBaseName = /^[Hh][Tt][Tt][Pp][Ss]?\:\/\/([^\.]+).*/;
-var cloudBaseName = getBaseName.exec(ver.cloudURL)[1]
+//var cloudBaseName = getBaseName.exec(relayInfo.cloudURL)[1]
 
 var killCommand = "kill $(ps aux | grep 'relayClient' | grep -v " + process.pid +" | awk '{print $2}')"
 exec(killCommand, function(error, stdout,stderr) {
@@ -49,17 +57,17 @@ function getIP() {
 	    if (alias >= 1) {
 	      // this single interface has multiple ipv4 addresses
 	      	console.log(ifname + ':' + alias, iface.address);
-	      	ver.IP = iface.address
+	      	relayInfo.IP = iface.address
 	      //ws.send(ver)
-	      	// ws.send(JSON.stringify(ver,null,4))
+	      	// ws.send(JSON.stringify(relayInfo,null,4))
 
 	    } else {
 	        if(ifname === 'eth0' || ifname == 'wlan0') {
 	          // this interface has only one ipv4 adress
 	         console.log(ifname, iface.address);
-	         ver.IP = iface.address
-	      	//ws.send(ver)
-	      	//ws.send(JSON.stringify(ver,null,4))
+	         relayInfo.IP = iface.address
+	      	//ws.send(relayInfo)
+	      	//ws.send(JSON.stringify(relayInfo,null,4))
 	         addr =  iface.address;
 	      }
 	    }
@@ -87,22 +95,22 @@ function tryToConnect() {
 		ws.removeEventListener('message');
 		ws.on('message', function incoming(data) {
 			if(data.indexOf('_id') > -1) {
-				ver.clientID = data.split("_")[0]
-				ws.send("openInfo:- "+JSON.stringify(ver,null,4))
+				relayInfo.clientID = data.split("_")[0]
+				ws.send("openInfo:- "+JSON.stringify(relayInfo,null,4))
 			}
 			cliArgv = data.split(" ")
 			switch(cliArgv[0]) {
 				case "getRelay":
-					if(cliArgv[1] != ver.relayID) {
+					if(cliArgv[1] != relayInfo.relayID) {
 						break;
 					}
 					getIP();
-					ws.send(JSON.stringify(ver,null,4))
+					ws.send(JSON.stringify(relayInfo,null,4))
 				break;
 
 				case "getAllRelays":
 					getIP();
-					ws.send(JSON.stringify(ver,null,4))
+					ws.send(JSON.stringify(relayInfo,null,4))
 				break;
 
 				case "upgradeAllRelaysWithUrl":
@@ -115,13 +123,13 @@ function tryToConnect() {
 						break;
 					}
 					build_version = cliArgv[1]
-					if(ver.cloudURL.indexOf('mbed') > -1){
+					if(relayInfo.cloudURL.indexOf('mbed') > -1){
 						url = "upgrade -F -t -U -v -w -S -r https://code.wigwag.com/ugs/builds/arm_development/cubietruck/"+build_version+"-field-factoryupdate.tar.gz |& tee upgrade.log &"
 					}
 					else {
 						url = "upgrade -F -t -U -v -w -S -r https://code.wigwag.com/ugs/builds/development/cubietruck/"+build_version+"-field-factoryupdate.tar.gz |& tee upgrade.log &"
 					}
-					ws.send("Downloading upgrade for " + ver.relayID)
+					ws.send("Downloading upgrade for " + relayInfo.relayID)
 					exec("rm -rf /wigwag/log/devicejs.log", function(error, stdout,stderr) {
 						if(error !== null) {
 						    console.log(error)
@@ -131,7 +139,7 @@ function tryToConnect() {
 						    if(error !== null) {
 						        console.log(error)
 						    }
-						    ws.send("Process initiated for relay upgrade for "+ ver.relayID)
+						    ws.send("Process initiated for relay upgrade for "+ relayInfo.relayID)
 						})
 					})
 				break;
@@ -141,18 +149,18 @@ function tryToConnect() {
 						ws.send("build_version is not defined")
 						break;
 					}
-					if(cliArgv[2] != ver.relayID) {
+					if(cliArgv[2] != relayInfo.relayID) {
 						break;
 					}
 					build_version = cliArgv[1]
-					ws.send("Downloading upgrade for " + ver.relayID)
-					if(ver.cloudURL.indexOf('mbed') > -1){
+					ws.send("Downloading upgrade for " + relayInfo.relayID)
+					if(relayInfo.cloudURL.indexOf('mbed') > -1){
 						url = "upgrade -F -t -U -v -w -S -r https://code.wigwag.com/ugs/builds/arm_development/cubietruck/"+build_version+"-field-factoryupdate.tar.gz |& tee upgrade.log &"
 					}
 					else {
 						url = "upgrade -F -t -U -v -w -S -r https://code.wigwag.com/ugs/builds/development/cubietruck/"+build_version+"-field-factoryupdate.tar.gz |& tee upgrade.log &"
 					}
-					ws.send("starting upgrade for " + ver.relayID)
+					ws.send("starting upgrade for " + relayInfo.relayID)
 					//ws.send(JSON.stringify("starting upgrade"))
 					exec("rm -rf /wigwag/log/devicejs.log", function(error, stdout,stderr) {
 						if(error !== null) {
@@ -164,7 +172,7 @@ function tryToConnect() {
 						        console.log(error)
 						    }
 						    console.log(stdout)
-						    ws.send("Process initiated for relay upgrade for " + ver.relayID)
+						    ws.send("Process initiated for relay upgrade for " + relayInfo.relayID)
 						})
 					})
 				break;
@@ -176,7 +184,7 @@ function tryToConnect() {
 					        console.log(error)
 					    }
 					    console.log(stdout)
-					    var status = "send upgrade status for "+ ver.relayID + '...\n' + stdout +'\n ============================================================='
+					    var status = "send upgrade status for "+ relayInfo.relayID + '...\n' + stdout +'\n ============================================================='
 						ws.send(status)
 					})
 				}catch (err) {
@@ -185,17 +193,17 @@ function tryToConnect() {
 				break;
 
 				case "getUpgrade":
-					if(cliArgv[1] != ver.relayID) {
+					if(cliArgv[1] != relayInfo.relayID) {
 						break;
 					}
 					try {
-						ws.send("send upgrade status for "+ ver.relayID)
+						ws.send("send upgrade status for "+ relayInfo.relayID)
 						exec('cat upgrade.log', function(error, stdout, stderr) {
 							if(error !== null) {
 						        console.log(error)
 						    }
 						    console.log(stdout)
-							var status = "send upgrade status for "+ ver.relayID + '...\n' + stdout +'\n ============================================================='
+							var status = "send upgrade status for "+ relayInfo.relayID + '...\n' + stdout +'\n ============================================================='
 							ws.send(status)
 						})
 					}catch (err) {
@@ -204,12 +212,12 @@ function tryToConnect() {
 				break;
 
 				case "upgradeGateway":
-					if((cliArgv[1] == ver.relayID  || cliArgv[1] == 'all') && (cliArgv[2] == cloudBaseName || cliArgv[2] == 'all')) {
+					if((cliArgv[1] == relayInfo.relayID  || cliArgv[1] == 'all') && (cliArgv[2] == cloudBaseName || cliArgv[2] == 'all')) {
 						var msg = ''
 						if(cloudBaseName == 'gateways-wigwag-int') {
-							msg = "ARMSCPIP " + ver.IP	+ " "+ cliArgv[3]
+							msg = "ARMSCPIP " + relayInfo.IP	+ " "+ cliArgv[3]
 						} else {
-							msg = "WWSCPIP " + ver.IP + " " + cliArgv[3]
+							msg = "WWSCPIP " + relayInfo.IP + " " + cliArgv[3]
 						}
 
 						ws.send(msg)
@@ -217,16 +225,16 @@ function tryToConnect() {
 				break;
 
 				case "runCommandOnGW":
-					if((cliArgv[1] == ver.relayID  || cliArgv[1] == 'all')) {
+					if((cliArgv[1] == relayInfo.relayID  || cliArgv[1] == 'all')) {
 						cliArgv.shift()  // skip node.exe
 						cliArgv.shift()  // skip name of js file
 
 						command = cliArgv.join(" ")
 						exec(command, function(error, stdout, stderr) {
 							if(error !== null) {
-						        ws.send("Error in running for " + ver.relayID + ".\n " + error)
+						        ws.send("Error in running for " + relayInfo.relayID + ".\n " + error)
 						    } else{
-						    	ws.send("Command ran succesfully for " + ver.relayID + ".\n "+ stdout)
+						    	ws.send("Command ran succesfully for " + relayInfo.relayID + ".\n "+ stdout)
 							}
 						})
 					}
@@ -257,7 +265,7 @@ function tryToConnect() {
 	});
 
 	process.on('SIGINT', function() {
-		ws.send("closeInfo:- "+JSON.stringify(ver,null,4))
+		ws.send("closeInfo:- "+JSON.stringify(relayInfo,null,4))
 		process.exit()	
 	})
 }

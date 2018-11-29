@@ -16,7 +16,7 @@ var version = "1.0.0"
 
 
 var allcommands = 'getRelay getAllRelays upgradeAllRelaysWithUrl upgradeRelayWithUrl runCommandOnGW '
-+'getAllUpgrade getUpgrade upgradeGateway downloadBuild clearBuild uploadClientToGW login '
++'getAllUpgrade getUpgrade upgradeGateway downloadBuild clearBuild loginToGW uploadClientToGW  '
 
 function completer(line) {
     var completions = allcommands;
@@ -95,7 +95,6 @@ wss.on('connection', function connection(ws,req) {
     ws.send(ws.id+"_id");
 
     ws.on('message', function incoming(data) {
-        //console.log(data)
         if(data.indexOf('SCPIP') > -1) {
             process.stdout.write('Copying...')
             let timer = setInterval(function() { process.stdout.write('.'); }, 500);
@@ -161,11 +160,7 @@ rl.on('line', (line) => {
         var child = exec(command, {maxBuffer: 1024 * 500},function(error, stdout, stderr) {
             if(error) {
                 console.log(chalk.red.bold('failed to copy ==> '+error))
-                //console.log('failed to copy ==> '+error)
             }
-            //if (self.verbose) {
-            
-        //}
         })
         child.stdout.on('data', data => {
             const getData = data.split(' ')
@@ -184,7 +179,6 @@ rl.on('line', (line) => {
             var status = getData.filter((c) => c.endsWith("%"));
             const size = getData.filter((c) => c.endsWith("M"));
             const eta = getData.filter((c) => c.endsWith("s"));
-            //console.log(status[0])
             if(status[0] === undefined || size[0] === undefined || eta[0] === undefined)return 0;
             process.stdout.clearLine();
             process.stdout.cursorTo(0);
@@ -195,33 +189,9 @@ rl.on('line', (line) => {
             console.log(chalk.blue.bold("\nDownloading finished"))
             rl.prompt()
         })
-    } else if(line.indexOf('clearBuild') > -1) {
-        var command = "rm -rf "+__dirname+"/build/*"
-        exec(command,function(error, stdout, stderr) {
-            if(error) {
-                console.log('failed to remove'+error)
-            }
-            console.log("Build folder is clean.")
-            rl.prompt()
-        })
-    }
-    else if(line.indexOf('login') > -1) {
-        var cliArgv = line.split(' ')
-        var IP = cliArgv[1]
-        var command = `gnome-terminal -e 'sh -c "${__dirname}/debug_script/relay-login.sh ${IP};exec bash"'`
-        // var command = `tmux new-window | tmux send-keys -t "$pane" '${__dirname}/debug_script/relay-login.sh ${IP}' Enter`
-        exec(command, function(error, stdout, stderr) {
-            if(error) {
-                console.log(chalk.red('Error'))
-            } else{
-                console.log(chalk.green("LOGING IN ..."));
-            }
-            rl.prompt()
-        })
     } else { 
         if(wss.clients.size === 0) {
-            console.log(chalk.red.bold("NO CLIENT CONNECTED YET")) 
-            //rl.prompt()
+            console.log(chalk.red.bold("NO CLIENT CONNECTED YET"))
         }  
         var command = line.split(' ')[0]
         var completions = allcommands.split(' ')
@@ -272,7 +242,6 @@ rl.on('line', (line) => {
                         wss.clients.forEach(function each(client) {
                             client.send(line);
                         });
-                        rl.prompt()  
                     } else {
                         console.log(chalk.red.bold("NO SUCH RELAY"))
                         rl.prompt()
@@ -324,12 +293,37 @@ rl.on('line', (line) => {
                     let timer = setInterval(function() { process.stdout.write('.'); }, 500);
                     exec('./prepare.sh',function(error, stdout, stderr) {
                         if(error) {
-                            console.log(chalk.red.bold("Error in Uploading"))
+                            console.log(chalk.red.bold("\nError in Uploading"))
                         }
                         else{
                             console.log(chalk.green.bold("\nDONE"))    
                         }
                         clearInterval(timer)
+                        rl.prompt()
+                    })
+                break;
+
+                case "loginToGW":
+                    var IP = cliArgv[1]
+                    var command = `gnome-terminal -e 'sh -c "${__dirname}/debug_script/relay-login.sh ${IP};exec bash"'`
+                    // var command = `tmux new-window | tmux send-keys -t "$pane" '${__dirname}/debug_script/relay-login.sh ${IP}' Enter`
+                    exec(command, function(error, stdout, stderr) {
+                        if(error) {
+                            console.log(chalk.red('Error'))
+                        } else{
+                            console.log(chalk.green("LOGING IN ..."));
+                        }
+                        rl.prompt()
+                    })
+                break;
+
+                case "clearBuild":
+                    var command = "rm -rf "+__dirname+"/build/*"
+                    exec(command,function(error, stdout, stderr) {
+                        if(error) {
+                            console.log('failed to remove'+error)
+                        }
+                        console.log("Build folder is clean now.")
                         rl.prompt()
                     })
                 break;
@@ -353,7 +347,6 @@ rl.on('line', (line) => {
             rl.prompt()
         }
     }
-    // ws.send(line);
 }).on('close', () => {
     console.log(chalk.blue.bold('\nHave a great day!'));
     process.exit(0);

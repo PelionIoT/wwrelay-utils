@@ -14,7 +14,6 @@ var relayInfo = {}
 var uri = "http://"+serverIP+":3232"
 console.log(serverIP)
 
-<<<<<<< HEAD
 try{
 	const config = JSON.parse(jsonminify(fs.readFileSync('/wigwag/wwrelay-utils/I2C/relay.conf', 'utf8')));
 	const ver = JSON.parse(jsonminify(fs.readFileSync('/wigwag/etc/versions.json', 'utf8')));
@@ -32,18 +31,7 @@ try{
 	relayInfo.build = "0.0.0"
 	var cloudBaseName = getBaseName.exec(relayInfo.cloudURL)[1]
 }
-=======
-const config = JSON.parse(jsonminify(fs.readFileSync('/wigwag/wwrelay-utils/I2C/relay.conf', 'utf8')));
-const ver = JSON.parse(jsonminify(fs.readFileSync('/wigwag/etc/versions.json', 'utf8')));
 
-var ws = null;
-delete ver.version
-ver.relayID = config.relayID || config.serialNumber
-ver.cloudURL = config.cloudURL || config.cloudAddress
-ver.build = ver.packages[0].version
-delete ver.packages
-//console.log(ver)
->>>>>>> dd51797faae33c44eac1569fc9944da3196fc930
 
 //var cloudBaseName = getBaseName.exec(relayInfo.cloudURL)[1]
 
@@ -227,7 +215,8 @@ function tryToConnect() {
 				case "upgradeGateway":
 					if((cliArgv[1] == relayInfo.relayID  || cliArgv[1] == 'all') && (cliArgv[2] == cloudBaseName || cliArgv[2] == 'all')) {
 						var msg = ''
-						if(cloudBaseName == 'gateways-wigwag-int') {
+						//if(cloudBaseName == 'gateways-wigwag-int') {
+						if(relayInfo.cloudURL.indexOf('mbed') > -1)
 							msg = "ARMSCPIP " + relayInfo.IP	+ " "+ cliArgv[3]
 						} else {
 							msg = "WWSCPIP " + relayInfo.IP + " " + cliArgv[3]

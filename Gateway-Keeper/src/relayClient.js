@@ -14,6 +14,7 @@ var relayInfo = {}
 var uri = "http://"+serverIP+":3232"
 console.log(serverIP)
 
+<<<<<<< HEAD
 try{
 	const config = JSON.parse(jsonminify(fs.readFileSync('/wigwag/wwrelay-utils/I2C/relay.conf', 'utf8')));
 	const ver = JSON.parse(jsonminify(fs.readFileSync('/wigwag/etc/versions.json', 'utf8')));
@@ -31,6 +32,18 @@ try{
 	relayInfo.build = "0.0.0"
 	var cloudBaseName = getBaseName.exec(relayInfo.cloudURL)[1]
 }
+=======
+const config = JSON.parse(jsonminify(fs.readFileSync('/wigwag/wwrelay-utils/I2C/relay.conf', 'utf8')));
+const ver = JSON.parse(jsonminify(fs.readFileSync('/wigwag/etc/versions.json', 'utf8')));
+
+var ws = null;
+delete ver.version
+ver.relayID = config.relayID || config.serialNumber
+ver.cloudURL = config.cloudURL || config.cloudAddress
+ver.build = ver.packages[0].version
+delete ver.packages
+//console.log(ver)
+>>>>>>> dd51797faae33c44eac1569fc9944da3196fc930
 
 //var cloudBaseName = getBaseName.exec(relayInfo.cloudURL)[1]
 

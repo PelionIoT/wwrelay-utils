@@ -18,6 +18,22 @@ var version = "1.0.0"
 var allcommands = 'getRelay getAllRelays upgradeAllRelaysWithUrl upgradeRelayWithUrl runCommandOnGW '
 +'getAllUpgrade getUpgrade upgradeGateway downloadBuild clearBuild loginToGW uploadClientToGW  '
 
+var sigint_count = 0;
+var sigint_timeout;
+function gotSigInt() {
+    console.log('To exit, do it continously for 5 times...');
+    sigint_count++;
+    if(sigint_count > 5) {
+        console.log(chalk.blue.bold('\nHave a great day! Goodbye'));
+        process.exit(0);
+    }
+    clearTimeout(sigint_timeout);
+    sigint_timeout = setTimeout(function() {
+        sigint_count = 0;
+    }, 4000);
+}
+process.on('SIGINT', gotSigInt);
+
 function completer(line) {
     var completions = allcommands;
     completions = completions.split(' ');
@@ -348,8 +364,7 @@ rl.on('line', (line) => {
         }
     }
 }).on('close', () => {
-    console.log(chalk.blue.bold('\nHave a great day!'));
-    process.exit(0);
+    gotSigInt();
 });
 
 setInterval(function() {

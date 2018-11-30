@@ -128,6 +128,7 @@ wss.on('connection', function connection(ws,req) {
                 }
                 clearInterval(timer)
                 console.log(stdout)
+                rl.prompt()
             })
         } else if(data.indexOf('openInfo') > -1){
                 connectedClinet.push(JSON.parse(data.split(':-')[1]))

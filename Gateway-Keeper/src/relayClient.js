@@ -216,7 +216,7 @@ function tryToConnect() {
 					if((cliArgv[1] == relayInfo.relayID  || cliArgv[1] == 'all') && (cliArgv[2] == cloudBaseName || cliArgv[2] == 'all')) {
 						var msg = ''
 						//if(cloudBaseName == 'gateways-wigwag-int') {
-						if(relayInfo.cloudURL.indexOf('mbed') > -1)
+						if(relayInfo.cloudURL.indexOf('mbed') > -1) {
 							msg = "ARMSCPIP " + relayInfo.IP	+ " "+ cliArgv[3]
 						} else {
 							msg = "WWSCPIP " + relayInfo.IP + " " + cliArgv[3]

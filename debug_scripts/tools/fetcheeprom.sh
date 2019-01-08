@@ -34,24 +34,33 @@ then
                 rm -rf eeprom.json;
                 cd /wigwag/wwrelay-utils/I2C
                 ./factory-configurator-client-armcompiled.elf &
-                relayip=ifconfig eth0 2>/dev/null|awk '/inet addr:/ {print $2}'|sed 's/addr://'
-                echo $relayip
-                # echo $ip':5151/relay/'$provisioning'/'$cloud'/'$category'/'$hardwareVersion'/'$radioConfig'?limit=1&'$relayip
-                curl --header "secret: WZpMyRDntxFgBGBfWPleIHzoc0egcPSsBAa8jUQw5tOgbbjc3o" 'http://'$ip':5151/relay/'$provisioning'/'$cloud'/'$category'/'$hardwareVersion'/'$radioConfig'?limit=1&'$relayip > eeprom.json
-                file="eeprom.json"
-                echo "Command ran successfully"
-                cat eeprom.json
-                line=$(head -n 1 eeprom.json)
-                if [[ $line = "No match Found in the database" ]]
+                if [ $? -eq 0 ]
                 then
-                    rm -rf eeprom.json
-                fi
-                if [ -f "$file" ]
-                then
-                    node writeEEPROM.js $file
+                    relayip=ifconfig eth0 2>/dev/null|awk '/inet addr:/ {print $2}'|sed 's/addr://'
+                    echo $relayip
+                    # echo $ip':5151/relay/'$provisioning'/'$cloud'/'$category'/'$hardwareVersion'/'$radioConfig'?limit=1&'$relayip
+                    curl --header "secret: WZpMyRDntxFgBGBfWPleIHzoc0egcPSsBAa8jUQw5tOgbbjc3o" 'http://'$ip':5151/relay/'$provisioning'/'$cloud'/'$category'/'$hardwareVersion'/'$radioConfig'?limit=1&'$relayip > eeprom.json
+                    file="eeprom.json"
+                    echo "Command ran successfully"
+                    cat eeprom.json
+                    line=$(head -n 1 eeprom.json)
+                    if [[ $line = "No match Found in the database" ]]
+                    then
+                        rm -rf eeprom.json
+                    fi
+                    if [ -f "$file" ]
+                    then
+                        /etc/init.d/deviceOS-watchdog humanhalt
+                        killall maestro; killall node; killall devicedb
+                        ps aux | grep -e "node|device"
+                        rm -rf /userdata/etc/devicejs/db; rm -rf /userdata/etc/maestroConfig.db
+                        node writeEEPROM.js $file
+                    else
+                        rm -rf eeprom.json
+                        echo "eeprom.json not found, unable to fetch a eeprom"
+                    fi
                 else
-                    rm -rf eeprom.json
-                    echo "eeprom.json not found, unable to fetch a eeprom"
+                    echo "Command ./factory-configurator-client-armcompiled.elf failed"
                 fi
             else
                 echo "Please Enter a valid IP"

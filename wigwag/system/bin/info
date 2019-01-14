@@ -192,13 +192,23 @@ firmware(){
 }
 
 account(){
-	SN=$relayID
-	PAIRINGCODE=$pairingCode
-	CLOUDURL=$cloudURL
-	_placeTitle "Account Infomation"
-	_placeLine "  - Serial Number:" "$SN"
-	_placeLine "  - Pairing Code:" "$PAIRINGCODE"
-	_placeLine "  - Cloud Server:" "$CLOUDURL"
+	if [ -d /userdata/mbed ]; then
+		SN=$serialNumber
+		DID=$deviceID
+		CLOUDURL=$cloudAddress
+		_placeTitle "Account Infomation"
+		_placeLine "  - Serial Number:" "$SN"
+		_placeLine "  - Device ID:" "$DID"
+		_placeLine "  - Cloud Server:" "$CLOUDURL"
+	else
+		SN=$relayID
+		PAIRINGCODE=$pairingCode
+		CLOUDURL=$cloudURL
+		_placeTitle "Account Infomation"
+		_placeLine "  - Serial Number:" "$SN"
+		_placeLine "  - Pairing Code:" "$PAIRINGCODE"
+		_placeLine "  - Cloud Server:" "$CLOUDURL"
+	fi
 }
 
 hardware(){
@@ -369,9 +379,15 @@ about(){
 }
 
 showthesticker(){
-	_placeTitle "Factory Label"
-	d="{\"ID\":\"$relayID\",\"PC\":\"$pairingCode\"}"
-     qrcode-terminal -l "L" -f "black" -b "white" "$d"
+	if [ -d /userdata/mbed]; then
+		_placeTitle "Factory Label"
+		d="{\"EID\":\"$enrollmentID\"}"
+	     qrcode-terminal -l "L" -f "black" -b "white" "$d"
+	else
+		_placeTitle "Factory Label"
+		d="{\"ID\":\"$relayID\",\"PC\":\"$pairingCode\"}"
+	     qrcode-terminal -l "L" -f "black" -b "white" "$d"
+	fi
 }
 
 main(){

@@ -68,9 +68,9 @@ _led(){
 			echo -e led $1 $2 $3 | socat unix-sendto:/var/deviceOSkeepalive STDIO
 		elif [[ "$LEDCONFIG" == "02" ]]; then
 			echo -e led $1 $3 $2 | socat unix-sendto:/var/deviceOSkeepalive STDIO
-		else
-			echo -e led $1 $2 $3 | socat unix-sendto:/var/deviceOSkeepalive STDIO
 		fi
+	else
+		echo -e led $(($1 * 25)) $(($2 * 25)) $(($3 * 25)) | socat unix-sendto:/var/deviceOSkeepalive STDIO
 	fi
 }
 
@@ -179,7 +179,7 @@ start(){
 		eepromSet=1;
 		cd ${WIGWAGROOT}/wwrelay-utils/I2C
 		pwd
-		if [ ! -e /userdata/etc/mbed ]; then
+		if [ -d /userdata/mbed ]; then
 			_log "Detected edge-gw. Reading edge eeprom..."
 			/usr/bin/node ./mbed-edge-eeprom-reader.js -c $MBED_SETUP_FILE >> $WWRELAY_LOG 2>&1
 		else

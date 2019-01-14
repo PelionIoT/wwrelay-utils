@@ -24,13 +24,13 @@ MAESTRO_CONFIG_RP100_MBED="${WIGWAGROOT}/wwrelay-utils/conf/maestro-conf/maestro
 MAESTRO_CONFIG_RP200_MBED="${WIGWAGROOT}/wwrelay-utils/conf/maestro-conf/maestro-config-rp200-mbed.yaml"
 eeprog /dev/i2c-1 0x55 -f -r 0:10 2> /dev/null
 	if [[ $? -eq 0 ]]; then
-		if [ ! -e /userdata/etc/mbed ]; then
+		if [ -d /userdata/mbed ]; then
 			MAESTRO_CONFIG=$MAESTRO_CONFIG_RP100_MBED
 		else
 			MAESTRO_CONFIG=$MAESTRO_CONFIG_RP100
 		fi
 	else
-		if [ ! -e /userdata/etc/mbed ]; then
+		if [ -d /userdata/mbed ]; then
 			MAESTRO_CONFIG=$MAESTRO_CONFIG_RP200_MBED
 		else
 			MAESTRO_CONFIG=$MAESTRO_CONFIG_RP200

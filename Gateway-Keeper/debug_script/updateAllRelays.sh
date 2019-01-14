@@ -26,7 +26,7 @@ foreach host $hosts {
 	expect -re ".*wigwag.*"
 	send "rm -rf /wigwag/log/devicejs.log\r"
 	expect "# "
-	send "upgra -F -t -U -v -w -S -r https://code.wigwag.com/ugs/builds/development/cubietruck/$build-field-factoryupdate.tar.gz &\r"
+	send "upgrade -F -t -U -v -w -S -r https://code.wigwag.com/ugs/builds/development/cubietruck/$build-field-factoryupdate.tar.gz &\r"
 	expect "# "
 	send "exit\r"
 	expect "$ "

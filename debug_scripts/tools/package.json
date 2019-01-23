@@ -1,0 +1,21 @@
+{
+  "name": "gateway-eeprom-fetcher",
+  "version": "1.0.0",
+  "description": "Tool to fetch Gateway-Eeproms",
+  "main": "fetch.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/WigWagCo/wwrelay-utils/tree/development/debug_scripts/tools"
+  },
+  "author": "Ayush Gupta <ayush.gupta2@arm.com> (http://www.arm.com/)",
+  "license": "ISC",
+  "dependencies": {
+    "bonjour": "^3.5.0",
+    "chalk": "^2.1.0",
+    "mkdirp": "^0.5.1",
+    "shelljs": "^0.8.3"
+  }
+}

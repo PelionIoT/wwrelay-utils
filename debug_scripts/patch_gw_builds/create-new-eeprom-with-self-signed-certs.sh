@@ -14,6 +14,7 @@ error () {
 }
 
 cleanup () {
+	cd /wigwag/wwrelay-utils/debug_scripts
 	rm edgestatus.json
 	rm edgestatus.sh
 	rm old_eeprom.json
@@ -21,14 +22,15 @@ cleanup () {
 }
 
 getEdgeStatus() {
+	cd /wigwag/wwrelay-utils/debug_scripts
 	edgestatusreq=$(curl localhost:9101/status)
 	stat=$(echo "$edgestatusreq")
 	echo $stat > edgestatus.json
 }
 
 convertStatusToBash() {
-	#convert json to sh
-	/wigwag/system/bin/json2sh edgestatus.json edgestatus.sh
+	cd /wigwag/wwrelay-utils/debug_scripts
+	PATH=/wigwag/system/lib/bash:$PATH /wigwag/system/bin/json2sh edgestatus.json edgestatus.sh
 	source ./edgestatus.sh
 }
 
@@ -63,10 +65,11 @@ createDeviceCertificate() {
 }
 
 readEeprom() {
+	cd /wigwag/wwrelay-utils/debug_scripts
 	output "Reading existing eeprom..."
 	cat /sys/bus/i2c/devices/1-0050/eeprom > old_eeprom.json
 	#convert json to sh
-	/wigwag/system/bin/json2sh old_eeprom.json old_eeprom.sh
+	PATH=/wigwag/system/lib/bash:$PATH  /wigwag/system/bin/json2sh old_eeprom.json old_eeprom.sh
 	source ./old_eeprom.sh
 }
 
@@ -74,9 +77,7 @@ burnEeprom() {
     cd /wigwag/wwrelay-utils/I2C
     node writeEEPROM.js $eeprom_file
     if [[ $? != 0 ]]; then
-        echo "Failed to write eeprom. Trying again in 5 seconds..."
-        sleep 5
-        burnEeprom
+        error "Failed to write eeprom. Trying again in 5 seconds..."
     fi
 }
 
@@ -94,7 +95,7 @@ execute () {
 		if [ -f /userdata/gateway_eeprom.json ]; then
 			output "/userdata/gateway_eeprom.json exists! Checking if deviceID is same..."
 			if [ ! -f /userdata/gateway_eeprom.sh ]; then
-				/wigwag/system/bin/json2sh /userdata/gateway_eeprom.json /userdata/gateway_eeprom.sh
+				PATH=/wigwag/system/lib/bash:$PATH /wigwag/system/bin/json2sh /userdata/gateway_eeprom.json /userdata/gateway_eeprom.sh
 			fi
 			source /userdata/gateway_eeprom.sh
 			if [[ $internalid == $deviceID ]]; then
@@ -108,6 +109,7 @@ execute () {
 
 		if [[ $internalid != $deviceID ]]; then
 			output "Generating device keys using CN=$internalid, OU=$OU"
+			cd /wigwag/wwrelay-utils/debug_scripts
 			mkdir temp_certs
 			createRootPrivateKey
 			createRootCA
@@ -117,10 +119,12 @@ execute () {
 			createDeviceCertificate
 			if [[ $? -eq 0 ]]; then
 				output "Creating new eeprom with new self signed certificate..."
+				cd /wigwag/wwrelay-utils/debug_scripts
 				node generate-new-eeprom.js $internalid
 				if [[ $? -eq 0 ]]; then
 					cleanup
 					output "Success! You can now write the new eeprom."
+					eeprom_file="/wigwag/wwrelay-utils/debug_scripts/new_eeprom.json"
 					burnEeprom
 					factoryReset
 					/etc/init.d/deviceOS-watchdog start

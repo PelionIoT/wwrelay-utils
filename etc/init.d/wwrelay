@@ -188,6 +188,13 @@ start(){
 		eepromSet=1;
 		cd ${WIGWAGROOT}/wwrelay-utils/I2C
 		pwd
+
+		# Make sure edge-core is running all time. Start a script to monitor edge-core until maestro implements this feature
+		/wigwag/wwrelay-utils/debug_scripts/run_mbed_edge_core.sh >& /wigwag/log/run_mbed_edge_core.log &
+
+		# Detect edge-core is now claimed. Burn eeprom and reboot. Temp fix until maestro implements this
+		/wigwag/wwrelay-utils/debug_scripts/check_edge_connection.sh >& /wigwag/log/check_edge_connection.log &
+
 		if [ -d /userdata/mbed ]; then
 			_log "Detected edge-gw. Reading edge eeprom..."
 			/usr/bin/node ./mbed-edge-eeprom-reader.js -c $MBED_SETUP_FILE >> $WWRELAY_LOG 2>&1
@@ -203,13 +210,7 @@ start(){
 			if [[ $stillgood -eq 1 ]]; then
 				success
 				_log "ww_eeprom_reader generated relay.config.json successfully"
-					PATH=/wigwag/system/lib/bash:$PATH /wigwag/system/bin/json2sh /wigwag/wwrelay-utils/I2C/relay.conf /wigwag/system/lib/bash/relaystatics.sh
-
-				# Make sure edge-core is running all time. Start a script to monitor edge-core until maestro implements this feature
-				/wigwag/wwrelay-utils/debug_scripts/run_mbed_edge_core.sh >& /wigwag/log/run_mbed_edge_core.log &
-
-				# Detect edge-core is now claimed. Burn eeprom and reboot. Temp fix until maestro implements this
-				/wigwag/wwrelay-utils/debug_scripts/check_edge_connection.sh >& /wigwag/log/check_edge_connection.log &
+				PATH=/wigwag/system/lib/bash:$PATH /wigwag/system/bin/json2sh /wigwag/wwrelay-utils/I2C/relay.conf /wigwag/system/lib/bash/relaystatics.sh
 			else
 				failure
 				_log "ssl files are not of proper size at $RunnerSSLROOT"

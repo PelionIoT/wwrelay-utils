@@ -46,3 +46,6 @@ chmod 755 /wigwag/wwrelay-utils/debug_scripts/tools/fetcheeprom.sh
 echo "Updating factory reset script"
 cp ./factory_wipe_gateway.sh /wigwag/wwrelay-utils/debug_scripts/
 chmod 755 /wigwag/wwrelay-utils/debug_scripts/factory_wipe_gateway.sh
+
+echo "Update genearte eeprom node.js"
+cp ./generate-new-eeprom.js /wigwag/wwrelay-utils/debug_scripts/generate-new-eeprom.js

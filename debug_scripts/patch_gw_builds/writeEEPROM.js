@@ -322,7 +322,15 @@ if(fs.existsSync(at24c256EepromFilePath)) {
 	} else {
 		rp200Eeprom.main_erase().then(() => {
 			rp200Eeprom.main_install().then((result) => {
-				rp200Eeprom.verify_write(result);
+				rp200Eeprom.verify_write(result).then(function() {
+
+				}, function(err) {
+					console.error('Erase failed ', err);
+					process.exit(1);
+				})
+			}, function(err) {
+				console.error('Erase failed ', err);
+				process.exit(1);
 			});
 		}, (err) => {
 			console.error('Erase failed ', err);
@@ -342,3 +350,9 @@ if(fs.existsSync(at24c256EepromFilePath)) {
 		});
 	}
 }
+
+
+process.on('unhandledRejection', error => {
+	console.error('unhandledRejection' + JSON.stringify(error.message));
+	process.exit(1);
+});

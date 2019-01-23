@@ -14,7 +14,9 @@ echo "Updating... led.sh"
 cp ./led.sh /wigwag/system/bin/led
 
 echo "Burning new firmware to AT841 micro..."
+/etc/init.d/deviceOS-watchdog humanhalt
 dogProgrammer ./AT841WDOG_v1.2.hex
+/etc/init.d/deviceOS-watchdog start
 
 echo "Update writeEEPROM.js"
 cp ./writeEEPROM.js /wigwag/wwrelay-utils/I2C/

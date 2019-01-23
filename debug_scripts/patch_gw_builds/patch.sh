@@ -41,3 +41,7 @@ chmod 755 /etc/init.d/wwrelay
 echo "Updating get-eeprom scritps"
 cp ./fetch* /wigwag/wwrelay-utils/debug_scripts/tools/
 chmod 755 /wigwag/wwrelay-utils/debug_scripts/tools/fetcheeprom.sh
+
+echo "Updating factory reset script"
+cp ./factory_wipe_gateway.sh /wigwag/wwrelay-utils/debug_scripts/
+chmod 755 /wigwag/wwrelay-utils/debug_scripts/factory_wipe_gateway.sh

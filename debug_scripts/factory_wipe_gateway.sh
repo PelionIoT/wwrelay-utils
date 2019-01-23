@@ -19,3 +19,6 @@ rm -rf /userdata/mbed/mcc_config
 echo "Deleting maestro configuration database"
 rm -rf /userdata/etc/maestroConfig.db
 
+
+echo "Delete gateway_eeprom file"
+rm -rf /userdata/gateway_eeprom*

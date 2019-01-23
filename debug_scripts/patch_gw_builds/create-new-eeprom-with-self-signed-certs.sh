@@ -77,7 +77,9 @@ burnEeprom() {
     cd /wigwag/wwrelay-utils/I2C
     node writeEEPROM.js $eeprom_file
     if [[ $? != 0 ]]; then
-        error "Failed to write eeprom. Trying again in 5 seconds..."
+        echo "Failed to write eeprom. Trying again in 5 seconds..."
+        sleep 5
+        burnEeprom
     fi
 }
 

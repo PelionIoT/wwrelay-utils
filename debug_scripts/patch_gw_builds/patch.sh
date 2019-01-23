@@ -12,3 +12,26 @@ cp ./logrotate.conf /etc/logrotate.conf
 
 echo "Updating... led.sh"
 cp ./led.sh /wigwag/system/bin/led
+
+echo "Burning new firmware to AT841 micro..."
+dogProgrammer ./AT841WDOG_v1.2.hex
+
+echo "Update writeEEPROM.js"
+cp ./writeEEPROM.js /wigwag/wwrelay-utils/I2C/
+
+echo "Adding check_edge_connection.sh"
+cp ./check_edge_connection.sh /wigwag/wwrelay-utils/debug_scripts/
+chmod 755 /wigwag/wwrelay-utils/debug_scripts/check_edge_connection.sh
+
+echo "Adding run_mbed_edge_core.sh"
+cp ./run_mbed_edge_core.sh /wigwag/wwrelay-utils/debug_scripts/
+chmod 755 /wigwag/wwrelay-utils/debug_scripts/run_mbed_edge_core.sh
+
+echo "Update create-new-eeprom with self-signed certs"
+cp ./create-new-eeprom-with-self-signed-certs.sh /wigwag/wwrelay-utils/debug_scripts/
+chmod 755 /wigwag/wwrelay-utils/debug_scripts/create-new-eeprom-with-self-signed-certs.sh
+
+echo "Updating wwrelay init.d"
+cp ./wwrelay /etc/init.d/wwrelay
+chmod 755 /etc/init.d/wwrelay
+

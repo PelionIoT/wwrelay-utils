@@ -10,6 +10,7 @@ output () {
 
 error () {
     echo "${red}"$1"${normal}"
+	exit 1
 }
 
 cleanup () {
@@ -61,34 +62,82 @@ createDeviceCertificate() {
 	openssl x509 -sha256 -req -in temp_certs/device_csr.pem -out temp_certs/device_cert.pem -CA temp_certs/intermediate_cert.pem -CAkey temp_certs/intermediate_key.pem -days 7300 -extensions ext -CAcreateserial
 }
 
+readEeprom() {
+	output "Reading existing eeprom..."
+	cat /sys/bus/i2c/devices/1-0050/eeprom > old_eeprom.json
+	#convert json to sh
+	/wigwag/system/bin/json2sh old_eeprom.json old_eeprom.sh
+	source ./old_eeprom.sh
+}
+
+burnEeprom() {
+    cd /wigwag/wwrelay-utils/I2C
+    node writeEEPROM.js $eeprom_file
+    if [[ $? != 0 ]]; then
+        echo "Failed to write eeprom. Trying again in 5 seconds..."
+        sleep 5
+        burnEeprom
+    fi
+}
+
+factoryReset() {
+    cd /wigwag/wwrelay-utils/debug_scripts
+    chmod 755 factory_wipe_gateway.sh
+    ./factory_wipe_gateway.sh
+}
+
 execute () {
 	OU=$(echo $lwm2mserveruri | cut -d'=' -f 2 | cut -d'&' -f 1)
-	if [[ $status = "connected" ]]; then
+	if [[ $status == "connected" ]]; then
 		output "Edge-core is connected..."
-		output "Generating device keys using CN=$internalid, OU=$OU"
-		mkdir temp_certs
-		createRootPrivateKey
-		createRootCA
-		createIntermediatePrivateKey
-		createIntermediateCA
-		createDevicePrivateKey
-		createDeviceCertificate
-		output "Reading existing eeprom..."
-		cat /sys/bus/i2c/devices/1-0050/eeprom > old_eeprom.json
-		if [[ $? -eq 0 ]]; then
-			output "Creating new eeprom with new self signed certificate..."
-			node generate-new-eeprom.js $internalid
+
+		if [ -f /userdata/gateway_eeprom.json ]; then
+			output "/userdata/gateway_eeprom.json exists! Checking if deviceID is same..."
+			if [ ! -f /userdata/gateway_eeprom.sh ]; then
+				/wigwag/system/bin/json2sh /userdata/gateway_eeprom.json /userdata/gateway_eeprom.sh
+			fi
+			source /userdata/gateway_eeprom.sh
+			if [[ $internalid == $deviceID ]]; then
+				output "EEPROM already has the same deviceID. No need for new eeprom. Bye!"
+				exit 0
+			fi
+		fi
+
+		# Read existing eeprom
+		readEeprom
+
+		if [[ $internalid != $deviceID ]]; then
+			output "Generating device keys using CN=$internalid, OU=$OU"
+			mkdir temp_certs
+			createRootPrivateKey
+			createRootCA
+			createIntermediatePrivateKey
+			createIntermediateCA
+			createDevicePrivateKey
+			createDeviceCertificate
 			if [[ $? -eq 0 ]]; then
-				cleanup
-				output "Success! You can now write the new eeprom."
+				output "Creating new eeprom with new self signed certificate..."
+				node generate-new-eeprom.js $internalid
+				if [[ $? -eq 0 ]]; then
+					cleanup
+					output "Success! You can now write the new eeprom."
+					burnEeprom
+					factoryReset
+					/etc/init.d/deviceOS-watchdog start
+					sleep 5
+					reboot
+				else
+					error "Failed to create new eeprom!"
+				fi
 			else
-				error "Failed to create new eeprom!"
+				error "Failed to read existing eeprom!"
 			fi
 		else
-			error "Failed to read existing eeprom!"
+			output "EEPROM already has the same deviceID. No need for new eeprom. Bye!"
+			exit 0
 		fi
 	else
-		error "Edge-core is not connected yet. Its status is- $status. Please try again later!"
+		error "Edge-core is not connected yet. Its status is- $status. Exited with code $?. Please try again later!"
 	fi
 }
 

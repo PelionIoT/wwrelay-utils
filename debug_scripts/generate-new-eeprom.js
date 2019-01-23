@@ -41,7 +41,7 @@ try {
 		                reject('Mbed gateway. Failed to locate mcc_config directory!');
 		                return;
 		            }
-		        });           
+		        });
 			} else {
 				console.warn('NOT UPDATING MCC_CONFIG AS IT IS NOT FOUND IN THE OLD EEPROM!');
 				resolve();
@@ -51,7 +51,7 @@ try {
 
 	updateMccConfig().then(function() {
 		console.log("Writing new eeprom to a file- new_eeprom.json");
-		fs.writeFileSync('./new_eeprom.json', JSON.stringify(new_eeprom, null, 4), 'utf8');	
+		fs.writeFileSync('./new_eeprom.json', JSON.stringify(new_eeprom, null, 4), 'utf8');
 		process.exit(0);
 	}, function(err) {
 		console.error('FAILED ', err);

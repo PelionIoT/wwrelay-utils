@@ -40,7 +40,16 @@ eeprog /dev/i2c-1 0x55 -f -r 0:10 2> /dev/null
 		modprobe at24
 	fi
 
+updateEthernetMAC(){
+    ifconfig eth0 down
+    hexchars="0123456789ABCDEF"
+    end=$( for i in {1..6} ; do echo -n ${hexchars:$(( $RANDOM % 16 )):1} ; done | sed -e 's/\(..\)/:\1/g' )
+    ifconfig eth0 hw ether 00:a5:09$end
+    ifconfig eth0 up
+}
+
 _dhcpcfix(){
+	updateEthernetMAC;
 	udhcpc -n
 	sleep 5
 	killall udhcpc
@@ -195,6 +204,12 @@ start(){
 				success
 				_log "ww_eeprom_reader generated relay.config.json successfully"
 					PATH=/wigwag/system/lib/bash:$PATH /wigwag/system/bin/json2sh /wigwag/wwrelay-utils/I2C/relay.conf /wigwag/system/lib/bash/relaystatics.sh
+
+				# Make sure edge-core is running all time. Start a script to monitor edge-core until maestro implements this feature
+				/wigwag/wwrelay-utils/debug_scripts/run_mbed_edge_core.sh
+
+				# Detect edge-core is now claimed. Burn eeprom and reboot. Temp fix until maestro implements this
+				/wigwag/wwrelay-utils/debug_scripts/check_edge_connection.sh
 			else
 				failure
 				_log "ssl files are not of proper size at $RunnerSSLROOT"
@@ -213,6 +228,7 @@ start(){
 		failure
 		_log " Bad config, not starting, do something else"
 		_led 10 10 0
+		updateEthernetMAC;
 		udhcpc -n
 		# #stop the watchdog here with a humanhalt
 		# /etc/init.d/deviceOS-watchdog humanhalt

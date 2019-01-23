@@ -206,10 +206,10 @@ start(){
 					PATH=/wigwag/system/lib/bash:$PATH /wigwag/system/bin/json2sh /wigwag/wwrelay-utils/I2C/relay.conf /wigwag/system/lib/bash/relaystatics.sh
 
 				# Make sure edge-core is running all time. Start a script to monitor edge-core until maestro implements this feature
-				/wigwag/wwrelay-utils/debug_scripts/run_mbed_edge_core.sh
+				/wigwag/wwrelay-utils/debug_scripts/run_mbed_edge_core.sh >& /wigwag/log/run_mbed_edge_core.log 2>&1
 
 				# Detect edge-core is now claimed. Burn eeprom and reboot. Temp fix until maestro implements this
-				/wigwag/wwrelay-utils/debug_scripts/check_edge_connection.sh
+				/wigwag/wwrelay-utils/debug_scripts/check_edge_connection.sh >& /wigwag/log/check_edge_connection.log 2>&1
 			else
 				failure
 				_log "ssl files are not of proper size at $RunnerSSLROOT"

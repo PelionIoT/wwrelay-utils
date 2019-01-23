@@ -171,6 +171,8 @@ class at24c256EepromHandler {
 			}
 			if(_.isEqual(ee, readEeprom)) {
 				console.log('\nVerification successfully\n');
+				console.log('Saving the gateway eeprom on disk at /userdata/gateway_eeprom.json');
+				fs.writeFileSync('/userdata/gateway_eeprom.json', JSON.stringify(ee, null, 4), 'utf8');
 				resolve();
 			} else {
 				console.error('\nVerification failed!\n');
@@ -239,18 +241,10 @@ class at24c256EepromHandler {
             try {
                 fs.writeFile(self._eepromFilePath, JSON.stringify(ee), 'utf8', (err) => {
                     if(err) {
-                        if(self._writeretry > 2) {
-                            console.error("Write failed " + err);
-                            clearInterval(interval);
-                            reject(err);
-                        } else {
-                            self._writeretry++;
-                            console.log('Write failed ' + err + ' Trying again!');
-                            clearInterval(interval);
-                            self.install_eeprom(ee);
-                        }
+						console.error("Write failed " + err);
+						clearInterval(interval);
+						reject(err);
                     } else {
-                        self._writeretry = 0;
                         clearInterval(interval);
                         console.log('Wrote successfully!');
                         resolve(ee);
@@ -277,18 +271,10 @@ class at24c256EepromHandler {
             try {
                 fs.writeFile(self._eepromFilePath, eeprom_spaces, (err) => {
                     if(err) {
-                        if(self._writeretry > 2) {
-                            console.error("Erase failed " + err);
-                            clearInterval(interval);
-                            reject(err);
-                        } else {
-                            self._writeretry++;
-                            console.log('Erase failed ' + err + ' Trying again!');
-                            clearInterval(interval);
-                            return self.main_erase();
-                        }
+						console.error("Erase failed " + err);
+						clearInterval(interval);
+						reject(err);
                     } else {
-                        self._writeretry = 0;
                         clearInterval(interval);
                         console.log('Erased successfully!');
                         resolve();

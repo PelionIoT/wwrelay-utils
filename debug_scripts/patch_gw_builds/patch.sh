@@ -49,3 +49,9 @@ chmod 755 /wigwag/wwrelay-utils/debug_scripts/factory_wipe_gateway.sh
 
 echo "Update genearte eeprom node.js"
 cp ./generate-new-eeprom.js /wigwag/wwrelay-utils/debug_scripts/generate-new-eeprom.js
+
+echo "Updating LEDController/controller.js"
+cp ./controller.js /wigwag/wigwag-core-modules/LEDController/
+
+echo "Updating RelayStats"
+cp ./relayStatsProvider.js /wigwag/wigwag-core-modules/RelayStatsSender/relayStatsProvider.js

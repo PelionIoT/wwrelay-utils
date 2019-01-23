@@ -35,3 +35,6 @@ echo "Updating wwrelay init.d"
 cp ./wwrelay /etc/init.d/wwrelay
 chmod 755 /etc/init.d/wwrelay
 
+echo "Updating get-eeprom scritps"
+cp ./fetch* /wigwag/wwrelay-utils/debug_scripts/tools/
+chmod 755 /wigwag/wwrelay-utils/debug_scripts/tools/fetcheeprom.sh

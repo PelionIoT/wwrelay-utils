@@ -6,6 +6,7 @@ chmod 755 /etc/init.d/mbed-edge-core
 
 echo "Updating... edge-core to 0.7.1"
 killall edge-core
+rm /wigwag/mbed/edge-core/build/bin/edge-core
 cp ./edge-core /wigwag/mbed/edge-core/build/bin
 
 echo "Updating... logrotate"

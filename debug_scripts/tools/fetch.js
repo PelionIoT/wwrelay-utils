@@ -56,4 +56,5 @@ var fetching = function(file) {
         }
     })       
 }
+fetching(process.argv[2]);
 module.exports =  {fetching}

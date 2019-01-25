@@ -79,6 +79,9 @@ then
                     if [ -f "$file" ]; then
                         burnEeprom
                         factoryReset
+                        /etc/init.d/deviceOS-watchdog start
+                        sleep 5
+                        reboot
                     else
                         rm -rf gateway_eeprom.json
                         echo "gateway_eeprom.json not found, unable to fetch a eeprom"

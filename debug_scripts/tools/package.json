@@ -15,7 +15,6 @@
   "dependencies": {
     "bonjour": "^3.5.0",
     "chalk": "^2.1.0",
-    "mkdirp": "^0.5.1",
-    "shelljs": "^0.8.3"
+    "mkdirp": "^0.5.1"
   }
 }

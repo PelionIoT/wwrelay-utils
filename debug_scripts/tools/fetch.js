@@ -35,27 +35,27 @@ var fetching = function(file) {
                 if (file.split('.').pop() === 'json') {
                     findip().then(function(result) {
                        var child = exec('/wigwag/wwrelay-utils/debug_scripts/tools/fetcheeprom.sh' + " " + file + " " + result, function(err, stdout, stderr) {
-                            if(err != null){ 
+                            if(err != null){
                                 console.log(err)
-                                process.exit(1);                                                                                                                           
-                            }else{                                                                                     
-                                console.log(stdout)                                                                        
-                            }                                                                                          
-                        });                                                                                            
-                        child.stdout.on('data',function(data){                                                         
-                            console.log(data);                                                                         
-                            if(data == 'No match Found in the database') {                                             
+                                process.exit(1);
+                            }else{
+                                console.log(stdout)
+                            }
+                        });
+                        child.stdout.on('data',function(data){
+                            console.log(data);
+                            if(data == 'No match Found in the database') {
                                 process.exit(0)
-                            }                                                                                          
-                        })                                                                                             
-                        child.stderr.on('data',function(data){                                                         
-                            console.log(data);                                                                         
-                        })                                                                                             
-                        child.on('close',function(data){                                                               
-                            console.log(data);                            
-                            resolve("Shell script ran successfully")      
-                            process.exit(0);                             
-                        })                                                
+                            }
+                        })
+                        child.stderr.on('data',function(data){
+                            console.log(data);
+                        })
+                        child.on('close',function(data){
+                            console.log(data);
+                            resolve("Shell script ran successfully")
+                            process.exit(0);
+                        })
                     })
                 } else {
                     console.error(chalk.bold("Please enter the file having json extension"));
@@ -65,7 +65,7 @@ var fetching = function(file) {
 
             }
         }
-    })       
+    })
 }
 fetching(process.argv[2]);
 module.exports =  {fetching}

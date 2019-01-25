@@ -42,6 +42,8 @@ chmod 755 /etc/init.d/wwrelay
 echo "Updating get-eeprom scritps"
 cp ./fetch* /wigwag/wwrelay-utils/debug_scripts/tools/
 chmod 755 /wigwag/wwrelay-utils/debug_scripts/tools/fetcheeprom.sh
+cp ./findedge-gw-dispatcher.js /wigwag/wwrelay-utils/debug_scripts/tools/
+cp -R ./node_modules /wigwag/wwrelay-utils/debug_scripts/tools/
 
 echo "Updating factory reset script"
 cp ./factory_wipe_gateway.sh /wigwag/wwrelay-utils/debug_scripts/
@@ -55,3 +57,11 @@ cp ./controller.js /wigwag/wigwag-core-modules/LEDController/
 
 echo "Updating RelayStats"
 cp ./relayStatsProvider.js /wigwag/wigwag-core-modules/RelayStatsSender/relayStatsProvider.js
+
+echo "Update playtone script"
+cp ./playtone.sh /wigwag/system/bin/playtone
+ln -s /wigwag/system/bin/playtone /usr/bin/playtone
+chmod 755 /wigwag/system/bin/playtone
+
+echo "Copy play tones..."
+cp ./rp200_tones.txt /wigwag/wwrelay-utils/conf/

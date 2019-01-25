@@ -59,7 +59,7 @@ then
                 ./factory-configurator-client-armcompiled.elf &
                 echo "My IP is- $relayip"
                 # echo $ip':5151/relay/'$provisioning'/'$cloud'/'$category'/'$hardwareVersion'/'$radioConfig'?limit=1&'$relayip
-                echo "Exectuing curl command"
+                echo "Executing curl command"
                 api='http://'$ip':5151/relay/'$provisioning'/'$cloud'/'$category'/'$hardwareVersion'/'$radioConfig'?limit=1&ip='$relayip''
                 curl -s --header "secret: WZpMyRDntxFgBGBfWPleIHzoc0egcPSsBAa8jUQw5tOgbbjc3o" $api > gateway_eeprom.json &
                 for job in `jobs -p`
@@ -79,6 +79,9 @@ then
                     if [ -f "$file" ]; then
                         burnEeprom
                         factoryReset
+                        /etc/init.d/deviceOS-watchdog start
+                        sleep 5
+                        reboot
                     else
                         rm -rf gateway_eeprom.json
                         echo "gateway_eeprom.json not found, unable to fetch a eeprom"

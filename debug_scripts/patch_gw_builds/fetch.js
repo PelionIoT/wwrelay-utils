@@ -1,8 +1,8 @@
 'use strict'
 var bonjour = require('bonjour')()
+var chalk = require('chalk')
 const fs = require('fs');
-const chalk = require('chalk');
-const shell = require('shelljs')
+var exec = require('child_process').exec
 
 
 var fetching = function(file) {
@@ -34,17 +34,28 @@ var fetching = function(file) {
             } else {
                 if (file.split('.').pop() === 'json') {
                     findip().then(function(result) {
-                        shell.exec('/wigwag/wwrelay-utils/debug_scripts/tools/fetcheeprom.sh' + " " + file + " " + result, function(err, result) {
-                            if (err) {
-                                console.log(chalk.bold("Error occured while executing the shell script: " + err))
-                                reject("Error occured while executing the shell script: " + err)
+                       var child = exec('/wigwag/wwrelay-utils/debug_scripts/tools/fetcheeprom.sh' + " " + file + " " + result, function(err, stdout, stderr) {
+                            if(err != null){
+                                console.log(err)
                                 process.exit(1);
-                            } else {
-                                console.log(chalk.bold("Shell script ran successfully "));
-                                resolve("Shell script ran successfully")
-                                process.exit(0);
+                            }else{
+                                console.log(stdout)
                             }
                         });
+                        child.stdout.on('data',function(data){
+                            console.log(data);
+                            if(data == 'No match Found in the database') {
+                                process.exit(0)
+                            }
+                        })
+                        child.stderr.on('data',function(data){
+                            console.log(data);
+                        })
+                        child.on('close',function(data){
+                            console.log(data);
+                            resolve("Shell script ran successfully")
+                            process.exit(0);
+                        })
                     })
                 } else {
                     console.error(chalk.bold("Please enter the file having json extension"));
@@ -54,6 +65,7 @@ var fetching = function(file) {
 
             }
         }
-    })       
+    })
 }
+fetching(process.argv[2]);
 module.exports =  {fetching}

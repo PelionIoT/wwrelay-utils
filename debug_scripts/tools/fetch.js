@@ -11,9 +11,16 @@ var fetching = function(file) {
         var findip = function() {
             return new Promise(function(resolve, reject) {
                 console.log(chalk.blue("Looking for Gateway-dispatcher.........................\n"))
+                function asktowait(arg) {
+                  console.log(`${arg}`);
+                }
+                setTimeout(asktowait, 40000, 'Please wait still looking for Gateway-dispatcher.......');
+                function asktorestart(arg) {
+                  console.log(`${arg}`);
+                }
+                setTimeout(asktorestart, 70000, 'Please restart your Gateway-dispatcher.......');
                 bonjour.findOne({
-                    type: 'Local',
-                    timeout: 1500
+                    type: 'Local-Network',
                 }, function(service) {
                     console.log('Found gateway-dispatcher having IP:', service.referer.address)
                     resolve(service.referer.address);

@@ -6,7 +6,7 @@
 - Make sure you edit the check.json file according to the requirements
 
 ## Setup
- -Start the edge-gw-provisioning-tool on a machine. Refer to this link [https://github.com/WigWagCo/edge-gw-provisioning-tool]
+- Start the edge-gw-provisioning-tool on a machine. Refer to this link [https://github.com/WigWagCo/edge-gw-provisioning-tool]
 - Get into the edge gateway
 - Go to the path
     `cd /wigwag/wwrelay-utils/debug_scripts/tools`
@@ -19,3 +19,14 @@
 - As soon as it obtains the IP of the gateway dispatcher, the program fetches the eeprom according to the specifications provided in check.json. 
 - Once, the fetched eeprom is written to gateway_eeprom.json, erasing of existing eeprom on gateway begins
 - Wait till the writing and verification of the new eeprom process finishes
+
+## Sample check.json
+
+`{
+    "hardwareVersion": "r2002",
+    "radioConfig": "10",
+    "ledConfig": "01",
+    "category": "development",
+    "cloudAddress": "https://gateways.mbedcloudintegration.net",
+    "gatewayServicesAddress": "https://gateways.mbedcloudintegration.net"
+}`

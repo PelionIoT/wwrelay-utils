@@ -4,24 +4,31 @@ var chalk = require('chalk')
 const fs = require('fs');
 var exec = require('child_process').exec
 
-
-var fetching = function(file) {
+var fetching = function (file) {
     process.argv[2] = file
-    return new Promise(function(resolve, reject) {
-        var findip = function() {
-            return new Promise(function(resolve, reject) {
+    return new Promise(function (resolve, reject) {
+        var findip = function () {
+            return new Promise(function (resolve, reject) {
                 console.log(chalk.blue("Looking for Gateway-dispatcher.........................\n"))
-                function asktowait(arg) {
-                  console.log(`${arg}`);
+                var check = 0
+                function ask() {
+                    if (check == 0) {
+                        function asktowait(arg) {
+                            console.log(`${arg}`);
+                        }
+                        setTimeout(asktowait, 500, 'Please wait still looking for Gateway-dispatcher.......');
+
+                        function asktorestart(arg) {
+                            console.log(`${arg}`);
+                        }
+                        setTimeout(asktorestart, 30000, 'Please restart your Gateway-dispatcher.................');
+                    }
                 }
-                setTimeout(asktowait, 40000, 'Please wait still looking for Gateway-dispatcher.......');
-                function asktorestart(arg) {
-                  console.log(`${arg}`);
-                }
-                setTimeout(asktorestart, 70000, 'Please restart your Gateway-dispatcher.......');
+                setTimeout(ask, 30000);
                 bonjour.findOne({
                     type: 'Local-Network',
-                }, function(service) {
+                }, function (service) {
+                    check = 1;
                     console.log('Found gateway-dispatcher having IP:', service.referer.address)
                     resolve(service.referer.address);
                 })
@@ -40,25 +47,25 @@ var fetching = function(file) {
                 process.exit(1);
             } else {
                 if (file.split('.').pop() === 'json') {
-                    findip().then(function(result) {
-                       var child = exec('/wigwag/wwrelay-utils/debug_scripts/tools/fetcheeprom.sh' + " " + file + " " + result, function(err, stdout, stderr) {
-                            if(err != null){
+                    findip().then(function (result) {
+                        var child = exec('/wigwag/wwrelay-utils/debug_scripts/tools/fetcheeprom.sh' + " " + file + " " + result, function (err, stdout, stderr) {
+                            if (err != null) {
                                 console.log(err)
                                 process.exit(1);
-                            }else{
+                            } else {
                                 console.log(stdout)
                             }
                         });
-                        child.stdout.on('data',function(data){
+                        child.stdout.on('data', function (data) {
                             console.log(data);
-                            if(data == 'No match Found in the database') {
+                            if (data == 'No match Found in the database') {
                                 process.exit(0)
                             }
                         })
-                        child.stderr.on('data',function(data){
+                        child.stderr.on('data', function (data) {
                             console.log(data);
                         })
-                        child.on('close',function(data){
+                        child.on('close', function (data) {
                             console.log(data);
                             resolve("Shell script ran successfully")
                             process.exit(0);
@@ -75,4 +82,6 @@ var fetching = function(file) {
     })
 }
 fetching(process.argv[2]);
-module.exports =  {fetching}
+module.exports = {
+    fetching
+}

@@ -443,7 +443,7 @@ jobs:
               "hardwareVersion": "{{ARCH_HARDWARE_VERSION}}",
               "radioConfig": "{{ARCH_RADIO_CONFIG}}",
               "ledConfig": "{{ARCH_LED_COLOR_PROFILE}}",
-              "cloudServer": "{{ARCH_CLOUD_ADDRESS}}",
+              "cloud": "{{ARCH_CLOUD_ADDRESS}}",
               "ethernetMac": "{{ARCH_ETHERNET_MAC}}"
           }
         }

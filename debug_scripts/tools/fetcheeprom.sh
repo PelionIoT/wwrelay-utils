@@ -73,7 +73,7 @@ then
                     echo "Command ran successfully"
                     cat gateway_eeprom.json
                     line=$(head -n 1 gateway_eeprom.json)
-                    if [[ $line = "No match Found in the database" ]]; then
+                    if [[ $line = "No match Found in the database"* ]]; then
                         rm -rf gateway_eeprom.json
                     fi
                     if [ -f "$file" ]; then

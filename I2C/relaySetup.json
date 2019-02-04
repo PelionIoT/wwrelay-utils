@@ -43,7 +43,7 @@
     "overwriteSSL": true,
 
     //To generate soft relay specify EEPROM/HardwareConfig file
-    "eepromFile": "",
+    "eepromFile": "/userdata/edge_gw_config/identity.json",
 
     //Mount partition where ssl certs will be saved
     "certsMountPoint": "/mnt/.boot/",
@@ -55,7 +55,7 @@
     "certsMemoryBlock": "/dev/mmcblk0p1",
 
     //Output directory where all the certs will be saved
-    "certsOutputDirectory": "/wigwag/devicejs-core-modules/Runner/.ssl",
+    "certsOutputDirectory": "/userdata/edge_gw_config/.ssl",
 
     //Directory where local database will be stored
     "localDatabaseDirectory": "/userdata/etc/devicejs/db",

@@ -20,7 +20,7 @@ var _ = require('underscore');
 
 var program = require('commander');
 
-var sslPathDefault = "/wigwag/devicejs-core-modules/Runner/.ssl/";
+var sslPathDefault = "/userdata/edge_gw_config/.ssl/";
 var ssl_client_key = "client.key.pem";
 var ssl_client_cert = "client.cert.pem";
 var ssl_server_key = "server.key.pem";
@@ -380,39 +380,37 @@ function MACarray2string(mray) {
 }
 
 function eeprom2relay(uuid_eeprom, callback) {
-    var R = {};
-    var ethernetMAC = {};
-    var sixBMAC = {};
-    var CI = require(uuid_eeprom);
+    try {
+        var R = {};
+        var ethernetMAC = {};
+        var sixBMAC = {};
+        var CI = require(uuid_eeprom);
 
-    R.BRAND = CI.relayID.substring(0, 2);
-    R.DEVICE = CI.relayID.substring(2, 4);
-    R.UUID = CI.relayID.substring(4, 10);
-    R.hardwareVersion = CI.hardwareVersion;
-    R.firmwareVersion = "-----";
-    R.radioConfig = CI.radioConfig;
-    R.year = CI.year;
-    R.month = CI.month;
-    R.batch = CI.batch;
-    ethernetMAC.string = MACarray2string(CI.ethernetMAC);
-    ethernetMAC.array = CI.ethernetMAC;
-    if(typeof CI.sixBMAC === 'undefined') { //Generate sixBMAC from ethernet MAC by inserting 0,1 in middle 
-    	CI.sixBMAC = JSON.parse(JSON.stringify(ethernetMAC.array));
-    	CI.sixBMAC.splice(3, 0, 0);
-    	CI.sixBMAC.splice(4, 0, 1);
+        R.BRAND = CI.relayID.substring(0, 2);
+        R.DEVICE = CI.relayID.substring(2, 4);
+        R.UUID = CI.relayID.substring(4, 10);
+        ethernetMAC.string = MACarray2string(CI.ethernetMAC);
+        ethernetMAC.array = CI.ethernetMAC;
+        if(typeof CI.sixBMAC === 'undefined') { //Generate sixBMAC from ethernet MAC by inserting 0,1 in middle 
+            CI.sixBMAC = JSON.parse(JSON.stringify(ethernetMAC.array));
+            CI.sixBMAC.splice(3, 0, 0);
+            CI.sixBMAC.splice(4, 0, 1);
+        }
+        sixBMAC.string = MACarray2string(CI.sixBMAC);
+        sixBMAC.array = CI.sixBMAC;
+        R.ethernetMAC = ethernetMAC;
+        R.sixBMAC = sixBMAC;
+        cloudURL = R.cloudURL = CI.cloudURL || cloudURL;
+        cloudDevicejsURL = R.devicejsCloudURL = CI.devicejsCloudURL || cloudDevicejsURL;
+        cloudDdbURL = R.devicedbCloudURL = CI.devicedbCloudURL || cloudDdbURL;
+        callback(null, R);
+    } catch(err) {
+        console.log('Failed to convert eeprom to relay config ', err);
+        if(err.stack) {
+            console.log('BT ', err.stack);
+        }
+        callback(err, R);
     }
-    sixBMAC.string = MACarray2string(CI.sixBMAC);
-    sixBMAC.array = CI.sixBMAC;
-    R.ethernetMAC = ethernetMAC;
-    R.sixBMAC = sixBMAC;
-    R.relaySecret = CI.relaySecret || "17c0c7bd1c7f8a360288ef56b4230ede"; //not used by any service, just random data
-    R.pairingCode = CI.pairingCode;
-    R.relayID = CI.relayID;
-    R.ssl = CI.ssl;
-    cloudURL = R.cloudURL = CI.cloudURL || cloudURL;
-    cloudDevicejsURL = R.devicejsCloudURL = CI.devicejsCloudURL || cloudDevicejsURL;
-    cloudDdbURL = R.devicedbCloudURL = CI.devicedbCloudURL || cloudDdbURL;
-    callback(null, R);
 }
 
 function read_sw_eeprom(callback) {
@@ -682,87 +680,96 @@ function main() {
     return new Promise(function(resolve, reject) {
 
         reader.exists(function(the_eeprom_exists) {
-            if (the_eeprom_exists) {
-                console.log("*** Hardware based Relay found ***");
-                //	if (!exists) {
-                get_all(function(result) {
-                    //this checks if the eeprom had valid data.  I may want to add a different check, perhaps a eeprom_version number, so this file never need to change
-                    console.log('Read EEPROM- ' + JSON.stringify(result));
-                    if (typeof result.BRAND === 'undefined') {
-                        reject(new Error('No relay ID found, please re-configure EEPROM'));
-                        return;
-                    }
+            // if (the_eeprom_exists) {
+            //     console.log("*** Hardware based Relay found ***");
+            //     //	if (!exists) {
+            //     get_all(function(result) {
+            //         //this checks if the eeprom had valid data.  I may want to add a different check, perhaps a eeprom_version number, so this file never need to change
+            //         console.log('Read EEPROM- ' + JSON.stringify(result));
+            //         if (typeof result.BRAND === 'undefined') {
+            //             reject(new Error('No relay ID found, please re-configure EEPROM'));
+            //             return;
+            //         }
 
-                    // if (result.BRAND == "WW" || result.BRAND == "WD") {
-                        hw = define_hardware(result);
-                        result.hardware = hw;
+            //         // if (result.BRAND == "WW" || result.BRAND == "WD") {
+            //             hw = define_hardware(result);
+            //             result.hardware = hw;
 
-                        var p = [];
+            //             var p = [];
 
-                        p.push(writeSecurity());
-                        p.push(generateDevicedbConf(result));
-                        p.push(generateDevicejsConf(result));
-                        p.push(generateRelayConf(result, "wwgateway_v"));
-                        p.push(generateRelayTermConf(result));
-                        p.push(generateHardwareConf(result));
+            //             p.push(writeSecurity());
+            //             p.push(generateDevicedbConf(result));
+            //             p.push(generateDevicejsConf(result));
+            //             p.push(generateRelayConf(result, "wwgateway_v"));
+            //             p.push(generateRelayTermConf(result));
+            //             p.push(generateHardwareConf(result));
 
-                        if (radioProfile_template_conf_file) {
-                            p.push(generateRadioProfileConf(result));
-                        }
+            //             if (radioProfile_template_conf_file) {
+            //                 p.push(generateRadioProfileConf(result));
+            //             }
 
-                        Promise.all(p).then(function(result) {
-                            console.log('EEPROM reader successful');
-                            resolve();
-                        }, function(err) {
-                            reject(err);
-                        });
-                    // } else {
-                    //     console.log("EEPROM is not configured properly.");
-                    //     reject(new Error('EEPROM is not configured properly.'));
-                    //     return;
-                    // }
-                });
-            } else { //eprom doesn't exist... must do other things.  Assume the relay.conf just exists in desired form
+            //             Promise.all(p).then(function(result) {
+            //                 console.log('EEPROM reader successful');
+            //                 resolve();
+            //             }, function(err) {
+            //                 reject(err);
+            //             });
+            //         // } else {
+            //         //     console.log("EEPROM is not configured properly.");
+            //         //     reject(new Error('EEPROM is not configured properly.'));
+            //         //     return;
+            //         // }
+            //     });
+            // } else { //eprom doesn't exist... must do other things.  Assume the relay.conf just exists in desired form
                 console.log("*** Software based Relay found ***");
                 softwareBasedRelay = true;
 
                 eeprom2relay(sw_eeprom_file, function(err, result) {
                     // console.log('Read EEPROM- ' + JSON.stringify(result));
-                    if (typeof result.BRAND === 'undefined') {
-                        reject(new Error('No relay ID found, please re-configure EEPROM'));
+                    if(err) {
+                        reject(err);
                         return;
                     }
+                    // if (typeof result.BRAND === 'undefined') {
+                    //     reject(new Error('No relay ID found, please re-configure EEPROM'));
+                    //     return;
+                    // }
 
                     if (result) {
                         // if (result.BRAND == "WW" || result.BRAND == "WD") {
-                            hw = define_hardware(result);
-                            result.hardware = hw;
-                            var p = [];
+                            try {
+                                hw = define_hardware(result);
+                                result.hardware = hw;
+                                var p = [];
 
-                            p.push(generateSSL(result.ssl));
-                            p.push(generateDevicedbConf(result));
-                            p.push(generateDevicejsConf(result));
-                            p.push(generateRelayConf(result, "softrelay"));
-                            p.push(generateRelayTermConf(result));
-                            p.push(generateHardwareConf(result));
+                                p.push(generateSSL(result.ssl));
+                                p.push(generateDevicedbConf(result));
+                                p.push(generateDevicejsConf(result));
+                                p.push(generateRelayConf(result, "softrelay"));
+                                p.push(generateRelayTermConf(result));
+                                p.push(generateHardwareConf(result));
 
-                            if (radioProfile_template_conf_file) {
-                                p.push(generateRadioProfileConf(result));
-                            }
+                                if (radioProfile_template_conf_file) {
+                                    p.push(generateRadioProfileConf(result));
+                                }
 
-                            Promise.all(p).then(function(result) {
-                                console.log('EEPROM reader successful');
-                                resolve();
-                            }, function(err) {
+                                Promise.all(p).then(function(result) {
+                                    console.log('EEPROM reader successful');
+                                    resolve();
+                                }, function(err) {
+                                    reject(err);
+                                });
+                            } catch(err) {
+                                console.log('Failed to generate ', err + ' ', err.stack);
                                 reject(err);
-                            });
+                            }
                         // } else {
                         //     console.log("EEPROM is not configured properly.");
                         //     reject(new Error('EEPROM is not configured properly.'));
                         // }
                     }
                 });
-            }
+            // }
         });
     });
 }
@@ -1061,20 +1068,20 @@ if (typeof program.relayFirmwareVersionFile !== 'undefined') {
 } else {
     console.warn('Using default relay firmware version file ', relayFirmwareVersionFile);
 }
-if(fs.existsSync(at24c256EepromFilePath)) {
-	main_at24c256().then(function() {
-		console.log('EEPROM read successfully!');
-	}, function(err) {
-		console.error('Failed ', err);
-		process.exit(1);
-	}).catch(function(error) {
-		console.error("EEPROM reader failed- ", err);
-		if(err.stack) {
-			console.error('Back trace: ', err.stack);
-		}
-		process.exit(1);
-	});
-} else {
+// if(fs.existsSync(at24c256EepromFilePath)) {
+// 	main_at24c256().then(function() {
+// 		console.log('EEPROM read successfully!');
+// 	}, function(err) {
+// 		console.error('Failed ', err);
+// 		process.exit(1);
+// 	}).catch(function(error) {
+// 		console.error("EEPROM reader failed- ", err);
+// 		if(err.stack) {
+// 			console.error('Back trace: ', err.stack);
+// 		}
+// 		process.exit(1);
+// 	});
+// } else {
 	main().then(function() {
 	    if (!softwareBasedRelay) {
 	        setupLEDGPIOs().then(function() {
@@ -1088,4 +1095,4 @@ if(fs.existsSync(at24c256EepromFilePath)) {
 	    }
 	    process.exit(1);
 	});
-}
+// }

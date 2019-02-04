@@ -3,7 +3,7 @@ sysLogSocket: /dev/log
 linuxKernelLog: true
 httpUnixSocket: /tmp/maestroapi.sock
 configDBPath: /userdata/etc/maestroConfig.db
-clientId: "{{ARCH_RELAYID}}"
+clientId: "{{ARCH_SERIAL_NUMBER}}"
 watchdog:
     path: "/wigwag/system/lib/rp100wd.so"
     opt1: "/var/deviceOSkeepalive"
@@ -72,17 +72,17 @@ mdns:
      not_interfaces: "Witap0"
      port: 3131
      text:
-      - "wwid={{ARCH_RELAYID}}"
+      - "wwid={{ARCH_SERIAL_NUMBER}}"
      hostname: "wigwaggateway"
-   - name: "WigWagRelay_{{ARCH_RELAYID}}"
+   - name: "WigWagRelay_{{ARCH_SERIAL_NUMBER}}"
      service: "_wwservices._tcp"  # normally something like https or ftp
      # domain: "local"     # local is default
      interfaces: "eth0"
      not_interfaces: "Witap0"
      port: 3131
      text:
-      - "wwid={{ARCH_RELAYID}}"
-     hostname: "{{ARCH_RELAYID}}"
+      - "wwid={{ARCH_SERIAL_NUMBER}}"
+     hostname: "{{ARCH_SERIAL_NUMBER}}"
 symphony:
 # symphony system management APIs
     # defaults to 10:
@@ -107,32 +107,11 @@ targets:
      format_tag: "{%s} "
      format_origin: "(%s) "
      filters:
-       - level: log,user1,user2
-         format_pre: "\u001B[39m"    # normal
-       - level: trace
-         format_pre: "\u001B[35m"    # purple
-         format_post: "\u001B[39m"
-       - level: info
-         format_pre: "\u001B[2m"     # 'dim' text
-         format_post: "\u001B[39m"
-       - levels: success
-         format_pre: "\u001B[32m"    # green
-         format_post: "\u001B[39m"
        - levels: warn
          format_pre: "\u001B[33m"    # yellow
          format_post: "\u001B[39m"
        - levels: error
          format_pre: "\u001B[31m"    # red
-         format_post: "\u001B[39m"
-       - levels: debug
-         format_pre: "\u001B[36m"    # cyan
-         format_post: "\u001B[39m"
-       - levels: debug2,debug3
-         format_pre: "\u001B[34m"    # blue
-         format_post: "\u001B[39m"
-       - levels: log
-         tag: stdout
-         format_pre: "\u001B[39m"    # normal
          format_post: "\u001B[39m"
    - name: "toCloud"  # this is a special target for sending to the cloud. It must send as a JSON
      format_time: "\"timestamp\":%ld%03d, "
@@ -228,6 +207,12 @@ static_file_generators:
    - name: "server_cert"
      template: "{{ARCH_SERVER_CERT_PEM}}"
      output_file: "{{SSL_CERTS_PATH}}/server.cert.pem"
+   - name: "intermediate_key"
+     template: "{{ARCH_INTERMEDIATE_KEY}}"
+     output_file: "{{SSL_CERTS_PATH}}/intermediate.key.pem"
+   - name: "intermediate_cert"
+     template: "{{ARCH_INTERMEDIATE_CERT}}"
+     output_file: "{{SSL_CERTS_PATH}}/intermediate.cert.pem"
    - name: "ca_chain"
      template: "{{ARCH_CA_CHAIN_PEM}}"
      output_file: "{{SSL_CERTS_PATH}}/ca-chain.cert.pem"
@@ -302,7 +287,7 @@ jobs:
      restart_pause: 90
      config: |
         {
-          "cloudURL":"{{ARCH_CLOUD_URL}}",
+          "cloudURL":"{{ARCH_CLOUD_ADDRESS}}",
           "ssl":{
               "key":"{{SSL_CERTS_PATH}}/client.key.pem",
               "cert":"{{SSL_CERTS_PATH}}/client.cert.pem",
@@ -311,7 +296,7 @@ jobs:
                   "{{SSL_CERTS_PATH}}/intermediate.cert.pem"
               ]
           },
-          "apiKey":"{{ARCH_RELAYID}}",
+          "apiKey":"{{ARCH_SERIAL_NUMBER}}",
           "udpSourcePort":3000,
           "udpDestinationPort":3001,
           "platform":"{{ARCH_WW_PLATFORM}}",
@@ -388,7 +373,7 @@ jobs:
             "debug": true,
             "mapUnplacedDevices": true,
             "ignoreDevicesById" : [],
-            "relayID": "{{ARCH_RELAYID}}",
+            "relayID": "{{ARCH_SERIAL_NUMBER}}",
             "mbedAPIKey": "ak_1MDE1ZDUwYTFmYmM2MDI0MjBhMDExMTA5MDAwMDAwMDA015e967fe74802420a01390300000000aJOhYRqzTXINzN9Aw2OkV5WrG0YwgmKS",
             "spawnEdgeCore": false,
             "edgeExecCmd": ["/apps/mbed-cloud-edge-confidential-w/build/mcc-linux-x86/existing/bin/edge-core","/tmp/edge.sock","9101"],
@@ -439,8 +424,8 @@ jobs:
      restart_pause: 90
      config: |
         {
-          "cloudAddress":"{{ARCH_CLOUD_URL}}",
-          "relayID":"{{ARCH_RELAYID}}",
+          "cloudAddress":"{{ARCH_CLOUD_ADDRESS}}",
+          "relayID":"{{ARCH_SERIAL_NUMBER}}",
           "ssl":{
               "key":"{{SSL_CERTS_PATH}}/client.key.pem",
               "cert":"{{SSL_CERTS_PATH}}/client.cert.pem",
@@ -454,11 +439,11 @@ jobs:
           "userVersionsFile": "{{USER_VERSIONS_FILE}}",
           "upgradeVersionsFile": "{{UPGRADE_VERSIONS_FILE}}",
           "relayInfo": {
-              "serialNumber": "{{ARCH_RELAYID}}",
+              "serialNumber": "{{ARCH_SERIAL_NUMBER}}",
               "hardwareVersion": "{{ARCH_HARDWARE_VERSION}}",
               "radioConfig": "{{ARCH_RADIO_CONFIG}}",
               "ledConfig": "{{ARCH_LED_COLOR_PROFILE}}",
-              "cloudServer": "{{ARCH_CLOUD_URL}}",
+              "cloud": "{{ARCH_CLOUD_ADDRESS}}",
               "ethernetMac": "{{ARCH_ETHERNET_MAC}}"
           }
         }
@@ -507,7 +492,7 @@ jobs:
    #   restart_pause: 90
    #   config: |
    #      {
-   #        "id":"{{ARCH_RELAYID}}",
+   #        "id":"{{ARCH_SERIAL_NUMBER}}",
    #        "waitForIPStack":true,
    #        "port":443
    #      }
@@ -515,7 +500,7 @@ jobs:
      immutable: true  # don't store in DB
      exec_cmd: "${thisdir}/../../wigwag-core-modules/LEDController"
      container_template: "deviceJS_process"
-     composite_id: "user"
+     composite_id: "core"
      restart: true
      restart_limit: 5000
      restart_pause: 90
@@ -559,7 +544,7 @@ jobs:
               "endPacketTimeout":25
           },
           "logLevel":1,   //Available- info- 2,debug- 3,trace- 4,error- 0,warn- 1
-          "relayId": "{{ARCH_RELAYID}}",
+          "relayId": "{{ARCH_SERIAL_NUMBER}}",
           "platform":"{{ARCH_WW_PLATFORM}}",    //Used to identify platform so that module can adapt and run automagically
           "maxTransportRetries":3, //Transport layer retries, message retries are default to 3 so total retries will be 4
           "requestAckTimeout":2000,  //Timeout if no data received on request (in ms)
@@ -600,7 +585,7 @@ jobs:
           "logLevel": 1, //Available- info- 2, debug- 3, trace- 4, error- 0, warn- 1
           "startControllerOnDiscovery": false,
           "nativeLogLevel": "WARN", //FATAL : 0, ERROR : 10, WARN : 20, ROUTING : 30, INFO : 40, DEBUG : 50, PACKET : 60, DUMP : 70, TRACE : 80, ALL :127
-          "relayId": "{{ARCH_RELAYID}}",
+          "relayId": "{{ARCH_SERIAL_NUMBER}}",
           "platform": "{{ARCH_WW_PLATFORM}}", //Used to identify platform so that module can adapt and run automagically
           "requestAckTimeout": 300, //ms
           "throttleRate": 50, //ms
@@ -618,8 +603,8 @@ jobs:
    #   restart_pause: 90
    #   config: |
    #      {
-   #        "cloudAddress":"{{ARCH_CLOUD_URL}}",
-   #        "relayID":"{{ARCH_RELAYID}}",
+   #        "cloudAddress":"{{ARCH_CLOUD_ADDRESS}}",
+   #        "relayID":"{{ARCH_SERIAL_NUMBER}}",
    #        "ssl":{
    #            "key":"{{SSL_CERTS_PATH}}/client.key.pem",
    #            "cert":"{{SSL_CERTS_PATH}}/client.cert.pem",
@@ -670,7 +655,7 @@ jobs:
    #            "enabled":true,
    #            "cloudAPISecret":"{{ARCH_PAIRING_CODE}}",
    #            "redirectURL":"/wigwag-ui/s/login/",
-   #            "cloudRedirectURL":"{{ARCH_CLOUD_URL}}/s/login"
+   #            "cloudRedirectURL":"{{ARCH_CLOUD_ADDRESS}}/s/login"
    #        },
    #        "port":443,
    #        "ssl":{
@@ -681,7 +666,7 @@ jobs:
    #                "{{SSL_CERTS_PATH}}/intermediate.cert.pem"
    #            ]
    #        },
-   #        "relayID":"{{ARCH_RELAYID}}"
+   #        "relayID":"{{ARCH_SERIAL_NUMBER}}"
    #      }
    # - job: "APIProxy"
    #   immutable: true  # don't store in DB
@@ -764,14 +749,14 @@ jobs:
    #   config: |
    #      {
    #        "jwtSecret":"IXPySxxr0f5X2CIqdB45eK",
-   #        "apiKey":"{{ARCH_RELAYID}}",
+   #        "apiKey":"{{ARCH_SERIAL_NUMBER}}",
    #        "apiSecret":"{{ARCH_PAIRING_CODE}}"
    #      }
    - job: "DevStateManager"
      immutable: true  # don't store in DB
      exec_cmd: "${thisdir}/../../wigwag-core-modules/DevStateManager"
      container_template: "deviceJS_process"
-     composite_id: "user"
+     composite_id: "core"
      restart: true
      restart_limit: 5000
      restart_pause: 90

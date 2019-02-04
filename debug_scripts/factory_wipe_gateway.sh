@@ -7,7 +7,7 @@ killall maestro
 killall maestro
 
 echo "Stopping edge core..."
-killall edge-core
+kill $(ps aux | grep -E 'edge-core|edge_core' | awk '{print $2}');
 
 echo "Stopping node processes..."
 killall node
@@ -22,3 +22,4 @@ rm -rf /userdata/etc/maestroConfig.db
 
 echo "Delete gateway_eeprom file"
 rm -rf /userdata/gateway_eeprom*
+rm -rf /userdata/gwi

@@ -28,6 +28,12 @@ cleanLastBurn() {
     rm -rf gateway_eeprom.json
 }
 
+restart_services() {
+	cd $SCRIPT_DIR
+	chmod 755 reboot_edge_gw.sh
+	source ./reboot_edge_gw.sh
+}
+
 if [ -e $1 ]
 then
     if [[ $filename == *.json ]]; then
@@ -81,7 +87,7 @@ then
                         factoryReset
                         /etc/init.d/deviceOS-watchdog start
                         sleep 5
-                        reboot
+                        restart_services
                     else
                         rm -rf gateway_eeprom.json
                         echo "gateway_eeprom.json not found, unable to fetch a eeprom"

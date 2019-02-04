@@ -13,8 +13,11 @@ error () {
 	exit 1
 }
 
+SCRIPT_DIR="/wigwag/wwrelay-utils/debug_scripts"
+I2C_DIR="/wigwag/wwrelay-utils/I2C"
+
 cleanup () {
-	cd /wigwag/wwrelay-utils/debug_scripts
+	cd $SCRIPT_DIR
 	rm edgestatus.json
 	rm edgestatus.sh
 	rm old_eeprom.json
@@ -22,14 +25,14 @@ cleanup () {
 }
 
 getEdgeStatus() {
-	cd /wigwag/wwrelay-utils/debug_scripts
+	cd $SCRIPT_DIR
 	edgestatusreq=$(curl localhost:9101/status)
 	stat=$(echo "$edgestatusreq")
 	echo $stat > edgestatus.json
 }
 
 convertStatusToBash() {
-	cd /wigwag/wwrelay-utils/debug_scripts
+	cd $SCRIPT_DIR
 	PATH=/wigwag/system/lib/bash:$PATH /wigwag/system/bin/json2sh edgestatus.json edgestatus.sh
 	source ./edgestatus.sh
 }
@@ -65,7 +68,7 @@ createDeviceCertificate() {
 }
 
 readEeprom() {
-	cd /wigwag/wwrelay-utils/debug_scripts
+	cd $SCRIPT_DIR
 	output "Reading existing eeprom..."
 	cat /sys/bus/i2c/devices/1-0050/eeprom > old_eeprom.json
 	#convert json to sh
@@ -74,7 +77,7 @@ readEeprom() {
 }
 
 burnEeprom() {
-    cd /wigwag/wwrelay-utils/I2C
+    cd $I2C_DIR
     node writeEEPROM.js $eeprom_file
     if [[ $? != 0 ]]; then
         echo "Failed to write eeprom. Trying again in 5 seconds..."
@@ -84,9 +87,15 @@ burnEeprom() {
 }
 
 factoryReset() {
-    cd /wigwag/wwrelay-utils/debug_scripts
+	cd $SCRIPT_DIR
     chmod 755 factory_wipe_gateway.sh
     ./factory_wipe_gateway.sh
+}
+
+restart_services() {
+	cd $SCRIPT_DIR
+	chmod 755 reboot_edge_gw.sh
+	source ./reboot_edge_gw.sh
 }
 
 execute () {
@@ -94,12 +103,12 @@ execute () {
 	if [[ $status == "connected" ]]; then
 		output "Edge-core is connected..."
 
-		if [ -f /userdata/gateway_eeprom.json ]; then
-			output "/userdata/gateway_eeprom.json exists! Checking if deviceID is same..."
-			if [ ! -f /userdata/gateway_eeprom.sh ]; then
-				PATH=/wigwag/system/lib/bash:$PATH /wigwag/system/bin/json2sh /userdata/gateway_eeprom.json /userdata/gateway_eeprom.sh
+		if [ -f /userdata/edge_gw_config/identity.json ]; then
+			output "/userdata/edge_gw_config/identity.json exists! Checking if deviceID is same..."
+			if [ ! -f /userdata/edge_gw_config/identity.sh ]; then
+				PATH=/wigwag/system/lib/bash:$PATH /wigwag/system/bin/json2sh /userdata/edge_gw_config/identity.json /userdata/edge_gw_config/identity.sh
 			fi
-			source /userdata/gateway_eeprom.sh
+			source /userdata/edge_gw_config/identity.sh
 			if [[ $internalid == $deviceID ]]; then
 				output "EEPROM already has the same deviceID. No need for new eeprom. Bye!"
 				exit 0
@@ -111,7 +120,7 @@ execute () {
 
 		if [[ $internalid != $deviceID ]]; then
 			output "Generating device keys using CN=$internalid, OU=$OU"
-			cd /wigwag/wwrelay-utils/debug_scripts
+			cd $SCRIPT_DIR
 			mkdir temp_certs
 			createRootPrivateKey
 			createRootCA
@@ -120,18 +129,22 @@ execute () {
 			createDevicePrivateKey
 			createDeviceCertificate
 			if [[ $? -eq 0 ]]; then
+				# Stop edge-core before taking a snapshot of mcc_config
+				echo "Stopping edge core..."
+				kill $(ps aux | grep -E 'edge-core|edge_core' | awk '{print $2}');
+
 				output "Creating new eeprom with new self signed certificate..."
-				cd /wigwag/wwrelay-utils/debug_scripts
+				cd $SCRIPT_DIR
 				node generate-new-eeprom.js $internalid
 				if [[ $? -eq 0 ]]; then
 					cleanup
 					output "Success! You can now write the new eeprom."
-					eeprom_file="/wigwag/wwrelay-utils/debug_scripts/new_eeprom.json"
+					eeprom_file="$SCRIPT_DIR/new_eeprom.json"
 					burnEeprom
 					factoryReset
 					/etc/init.d/deviceOS-watchdog start
 					sleep 5
-					reboot
+					restart_services
 				else
 					error "Failed to create new eeprom!"
 				fi

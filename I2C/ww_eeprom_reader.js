@@ -381,34 +381,32 @@ function MACarray2string(mray) {
 
 function eeprom2relay(uuid_eeprom, callback) {
     try {
-        var R = {};
         var ethernetMAC = {};
         var sixBMAC = {};
-        var CI = require(uuid_eeprom);
+        var CI = JSON.parse(jsonminify(fs.readFileSync(uuid_eeprom, 'utf8')));
+        var R = CI;
 
-        R.BRAND = CI.relayID.substring(0, 2);
-        R.DEVICE = CI.relayID.substring(2, 4);
-        R.UUID = CI.relayID.substring(4, 10);
-        ethernetMAC.string = MACarray2string(CI.ethernetMAC);
-        ethernetMAC.array = CI.ethernetMAC;
-        if(typeof CI.sixBMAC === 'undefined') { //Generate sixBMAC from ethernet MAC by inserting 0,1 in middle 
-            CI.sixBMAC = JSON.parse(JSON.stringify(ethernetMAC.array));
-            CI.sixBMAC.splice(3, 0, 0);
-            CI.sixBMAC.splice(4, 0, 1);
+        R.BRAND = CI.serialNumber.substring(0, 2);
+        R.DEVICE = CI.serialNumber.substring(2, 4);
+        R.UUID = CI.serialNumber.substring(4, 10);
+        if(CI.ethernetMAC && CI.ethernetMAC.length > 0) {
+            ethernetMAC.string = MACarray2string(CI.ethernetMAC);
+            ethernetMAC.array = CI.ethernetMAC;
+            if(typeof CI.sixBMAC === 'undefined') { //Generate sixBMAC from ethernet MAC by inserting 0,1 in middle 
+                CI.sixBMAC = JSON.parse(JSON.stringify(ethernetMAC.array));
+                CI.sixBMAC.splice(3, 0, 0);
+                CI.sixBMAC.splice(4, 0, 1);
+            }
+            sixBMAC.string = MACarray2string(CI.sixBMAC);
+            sixBMAC.array = CI.sixBMAC;
+            R.ethernetMAC = ethernetMAC;
+            R.sixBMAC = sixBMAC;
         }
-        sixBMAC.string = MACarray2string(CI.sixBMAC);
-        sixBMAC.array = CI.sixBMAC;
-        R.ethernetMAC = ethernetMAC;
-        R.sixBMAC = sixBMAC;
         cloudURL = R.cloudURL = CI.cloudURL || cloudURL;
         cloudDevicejsURL = R.devicejsCloudURL = CI.devicejsCloudURL || cloudDevicejsURL;
         cloudDdbURL = R.devicedbCloudURL = CI.devicedbCloudURL || cloudDdbURL;
         callback(null, R);
     } catch(err) {
-        console.log('Failed to convert eeprom to relay config ', err);
-        if(err.stack) {
-            console.log('BT ', err.stack);
-        }
         callback(err, R);
     }
 }
@@ -745,7 +743,7 @@ function main() {
                                 p.push(generateSSL(result.ssl));
                                 p.push(generateDevicedbConf(result));
                                 p.push(generateDevicejsConf(result));
-                                p.push(generateRelayConf(result, "softrelay"));
+                                p.push(generateRelayConf(result, "wwgateway_v"));
                                 p.push(generateRelayTermConf(result));
                                 p.push(generateHardwareConf(result));
 

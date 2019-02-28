@@ -48,7 +48,7 @@ var fetching = function (file) {
             } else {
                 if (file.split('.').pop() === 'json') {
                     findip().then(function (result) {
-                        var child = exec('/wigwag/wwrelay-utils/debug_scripts/tools/fetcheeprom.sh' + " " + file + " " + result, function (err, stdout, stderr) {
+                        var child = exec('/wigwag/wwrelay-utils/debug_scripts/get_new_gw_identity/fetcheeprom.sh' + " " + file + " " + result, function (err, stdout, stderr) {
                             if (err != null) {
                                 console.log(err)
                                 process.exit(1);

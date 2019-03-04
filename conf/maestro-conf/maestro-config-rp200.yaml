@@ -17,7 +17,9 @@ network:
 processes:
     reaper_interval: 1500
 platform_readers:
-    - platform: "rp200"
+    - platform: "fsonly"
+    params:
+      identityPath: "/userdata/edge_gw_config/identity.json"
 # relaymq:
 #     host: "{{ARCH_relaymqHost}}"
 #     logging: true
@@ -432,14 +434,11 @@ jobs:
           "userVersionsFile": "{{USER_VERSIONS_FILE}}",
           "upgradeVersionsFile": "{{UPGRADE_VERSIONS_FILE}}",
           "relayInfo": {
-              "pairingCode": "{{ARCH_PAIRING_CODE}}",
               "serialNumber": "{{ARCH_RELAYID}}",
               "hardwareVersion": "{{ARCH_HARDWARE_VERSION}}",
               "radioConfig": "{{ARCH_RADIO_CONFIG}}",
               "ledConfig": "{{ARCH_LED_COLOR_PROFILE}}",
               "cloudServer": "{{ARCH_CLOUD_URL}}",
-              "devicejsServer": "{{ARCH_CLOUD_DEVJS_URL}}",
-              "devicedbServer": "{{ARCH_CLOUD_DDB_URL}}",
               "ethernetMac": "{{ARCH_ETHERNET_MAC}}"
           }
         }

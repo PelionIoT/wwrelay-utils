@@ -17,7 +17,9 @@ network:
 processes:
     reaper_interval: 1500
 platform_readers:
-    - platform: "rp200_edge"
+    - platform: "fsonly"
+    params:
+      identityPath: "/userdata/edge_gw_config/identity.json"
 # relaymq:
 #     host: "{{ARCH_relaymqHost}}"
 #     logging: true

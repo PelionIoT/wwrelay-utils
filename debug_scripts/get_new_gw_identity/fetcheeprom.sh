@@ -83,8 +83,8 @@ then
                         rm -rf gateway_eeprom.json
                     fi
                     if [ -f "$file" ]; then
-                        burnEeprom
                         factoryReset
+                        burnEeprom
                         /etc/init.d/deviceOS-watchdog start
                         sleep 5
                         restart_services

@@ -21,5 +21,4 @@ rm -rf /userdata/etc/maestroConfig.db
 
 
 echo "Delete gateway_eeprom file"
-rm -rf /userdata/gateway_eeprom*
-rm -rf /userdata/gwi
+rm -rf /userdata/edge_gw_config*

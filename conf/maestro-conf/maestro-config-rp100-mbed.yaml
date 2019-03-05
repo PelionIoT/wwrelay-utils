@@ -17,7 +17,7 @@ network:
 processes:
     reaper_interval: 1500
 platform_readers:
-    - platform: "fsonly"
+  - platform: "fsonly"
     params:
       identityPath: "/userdata/edge_gw_config/identity.json"
 # relaymq:

@@ -94,6 +94,12 @@ factoryReset() {
     ./factory_wipe_gateway.sh
 }
 
+resetDatabase() {
+	cd $SCRIPT_DIR
+	echo "Deleting gateway database"
+	rm -rf /userdata/etc/devicejs/db
+}
+
 restart_services() {
 	cd $SCRIPT_DIR
 	chmod 755 reboot_edge_gw.sh
@@ -135,7 +141,7 @@ execute () {
 				echo "Stopping edge core..."
 				kill $(ps aux | grep -E 'edge-core|edge_core' | awk '{print $2}');
 
-				factoryReset
+				resetDatabase
 				output "Creating new eeprom with new self signed certificate..."
 				cd $SCRIPT_DIR
 				node generate-new-eeprom.js $internalid

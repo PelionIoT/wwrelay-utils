@@ -189,6 +189,7 @@ start(){
 	_led 10 0 10
 	_doPostUpgrade
 	_doPrepDb
+	updateEthernetMAC
 	_doGenerateSupportCertificates
 	_doUDEVreload
 	#_eepromBurned

@@ -6,6 +6,8 @@ fname=$(echo $filename | cut -d'.' -f 1)
 #echo $fname
 #echo $filename
 
+SCRIPT_DIR="/wigwag/wwrelay-utils/debug_scripts"
+
 burnEeprom() {
     cd /wigwag/wwrelay-utils/I2C
     node writeEEPROM.js $file
@@ -85,6 +87,7 @@ then
                     if [ -f "$file" ]; then
                         factoryReset
                         burnEeprom
+                        rm -rf gateway_eeprom.json
                         /etc/init.d/deviceOS-watchdog start
                         sleep 5
                         restart_services

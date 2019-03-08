@@ -21,6 +21,7 @@ cleanup () {
 	rm edgestatus.json
 	rm edgestatus.sh
 	rm old_eeprom.json
+	rm old_eeprom.sh
 	rm -rf temp_certs
 }
 
@@ -70,7 +71,8 @@ createDeviceCertificate() {
 readEeprom() {
 	cd $SCRIPT_DIR
 	output "Reading existing eeprom..."
-	cat /sys/bus/i2c/devices/1-0050/eeprom > old_eeprom.json
+	# cat /sys/bus/i2c/devices/1-0050/eeprom > old_eeprom.json
+	cp /userdata/edge_gw_config/identity.json old_eeprom.json
 	#convert json to sh
 	PATH=/wigwag/system/lib/bash:$PATH  /wigwag/system/bin/json2sh old_eeprom.json old_eeprom.sh
 	source ./old_eeprom.sh
@@ -133,6 +135,7 @@ execute () {
 				echo "Stopping edge core..."
 				kill $(ps aux | grep -E 'edge-core|edge_core' | awk '{print $2}');
 
+				factoryReset
 				output "Creating new eeprom with new self signed certificate..."
 				cd $SCRIPT_DIR
 				node generate-new-eeprom.js $internalid
@@ -141,7 +144,7 @@ execute () {
 					output "Success! You can now write the new eeprom."
 					eeprom_file="$SCRIPT_DIR/new_eeprom.json"
 					burnEeprom
-					factoryReset
+					rm -rf $SCRIPT_DIR/new_eeprom.json
 					/etc/init.d/deviceOS-watchdog start
 					sleep 5
 					restart_services

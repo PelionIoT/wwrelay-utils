@@ -16,8 +16,8 @@ network:
           hw_addr: "{{ARCH_ETHERNET_MAC}}"
 processes:
     reaper_interval: 1500
-platform_readers:
-  - platform: "fsonly"
+EDGE_PLATFORMorm_readers:
+  - EDGE_PLATFORMorm: "fsonly"
     params:
       identityPath: "/userdata/edge_gw_config/identity.json"
 # relaymq:
@@ -316,7 +316,7 @@ jobs:
           "apiKey":"{{ARCH_RELAYID}}",
           "udpSourcePort":3000,
           "udpDestinationPort":3001,
-          "platform":"{{ARCH_WW_PLATFORM}}",
+          "EDGE_PLATFORMorm":"{{ARCH_WW_EDGE_PLATFORMORM}}",
           "sixlbr":{
               "ifname":"Witap0",
               "wsnNet":"bbbb::100",
@@ -326,7 +326,7 @@ jobs:
                   "log_level":[
                       "error"
                   ],
-                  "platform":"{{ARCH_WW_PLATFORM}}",
+                  "EDGE_PLATFORMorm":"{{ARCH_WW_EDGE_PLATFORMORM}}",
                   "siodev":"tty6lbr",
                   "siodev_secondary":"ttyUSB1",
                   "sixBMAC":"{{ARCH_SIXLBR_MAC}}",
@@ -406,7 +406,7 @@ jobs:
    #        "networkRefreshDuration":17000,
    #        "panIdSelection":"randomInRange",
    #        "panId":23,
-   #        "platform":"{{ARCH_WW_PLATFORM}}",
+   #        "EDGE_PLATFORMorm":"{{ARCH_WW_EDGE_PLATFORMORM}}",
    #        "logLevel": 2 //Available- info- 2, debug- 3, trace- 4, error- 0, warn- 1
    #      }
    - job: "RelayStatsSender"
@@ -458,7 +458,7 @@ jobs:
               "dataBits":8,
               "stopBits":1
           },
-          "platform":"{{ARCH_WW_PLATFORM}}"
+          "EDGE_PLATFORMorm":"{{ARCH_WW_EDGE_PLATFORMORM}}"
         }
    # - job: "IPStack"
    #   immutable: true  # don't store in DB
@@ -540,7 +540,7 @@ jobs:
           },
           "logLevel":1,   //Available- info- 2,debug- 3,trace- 4,error- 0,warn- 1
           "relayId": "{{ARCH_RELAYID}}",
-          "platform":"{{ARCH_WW_PLATFORM}}",    //Used to identify platform so that module can adapt and run automagically
+          "EDGE_PLATFORMorm":"{{ARCH_WW_EDGE_PLATFORMORM}}",    //Used to identify EDGE_PLATFORMorm so that module can adapt and run automagically
           "maxTransportRetries":3, //Transport layer retries, message retries are default to 3 so total retries will be 4
           "requestAckTimeout":2000,  //Timeout if no data received on request (in ms)
           "throttleRate": 100,
@@ -581,7 +581,7 @@ jobs:
           "startControllerOnDiscovery": false,
           "nativeLogLevel": "WARN", //FATAL : 0, ERROR : 10, WARN : 20, ROUTING : 30, INFO : 40, DEBUG : 50, PACKET : 60, DUMP : 70, TRACE : 80, ALL :127
           "relayId": "{{ARCH_RELAYID}}",
-          "platform": "{{ARCH_WW_PLATFORM}}", //Used to identify platform so that module can adapt and run automagically
+          "EDGE_PLATFORMorm": "{{ARCH_WW_EDGE_PLATFORMORM}}", //Used to identify EDGE_PLATFORMorm so that module can adapt and run automagically
           "requestAckTimeout": 300, //ms
           "throttleRate": 50, //ms
           "bacnetResourceId": "BacnetDriver",

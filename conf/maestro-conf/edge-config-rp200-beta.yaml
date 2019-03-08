@@ -92,9 +92,9 @@ symphony:
     sys_stats_time_threshold: 120000  # every 120 seconds send stuff, no matter what
     client_cert: "{{ARCH_CLIENT_CERT_PEM}}"
     client_key: "{{ARCH_CLIENT_KEY_PEM}}"
-    host: "{{ARCH_RELAY_SERVICES_HOST_RES}}"
-    url_logs: "{{ARCH_RELAY_SERVICES_HOST}}/relay-logs/logs"
-    url_stats: "{{ARCH_RELAY_SERVICES_HOST}}/relay-stats/stats_obj"
+    host: "{{ARCH_GW_SERVICES_RESRC}}"
+    url_logs: "{{ARCH_GW_SERVICES_URL}}/relay-logs/logs"
+    url_stats: "{{ARCH_GW_SERVICES_URL}}/relay-stats/stats_obj"
     # port: "{{ARCH_RELAY_SERVICES_PORT}}"
 targets:
    - file: "/wigwag/log/devicejs.log"
@@ -283,7 +283,7 @@ jobs:
      restart_pause: 90
      config: |
         {
-          "cloudURL":"{{ARCH_CLOUD_ADDRESS}}",
+          "cloudURL":"{{ARCH_GW_SERVICES_URL}}",
           "ssl":{
               "key":"{{SSL_CERTS_PATH}}/client.key.pem",
               "cert":"{{SSL_CERTS_PATH}}/client.cert.pem",
@@ -295,7 +295,7 @@ jobs:
           "apiKey":"{{ARCH_SERIAL_NUMBER}}",
           "udpSourcePort":3000,
           "udpDestinationPort":3001,
-          "platform":"{{ARCH_WW_PLATFORM}}",
+          "platform":"{{ARCH_EDGE_PLATFORM}}",
           "sixlbr":{
               "ifname":"Witap0",
               "wsnNet":"bbbb::100",
@@ -305,7 +305,7 @@ jobs:
                   "log_level":[
                       "error"
                   ],
-                  "platform":"{{ARCH_WW_PLATFORM}}",
+                  "platform":"{{ARCH_EDGE_PLATFORM}}",
                   "siodev":"tty6lbr",
                   "siodev_secondary":"ttyUSB1",
                   "sixBMAC":"{{ARCH_SIXLBR_MAC}}",
@@ -407,7 +407,7 @@ jobs:
    #        "networkRefreshDuration":17000,
    #        "panIdSelection":"randomInRange",
    #        "panId":23,
-   #        "platform":"{{ARCH_WW_PLATFORM}}",
+   #        "platform":"{{ARCH_EDGE_PLATFORM}}",
    #        "logLevel": 2 //Available- info- 2, debug- 3, trace- 4, error- 0, warn- 1
    #      }
    - job: "RelayStatsSender"
@@ -420,7 +420,7 @@ jobs:
      restart_pause: 90
      config: |
         {
-          "cloudAddress":"{{ARCH_CLOUD_ADDRESS}}",
+          "cloudAddress":"{{ARCH_GW_SERVICES_URL}}",
           "relayID":"{{ARCH_SERIAL_NUMBER}}",
           "ssl":{
               "key":"{{SSL_CERTS_PATH}}/client.key.pem",
@@ -439,7 +439,7 @@ jobs:
               "hardwareVersion": "{{ARCH_HARDWARE_VERSION}}",
               "radioConfig": "{{ARCH_RADIO_CONFIG}}",
               "ledConfig": "{{ARCH_LED_COLOR_PROFILE}}",
-              "cloud": "{{ARCH_CLOUD_ADDRESS}}",
+              "cloud": "{{ARCH_GW_SERVICES_URL}}",
               "ethernetMac": "{{ARCH_ETHERNET_MAC}}"
           }
         }
@@ -459,7 +459,7 @@ jobs:
               "dataBits":8,
               "stopBits":1
           },
-          "platform":"{{ARCH_WW_PLATFORM}}"
+          "platform":"{{ARCH_EDGE_PLATFORM}}"
         }
    # - job: "IPStack"
    #   immutable: true  # don't store in DB
@@ -541,7 +541,7 @@ jobs:
           },
           "logLevel":1,   //Available- info- 2,debug- 3,trace- 4,error- 0,warn- 1
           "relayId": "{{ARCH_SERIAL_NUMBER}}",
-          "platform":"{{ARCH_WW_PLATFORM}}",    //Used to identify platform so that module can adapt and run automagically
+          "platform":"{{ARCH_EDGE_PLATFORM}}",    //Used to identify platform so that module can adapt and run automagically
           "maxTransportRetries":3, //Transport layer retries, message retries are default to 3 so total retries will be 4
           "requestAckTimeout":2000,  //Timeout if no data received on request (in ms)
           "throttleRate": 100,
@@ -582,7 +582,7 @@ jobs:
           "startControllerOnDiscovery": false,
           "nativeLogLevel": "WARN", //FATAL : 0, ERROR : 10, WARN : 20, ROUTING : 30, INFO : 40, DEBUG : 50, PACKET : 60, DUMP : 70, TRACE : 80, ALL :127
           "relayId": "{{ARCH_SERIAL_NUMBER}}",
-          "platform": "{{ARCH_WW_PLATFORM}}", //Used to identify platform so that module can adapt and run automagically
+          "platform": "{{ARCH_EDGE_PLATFORM}}", //Used to identify platform so that module can adapt and run automagically
           "requestAckTimeout": 300, //ms
           "throttleRate": 50, //ms
           "bacnetResourceId": "BacnetDriver",

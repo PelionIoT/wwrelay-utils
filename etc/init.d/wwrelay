@@ -32,13 +32,14 @@ RELAYTERMCONF=${WIGWAGROOT}"/wigwag-core-modules/relay-term/config/config.json"
 SUPPORTCERTROOT=${WIGWAGROOT}"/devicejs-core-modules/AppServer/Certs"
 establish_tunnel=0;
 echo "tempnuke" > $WWRELAY_LOG
-eeprog /dev/i2c-1 0x55 -f -r 0:10 2> /dev/null
-	if [[ $? -eq 0 ]]; then
-		hardwareversion="relay"
-	else
-		hardwareversion="RP200"
-		modprobe at24
-	fi
+GW_IDENTITY_FILE="/userdata/edge_gw_config/identity.json"
+# eeprog /dev/i2c-1 0x55 -f -r 0:10 2> /dev/null
+# 	if [[ $? -eq 0 ]]; then
+# 		hardwareversion="relay"
+# 	else
+# 		hardwareversion="RP200"
+# 		modprobe at24
+# 	fi
 
 updateEthernetMAC(){
     ifconfig eth0 down
@@ -127,31 +128,41 @@ _doGenerateSupportCertificates() {
 
 EEMESAGE=""
 _eepromBurned(){
-	if [[ $hardwareversion = "relay" ]]; then
-		wwrl=$(eeprog -f -r 0:1 /dev/i2c-1 0x50 2>/dev/null )
-		h1=$(eeprog -f -r 0:4 /dev/i2c-1 0x51 2> /dev/null )
-		h2=$(eeprog -f -r 0:4 /dev/i2c-1 0x52 2> /dev/null )
-		h3=$(eeprog -f -r 0:4 /dev/i2c-1 0x53 2> /dev/null )
-		if [[  "$wwrl" = "W" && "$h1" = "http" && "$h2" = "http" && "$h3" = "http" ]]; then
-			:
-		else
-			EEMESAGE="Actual EEPROM has bad data"
-		fi
-		if [[  -s $SSLROOT"/client.cert.pem" && -s $SSLROOT"/ca.cert.pem" && -s $SSLROOT"/client.key.pem" && -s $SSLROOT"/intermediate.cert.pem" && -s $SSLROOT"/server.cert.pem" && -s $SSLROOT"/server.key.pem" ]]; then
-			:
-		else
-			EEMESAGE="$EEMESAGE and the ssl files are not of proper size at $SSLROOT"
-		fi
-		if [[ $EEMESAGE = "" ]]; then
-			echo 1
-		else
-			echo 0
-		fi
+	if [[ -s $GW_IDENTITY_FILE ]]; then
+		:
 	else
-		#need to read the eeporom at24 here, but lets just skip until I can see what burned one looks like
-
-		echo 1
+		EEMESAGE="$EEMESSAGE gateway identity file is not of proper size at $GW_IDENTITY_FILE"
 	fi
+	if [[ $EEMESAGE == "" ]]; then
+		echo 1
+	else
+		echo 0
+	fi
+	# if [[ $hardwareversion = "relay" ]]; then
+	# 	wwrl=$(eeprog -f -r 0:1 /dev/i2c-1 0x50 2>/dev/null )
+	# 	h1=$(eeprog -f -r 0:4 /dev/i2c-1 0x51 2> /dev/null )
+	# 	h2=$(eeprog -f -r 0:4 /dev/i2c-1 0x52 2> /dev/null )
+	# 	h3=$(eeprog -f -r 0:4 /dev/i2c-1 0x53 2> /dev/null )
+	# 	if [[  "$wwrl" = "W" && "$h1" = "http" && "$h2" = "http" && "$h3" = "http" ]]; then
+	# 		:
+	# 	else
+	# 		EEMESAGE="Actual EEPROM has bad data"
+	# 	fi
+	# 	if [[  -s $SSLROOT"/client.cert.pem" && -s $SSLROOT"/ca.cert.pem" && -s $SSLROOT"/client.key.pem" && -s $SSLROOT"/intermediate.cert.pem" && -s $SSLROOT"/server.cert.pem" && -s $SSLROOT"/server.key.pem" ]]; then
+	# 		:
+	# 	else
+	# 		EEMESAGE="$EEMESAGE and the ssl files are not of proper size at $SSLROOT"
+	# 	fi
+	# 	if [[ $EEMESAGE = "" ]]; then
+	# 		echo 1
+	# 	else
+	# 		echo 0
+	# 	fi
+	# else
+	# 	#need to read the eeporom at24 here, but lets just skip until I can see what burned one looks like
+
+	# 	echo 1
+	# fi
 }
 
 _runnerWritten(){
@@ -195,34 +206,34 @@ start(){
 		# Detect edge-core is now claimed. Burn eeprom and reboot. Temp fix until maestro implements this
 		/wigwag/wwrelay-utils/debug_scripts/check_edge_connection.sh >& /wigwag/log/check_edge_connection.log &
 
-		if [ -d /userdata/mbed ]; then
-			_log "Detected edge-gw. Reading edge eeprom..."
-			/usr/bin/node ./mbed-edge-eeprom-reader.js -c $MBED_SETUP_FILE >> $WWRELAY_LOG 2>&1
-		else
-			_log "Detected wigwag gateway. Reading ww eeprom..."
-			/usr/bin/node ./ww_eeprom_reader.js -c $RELAY_SETUP_FILE >> $WWRELAY_LOG 2>&1
-		fi
+		# if [ -d /userdata/mbed ]; then
+		# 	_log "Detected edge-gw. Reading edge eeprom..."
+		# 	/usr/bin/node ./mbed-edge-eeprom-reader.js -c $MBED_SETUP_FILE >> $WWRELAY_LOG 2>&1
+		# else
+		# 	_log "Detected wigwag gateway. Reading ww eeprom..."
+		# 	/usr/bin/node ./ww_eeprom_reader.js -c $RELAY_SETUP_FILE >> $WWRELAY_LOG 2>&1
+		# fi
 		#/usr/bin/node ./ww_eeprom_reader.js -c $RELAY_SETUP_FILE
-		OUT=$?
-		if [ $OUT -eq 0 ]; then
+		# OUT=$?
+		# if [ $OUT -eq 0 ]; then
 
-			stillgood=$(_runnerWritten)
-			if [[ $stillgood -eq 1 ]]; then
-				success
-				_log "ww_eeprom_reader generated relay.config.json successfully"
-				PATH=/wigwag/system/lib/bash:$PATH /wigwag/system/bin/json2sh /wigwag/wwrelay-utils/I2C/relay.conf /wigwag/system/lib/bash/relaystatics.sh
-			else
-				failure
-				_log "ssl files are not of proper size at $RunnerSSLROOT"
-				eepromSet=0;
-			fi
-		else
-			eepromSet=0;
-			failure
-			_log "something is wrong with ww_eeprom_reader.js"
-		fi
+		# 	stillgood=$(_runnerWritten)
+		# 	if [[ $stillgood -eq 1 ]]; then
+		# 		success
+		# 		_log "ww_eeprom_reader generated relay.config.json successfully"
+				PATH=/wigwag/system/lib/bash:$PATH /wigwag/system/bin/json2sh $GW_IDENTITY_FILE /wigwag/system/lib/bash/relaystatics.sh
+			# else
+			# 	failure
+			# 	_log "ssl files are not of proper size at $RunnerSSLROOT"
+			# 	eepromSet=0;
+			# fi
+		# else
+		# 	eepromSet=0;
+		# 	failure
+		# 	_log "something is wrong with ww_eeprom_reader.js"
+		# fi
 	else
-		_log "EEPROM failed first check: $EEMESAGE"
+		_log "Identity failed first check: $EEMESAGE"
 		eepromSet=0;
 	fi
 	if [[ $eepromSet -eq 0 ]]; then

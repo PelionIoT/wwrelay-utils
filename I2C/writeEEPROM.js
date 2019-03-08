@@ -214,288 +214,288 @@ class softEepromHandler {
 	}
 }
 
-//For Relay
-class at24c16EepromHandler {
-	constructor() {
-		this.EEwriter = require('./eewriter_module.js');
-	}
+// //For Relay
+// class at24c16EepromHandler {
+// 	constructor() {
+// 		this.EEwriter = require('./eewriter_module.js');
+// 	}
 
-	process_prog() {
-		return new Promise((resolve, reject) => {
-			if (program.args.length != 1 && program.erase === null) {
-				program.outputHelp();
-				reject("Missing configuration file");
-			}
-			else {
-				try {
-					let ee = JSON.parse(jsonminify(fs.readFileSync(program.args[0], 'utf8')));
-					//Add sixBMAC as it is removed from the relay eeprom from provisiong server
-					//Make it compatible with existing requirement on eeprom writer
-					if(typeof ee.sixBMAC == 'undefined') {
-						ee.sixBMAC = JSON.parse(JSON.stringify(ee.ethernetMAC));
-						ee.sixBMAC.splice(3, 0, 0);
-						ee.sixBMAC.splice(4, 0, 1);
-					}
-					ee.relaySecret =  ee.relaySecret || "17c0c7bd1c7f8a360288ef56b4230ede";
-					ee.batch = ee.batch || '1';
-					ee.month = ee.month || 'F';
-					ee.year = ee.year || '5';
-                    if( (ee.cloudURL && ee.cloudURL.indexOf('mbed') > -1) || (ee.cloudAddress && ee.cloudAddress.indexOf('mbed') > -1)) {
-                    	//TODO- This is deleted on upgrade so refer this or find out if something exists in /userdata/mbed/mcc_config
-						if(!ee.mcc_config) {
-	                        fs.stat('./pal', function(err, stats) {
-	                            if(err) {
-	                                reject('Mbed gateway. Failed to get pal directory stats ', err);
-	                                return;
-	                            }
-	                            if(stats.isDirectory()) {
-	                                execSync('cp -R ./pal ./mcc_config');
-	                                execSync('tar -czvf mcc_config.tar.gz ./mcc_config');
-	                                // if(ee.mbed) {
-	                                    delete ee.mbed;
-	                                    ee.mcc_config = fs.readFileSync('./mcc_config.tar.gz', 'hex');
-	                                    resolve(ee);
-	                                // } else {
-	                                    // reject('Mbed gateway. Did not find the mbed device certs and enrollment id!');
-	                                    // return;
-	                                // }
-	                            } else {
-	                                reject('Mbed gateway. Failed to locate pal directory!');
-	                                return;
-	                            }
-	                        });
-	                    } else {
-	                    	resolve(ee);
-	                    }
-                    } else {
-                        resolve(ee);
-                    }
-					// resolve(ee);
-				}
-				catch (e) {
-					reject('Could not open ' + program.args[0] + ' file', e + ' ', e.stack);
+// 	process_prog() {
+// 		return new Promise((resolve, reject) => {
+// 			if (program.args.length != 1 && program.erase === null) {
+// 				program.outputHelp();
+// 				reject("Missing configuration file");
+// 			}
+// 			else {
+// 				try {
+// 					let ee = JSON.parse(jsonminify(fs.readFileSync(program.args[0], 'utf8')));
+// 					//Add sixBMAC as it is removed from the relay eeprom from provisiong server
+// 					//Make it compatible with existing requirement on eeprom writer
+// 					if(typeof ee.sixBMAC == 'undefined') {
+// 						ee.sixBMAC = JSON.parse(JSON.stringify(ee.ethernetMAC));
+// 						ee.sixBMAC.splice(3, 0, 0);
+// 						ee.sixBMAC.splice(4, 0, 1);
+// 					}
+// 					ee.relaySecret =  ee.relaySecret || "17c0c7bd1c7f8a360288ef56b4230ede";
+// 					ee.batch = ee.batch || '1';
+// 					ee.month = ee.month || 'F';
+// 					ee.year = ee.year || '5';
+//                     if( (ee.cloudURL && ee.cloudURL.indexOf('mbed') > -1) || (ee.cloudAddress && ee.cloudAddress.indexOf('mbed') > -1)) {
+//                     	//TODO- This is deleted on upgrade so refer this or find out if something exists in /userdata/mbed/mcc_config
+// 						if(!ee.mcc_config) {
+// 	                        fs.stat('./pal', function(err, stats) {
+// 	                            if(err) {
+// 	                                reject('Mbed gateway. Failed to get pal directory stats ', err);
+// 	                                return;
+// 	                            }
+// 	                            if(stats.isDirectory()) {
+// 	                                execSync('cp -R ./pal ./mcc_config');
+// 	                                execSync('tar -czvf mcc_config.tar.gz ./mcc_config');
+// 	                                // if(ee.mbed) {
+// 	                                    delete ee.mbed;
+// 	                                    ee.mcc_config = fs.readFileSync('./mcc_config.tar.gz', 'hex');
+// 	                                    resolve(ee);
+// 	                                // } else {
+// 	                                    // reject('Mbed gateway. Did not find the mbed device certs and enrollment id!');
+// 	                                    // return;
+// 	                                // }
+// 	                            } else {
+// 	                                reject('Mbed gateway. Failed to locate pal directory!');
+// 	                                return;
+// 	                            }
+// 	                        });
+// 	                    } else {
+// 	                    	resolve(ee);
+// 	                    }
+//                     } else {
+//                         resolve(ee);
+//                     }
+// 					// resolve(ee);
+// 				}
+// 				catch (e) {
+// 					reject('Could not open ' + program.args[0] + ' file', e + ' ', e.stack);
 
-				}
-			}
-		});
-	}
+// 				}
+// 			}
+// 		});
+// 	}
 
-	install_eeprom(ee) {
-		var self = this;
-		return new Promise((resolve, reject) => {
-			logdbg("In install EEPROM Function");
-			//logdbg(ee);
-			let aPray2= [];
-			let writer = new self.EEwriter(ee);
+// 	install_eeprom(ee) {
+// 		var self = this;
+// 		return new Promise((resolve, reject) => {
+// 			logdbg("In install EEPROM Function");
+// 			//logdbg(ee);
+// 			let aPray2= [];
+// 			let writer = new self.EEwriter(ee);
 
-			if (!program.skipeeprom) {
-				loginfo("didnnt skip eeprom");
-				aPray2.push(writer.writeEMMC());
-			}
-			if (!program.skipSSL) {
-				loginfo("didnnt skip ssl");
-				aPray2.push(writer.writeSSL());
-			}
-			Promise.all(aPray2).then((suc) => {
-				loginfo("ie: " + suc);
-				resolve(suc);
-			}, (err) => {
-				loginfo("iee: " + err);
-				reject(err);
-			});
-		});
-	}
+// 			if (!program.skipeeprom) {
+// 				loginfo("didnnt skip eeprom");
+// 				aPray2.push(writer.writeEMMC());
+// 			}
+// 			if (!program.skipSSL) {
+// 				loginfo("didnnt skip ssl");
+// 				aPray2.push(writer.writeSSL());
+// 			}
+// 			Promise.all(aPray2).then((suc) => {
+// 				loginfo("ie: " + suc);
+// 				resolve(suc);
+// 			}, (err) => {
+// 				loginfo("iee: " + err);
+// 				reject(err);
+// 			});
+// 		});
+// 	}
 
-	main_erase() {
-		var self = this;
-		loginfo("main erase");
-		return new Promise((resolve, reject) => {
-			let writer = new self.EEwriter();
-			writer.erase().then((result) => {
-				loginfo("debug", "erase resolved: ", result);
-				resolve(result);
-			}).catch((error) => {
-				loginfo("debug", "erase errored: ", error);
-				reject(error);
-			});
-		});
+// 	main_erase() {
+// 		var self = this;
+// 		loginfo("main erase");
+// 		return new Promise((resolve, reject) => {
+// 			let writer = new self.EEwriter();
+// 			writer.erase().then((result) => {
+// 				loginfo("debug", "erase resolved: ", result);
+// 				resolve(result);
+// 			}).catch((error) => {
+// 				loginfo("debug", "erase errored: ", error);
+// 				reject(error);
+// 			});
+// 		});
 
-	}
+// 	}
 
-	main_install() {
-		let self = this;
-		this.process_prog().then((result) => {
-			loginfo("debug", "process_program resolved: ");
-			return self.install_eeprom(result);
-		}).catch((error) => {
-			loginfo("debug", "process_program errored: ", error);
-		});
-	}
-}
+// 	main_install() {
+// 		let self = this;
+// 		this.process_prog().then((result) => {
+// 			loginfo("debug", "process_program resolved: ");
+// 			return self.install_eeprom(result);
+// 		}).catch((error) => {
+// 			loginfo("debug", "process_program errored: ", error);
+// 		});
+// 	}
+// }
 
-const at24c256EepromFilePath = "/sys/bus/i2c/devices/1-0050/eeprom";
+// const at24c256EepromFilePath = "/sys/bus/i2c/devices/1-0050/eeprom";
 
-//For RP200 and above
-class at24c256EepromHandler {
-	constructor() {
-		this._eepromFilePath = at24c256EepromFilePath;
-		this._writeretry = 0;
-	}
+// //For RP200 and above
+// class at24c256EepromHandler {
+// 	constructor() {
+// 		this._eepromFilePath = at24c256EepromFilePath;
+// 		this._writeretry = 0;
+// 	}
 
-	verify_write(ee) {
-		let self = this;
-		process.stdout.write('Verifying...');
-	 	let interval = setInterval(() => {
-			process.stdout.write(".");
-		}, 500);
-		return new Promise((resolve, reject) => {
-			let readEeprom = fs.readFileSync(self._eepromFilePath, 'utf8');
-			clearInterval(interval);
-			try {
-				readEeprom = JSON.parse(readEeprom);
-			} catch(err) {
-				logerr('Failed to parse ', err);
-				reject(err);
-				process.exit(1);
-				return;
-			}
-			if(_.isEqual(ee, readEeprom)) {
-				loginfo('\nVerification successfully\n');
-				loginfo('Saving the gateway eeprom on disk at /userdata/gateway_eeprom.json');
-				fs.writeFileSync('/userdata/gateway_eeprom.json', JSON.stringify(ee, null, 4), 'utf8');
-				resolve();
-			} else {
-				logerr('\nVerification failed!\n');
-				reject('Verification failed!');
-				process.exit(1);
-			}
-		});
-	}
+// 	verify_write(ee) {
+// 		let self = this;
+// 		process.stdout.write('Verifying...');
+// 	 	let interval = setInterval(() => {
+// 			process.stdout.write(".");
+// 		}, 500);
+// 		return new Promise((resolve, reject) => {
+// 			let readEeprom = fs.readFileSync(self._eepromFilePath, 'utf8');
+// 			clearInterval(interval);
+// 			try {
+// 				readEeprom = JSON.parse(readEeprom);
+// 			} catch(err) {
+// 				logerr('Failed to parse ', err);
+// 				reject(err);
+// 				process.exit(1);
+// 				return;
+// 			}
+// 			if(_.isEqual(ee, readEeprom)) {
+// 				loginfo('\nVerification successfully\n');
+// 				loginfo('Saving the gateway eeprom on disk at /userdata/gateway_eeprom.json');
+// 				fs.writeFileSync('/userdata/gateway_eeprom.json', JSON.stringify(ee, null, 4), 'utf8');
+// 				resolve();
+// 			} else {
+// 				logerr('\nVerification failed!\n');
+// 				reject('Verification failed!');
+// 				process.exit(1);
+// 			}
+// 		});
+// 	}
 
-	process_prog() {
-		return new Promise((resolve, reject) => {
-			if (program.args.length != 1 && program.erase === null) {
-				program.outputHelp();
-				reject("Missing configuration file");
-			}
-			else {
-				try {
-					let ee = JSON.parse(jsonminify(fs.readFileSync(program.args[0], 'utf8')));
-                    if( (ee.cloudURL && ee.cloudURL.indexOf('mbed') > -1) || (ee.cloudAddress && ee.cloudAddress.indexOf('mbed') > -1)) {
-                    	//TODO- This is deleted on upgrade so refer this or find out if something exists in /userdata/mbed/mcc_config
-                        if(!ee.mcc_config) {
-	                        fs.stat('./pal', function(err, stats) {
-	                            if(err) {
-	                                reject('Mbed gateway. Failed to get pal directory stats ', err);
-	                                return;
-	                            }
-	                            if(stats.isDirectory()) {
-	                                execSync('cp -R ./pal ./mcc_config');
-	                                execSync('tar -czvf mcc_config.tar.gz ./mcc_config');
-	                                // if(ee.mbed) {
-	                                    delete ee.mbed;
-	                                    ee.mcc_config = fs.readFileSync('./mcc_config.tar.gz', 'hex');
-	                                    resolve(ee);
-	                                // } else {
-	                                    // reject('Mbed gateway. Did not find the mbed device certs and enrollment id!');
-	                                    // return;
-	                                // }
-	                            } else {
-	                                reject('Mbed gateway. Failed to locate pal directory!');
-	                                return;
-	                            }
-	                        });
-	                    } else {
-	                    	resolve(ee);
-	                    }
-                    } else {
-                        resolve(ee);
-                    }
-				}
-				catch (e) {
-					reject('Could not open ' + program.args[0] + ' file', e + ' ', e.stack);
+// 	process_prog() {
+// 		return new Promise((resolve, reject) => {
+// 			if (program.args.length != 1 && program.erase === null) {
+// 				program.outputHelp();
+// 				reject("Missing configuration file");
+// 			}
+// 			else {
+// 				try {
+// 					let ee = JSON.parse(jsonminify(fs.readFileSync(program.args[0], 'utf8')));
+//                     if( (ee.cloudURL && ee.cloudURL.indexOf('mbed') > -1) || (ee.cloudAddress && ee.cloudAddress.indexOf('mbed') > -1)) {
+//                     	//TODO- This is deleted on upgrade so refer this or find out if something exists in /userdata/mbed/mcc_config
+//                         if(!ee.mcc_config) {
+// 	                        fs.stat('./pal', function(err, stats) {
+// 	                            if(err) {
+// 	                                reject('Mbed gateway. Failed to get pal directory stats ', err);
+// 	                                return;
+// 	                            }
+// 	                            if(stats.isDirectory()) {
+// 	                                execSync('cp -R ./pal ./mcc_config');
+// 	                                execSync('tar -czvf mcc_config.tar.gz ./mcc_config');
+// 	                                // if(ee.mbed) {
+// 	                                    delete ee.mbed;
+// 	                                    ee.mcc_config = fs.readFileSync('./mcc_config.tar.gz', 'hex');
+// 	                                    resolve(ee);
+// 	                                // } else {
+// 	                                    // reject('Mbed gateway. Did not find the mbed device certs and enrollment id!');
+// 	                                    // return;
+// 	                                // }
+// 	                            } else {
+// 	                                reject('Mbed gateway. Failed to locate pal directory!');
+// 	                                return;
+// 	                            }
+// 	                        });
+// 	                    } else {
+// 	                    	resolve(ee);
+// 	                    }
+//                     } else {
+//                         resolve(ee);
+//                     }
+// 				}
+// 				catch (e) {
+// 					reject('Could not open ' + program.args[0] + ' file', e + ' ', e.stack);
 
-				}
-			}
-		});
-	}
+// 				}
+// 			}
+// 		});
+// 	}
 
-    install_eeprom(ee) {
-        var self = this;
-        return new Promise((resolve, reject) => {
-            logdbg("In install EEPROM function");
-            process.stdout.write("Writing...");
-            let interval = setInterval(() => {
-                process.stdout.write(".");
-            }, 500);
-            try {
-                fs.writeFile(self._eepromFilePath, JSON.stringify(ee), 'utf8', (err) => {
-                    if(err) {
-						logerr("Write failed " + err);
-						clearInterval(interval);
-						reject(err);
-                    } else {
-                        clearInterval(interval);
-                        loginfo('Wrote successfully!');
-                        resolve(ee);
-                    }
-                });
-            } catch(err){
-                logerr("Write caught exception failed ", err);
-                clearInterval(interval);
-                reject(err);
-            }
-        });
-    }
+//     install_eeprom(ee) {
+//         var self = this;
+//         return new Promise((resolve, reject) => {
+//             logdbg("In install EEPROM function");
+//             process.stdout.write("Writing...");
+//             let interval = setInterval(() => {
+//                 process.stdout.write(".");
+//             }, 500);
+//             try {
+//                 fs.writeFile(self._eepromFilePath, JSON.stringify(ee), 'utf8', (err) => {
+//                     if(err) {
+// 						logerr("Write failed " + err);
+// 						clearInterval(interval);
+// 						reject(err);
+//                     } else {
+//                         clearInterval(interval);
+//                         loginfo('Wrote successfully!');
+//                         resolve(ee);
+//                     }
+//                 });
+//             } catch(err){
+//                 logerr("Write caught exception failed ", err);
+//                 clearInterval(interval);
+//                 reject(err);
+//             }
+//         });
+//     }
 
-    main_erase() {
-        let self = this;
-        return new Promise((resolve, reject) => {
-            loginfo("main erase");
-            let eeprom_spaces = new Buffer(32768);
-            eeprom_spaces.fill(0x20);
-            process.stdout.write("Erasing...");
-            let interval = setInterval(() => {
-                process.stdout.write(".");
-            }, 500);
-            try {
-                fs.writeFile(self._eepromFilePath, eeprom_spaces, (err) => {
-                    if(err) {
-						logerr("Erase failed " + err);
-						clearInterval(interval);
-						reject(err);
-                    } else {
-                        clearInterval(interval);
-                        loginfo('Erased successfully!');
-                        resolve();
-                    }
-                });
-            } catch(err) {
-                logerr("Erase caught exception failed ", err);
-                clearInterval(interval);
-                reject(err);
-            }
-        });
-    }
+//     main_erase() {
+//         let self = this;
+//         return new Promise((resolve, reject) => {
+//             loginfo("main erase");
+//             let eeprom_spaces = new Buffer(32768);
+//             eeprom_spaces.fill(0x20);
+//             process.stdout.write("Erasing...");
+//             let interval = setInterval(() => {
+//                 process.stdout.write(".");
+//             }, 500);
+//             try {
+//                 fs.writeFile(self._eepromFilePath, eeprom_spaces, (err) => {
+//                     if(err) {
+// 						logerr("Erase failed " + err);
+// 						clearInterval(interval);
+// 						reject(err);
+//                     } else {
+//                         clearInterval(interval);
+//                         loginfo('Erased successfully!');
+//                         resolve();
+//                     }
+//                 });
+//             } catch(err) {
+//                 logerr("Erase caught exception failed ", err);
+//                 clearInterval(interval);
+//                 reject(err);
+//             }
+//         });
+//     }
 
-	main_install() {
-		let self = this;
-		return new Promise((resolve, reject) => {
-			self.process_prog().then((result) => {
-				loginfo("debug", "process_program resolved: ");
-				self.install_eeprom(result).then((resp) => {
-					resolve(resp);
-				}).catch((error) => {
-					logerr('Failed to write ', error);
-					reject(error);
-				});
-			}).catch((error) => {
-				loginfo("debug", "process_program errored: ", error);
-				reject(error);
-			});
-		});
-	}
-}
+// 	main_install() {
+// 		let self = this;
+// 		return new Promise((resolve, reject) => {
+// 			self.process_prog().then((result) => {
+// 				loginfo("debug", "process_program resolved: ");
+// 				self.install_eeprom(result).then((resp) => {
+// 					resolve(resp);
+// 				}).catch((error) => {
+// 					logerr('Failed to write ', error);
+// 					reject(error);
+// 				});
+// 			}).catch((error) => {
+// 				loginfo("debug", "process_program errored: ", error);
+// 				reject(error);
+// 			});
+// 		});
+// 	}
+// }
 
 
 if (program.args.length != 1) {

@@ -250,7 +250,7 @@ jobs:
    - job: "devicedb"
      immutable: true
      die_on_parent_death: true
-     exec_cmd: "/usr/bin/devicedb"
+     exec_cmd: "/wigwag/system/bin/devicedb"
      restart: true
      restart_limit: 5000
      restart_pause: 1

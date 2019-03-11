@@ -222,6 +222,7 @@ container_templates:
      die_on_parent_death: true
      inherit_env: true
      add_env:
+        - "LD_PRELOAD=/usr/lib/libcrypto.so.1.0.2"
         - "DEVJS_ROOT={{DEVICEJS_ROOT}}"
         - "DEVJS_CONFIG_FILE=/wigwag/etc/devicejs/devicejs.conf"
         - "NODE_PATH={{WIGWAG_NODE_PATH}}"
@@ -265,6 +266,7 @@ jobs:
      immutable: true
      die_on_parent_death: true
      env:
+        - "LD_PRELOAD=/usr/lib/libcrypto.so.1.0.2"
         - "NODE_PATH={{DEVICEJS_ROOT}}/node_modules"
         - "DEVJS_LOGGER={\"modulepath\":\"{{WIGWAG_NODE_PATH}}/grease-log-client\",\"type\":\"global\"}"
      exec_cmd: "{{DEVICEJS_ROOT}}/src/runtime/start"

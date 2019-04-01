@@ -42,11 +42,14 @@ then
         json2sh $filename $fname.sh
         echo "File converted to bash file "
         source <(grep -E '^\w+=' $fname.sh)
+
+        # TODO: need to get rid of this
         if [[ $hardwareVersion == "r2002" ]]; then
             hardwareVersion=rp200
-        else
+        elif [[ $hardwareVersion == "0.1.1" ]]; then
             hardwareVersion=rp100
         fi
+
         echo "Debuggging Values: " $radioConfig $category $cloudAddress $hardwareVersion 
         cloud=$(echo $cloudAddress|cut -c9-125)
         provisioning=$(echo $cloudAddress | cut -d'.' -f 2)
@@ -60,19 +63,27 @@ then
                 echo "Entered IP ${ip}"
             fi
             if [[ $ip =~ ^[0-9]+\.[0-9]+\.[0-9]+\.[0-9]+$ ]]; then
+                ispresentapi='http://'$ip':5151/relay/'$provisioning'/'$cloud'/'$category'/'$hardwareVersion'/'$radioConfig'/ispresent?limit=1&ip='$relayip''
+                curl -i -s --header "secret: WZpMyRDntxFgBGBfWPleIHzoc0egcPSsBAa8jUQw5tOgbbjc3o" $ispresentapi > /tmp/isidentitypresent.log
+                line=$(head -n 1 /tmp/isidentitypresent.log)
+                if [[ $line = *"404"* ]]; then
+                    cat /tmp/isidentitypresent.log
+                    rm -rf /tmp/isidentitypresent.log
+                    echo "gateway_eeprom.json not found, unable to fetch a eeprom"
+                    exit 1
+                fi
                 cd /wigwag/wwrelay-utils/I2C
                 cleanLastBurn
                 echo "Starting FCC...";
                 FAIL=0
                 ./factory-configurator-client-armcompiled.elf &
                 echo "My IP is- $relayip"
-                # echo $ip':5151/relay/'$provisioning'/'$cloud'/'$category'/'$hardwareVersion'/'$radioConfig'?limit=1&'$relayip
                 echo "Executing curl command"
                 api='http://'$ip':5151/relay/'$provisioning'/'$cloud'/'$category'/'$hardwareVersion'/'$radioConfig'?limit=1&ip='$relayip''
                 curl -s --header "secret: WZpMyRDntxFgBGBfWPleIHzoc0egcPSsBAa8jUQw5tOgbbjc3o" $api > gateway_eeprom.json &
                 for job in `jobs -p`
                 do
-                echo $job
+                    echo $job
                     wait $job || let "FAIL+=1"
                 done
                 if [ "$FAIL" == "0" ]; then
@@ -81,7 +92,7 @@ then
                     echo "Command ran successfully"
                     cat gateway_eeprom.json
                     line=$(head -n 1 gateway_eeprom.json)
-                    if [[ $line = "No match Found in the database"* ]]; then
+                    if [[ $line = "No match found in the database"* ]]; then
                         rm -rf gateway_eeprom.json
                     fi
                     if [ -f "$file" ]; then

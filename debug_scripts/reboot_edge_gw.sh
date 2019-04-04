@@ -18,7 +18,7 @@ restart_services() {
 		echo "Stopping edge core..."
 		killall edge-core
 		/etc/init.d/wwrelay start
-		/etc/init.d/devicejs start
+		/etc/init.d/maestro.sh start
     # else
         # echo "Unknown platform! Do not know how to restart the edge services..."
 	# fi

@@ -1,0 +1,16 @@
+{
+  "name": "developer_identity",
+  "version": "1.0.0",
+  "description": "Generate identity for developer gateway",
+  "main": "index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "dependencies": {
+    "inquirer": "6.2.2",
+    "uuid": "^3.2.1",
+    "commander": "2.9.0"
+  },
+  "author": "Yash Goyal",
+  "license": "ISC"
+}

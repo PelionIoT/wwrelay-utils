@@ -14,6 +14,10 @@ restart_services() {
 	    echo "Stopping maestro processes..."
 		killall maestro
 		killall maestro
+		killall run_mbed_edge_core.sh
+		killall run_mbed_edge_core.sh
+		killall check_edge_connection.sh
+		killall check_edge_connection.sh
 
 		echo "Stopping edge core..."
 		killall edge-core

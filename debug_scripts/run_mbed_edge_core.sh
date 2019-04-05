@@ -6,6 +6,7 @@ function run_edge_core() {
 	while true; do
         if ! pgrep -x "edge-core" > /dev/null
         then
+            sleep 30
             # Only start edge-core if maestro is running
             if pgrep "maestro" > /dev/null; then
                 $START_EDGE_CORE &

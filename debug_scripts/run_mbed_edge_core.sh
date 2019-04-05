@@ -23,4 +23,8 @@ function run_edge_core() {
 	done
 }
 
+# Let this script handle it for MVP1.
+# If edge-core is started by init script then we cant start pt-example
+# So kill edge-core and let this script start it in order
+killall edge-core
 run_edge_core

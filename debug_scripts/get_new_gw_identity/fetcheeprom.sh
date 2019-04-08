@@ -27,7 +27,7 @@ factoryReset() {
 cleanLastBurn() {
     kill $(ps aux | grep 'factory-configurator' | awk '{print $2}');
     rm -rf mcc_config*; rm -rf pal;
-    rm -rf gateway_eeprom.json
+    rm -rf gateway_eeprom.*
 }
 
 restart_services() {
@@ -50,12 +50,12 @@ then
             hardwareVersion=rp100
         fi
 
-        echo "Debuggging Values: " $radioConfig $category $cloudAddress $hardwareVersion 
+        echo "Debuggging Values: " $radioConfig $category $cloudAddress $hardwareVersion
         cloud=$(echo $cloudAddress|cut -c9-125)
         provisioning=$(echo $cloudAddress | cut -d'.' -f 2)
         relayip=$(ifconfig | grep -A 2 -E 'wlan|eth|wlp|enp' | grep -Eo 'inet (addr:)?([0-9]*\.){3}[0-9]*' | grep -Eo '([0-9]*\.){3}[0-9]*' | grep -v '127.0.0.1')
         if [[ -z $radioConfig || -z $category || -z $cloudAddress || -z $hardwareVersion ]]; then
-           echo "Please enter a correct configuration file" 
+           echo "Please enter a correct configuration file"
         else
             if [[ $ip == '' ]];then
                 echo "Please enter the IP where gateway dispatcher is running"
@@ -93,17 +93,22 @@ then
                     cat gateway_eeprom.json
                     line=$(head -n 1 gateway_eeprom.json)
                     if [[ $line = "No match found in the database"* ]]; then
-                        rm -rf gateway_eeprom.json
+                        rm -rf gateway_eeprom.*
                     fi
                     if [ -f "$file" ]; then
+                        #GET enrollment-id
+                        json2sh gateway_eeprom.json gateway_eeprom.sh
+                        source gateway_eeprom.sh
+                        geteidapi='http://'$ip':5151/enrollment-id/'$serialNumber''
+                        curl -s --header "secret: WZpMyRDntxFgBGBfWPleIHzoc0egcPSsBAa8jUQw5tOgbbjc3o" $geteidapi
                         factoryReset
                         burnEeprom
-                        rm -rf gateway_eeprom.json
+                        rm -rf gateway_eeprom.*
                         /etc/init.d/deviceOS-watchdog start
                         sleep 5
                         restart_services
                     else
-                        rm -rf gateway_eeprom.json
+                        rm -rf gateway_eeprom.*
                         echo "gateway_eeprom.json not found, unable to fetch a eeprom"
                         exit 1
                     fi

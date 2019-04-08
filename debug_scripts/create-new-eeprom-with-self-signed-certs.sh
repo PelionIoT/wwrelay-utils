@@ -96,7 +96,7 @@ burnEeprom() {
     cd $I2C_DIR
     node writeEEPROM.js $eeprom_file
     if [[ $? != 0 ]]; then
-        echo "Failed to write eeprom. Trying again in 5 seconds..."
+        output "Failed to write eeprom. Trying again in 5 seconds..."
         sleep 5
         burnEeprom
     fi
@@ -110,7 +110,7 @@ factoryReset() {
 
 resetDatabase() {
 	cd $SCRIPT_DIR
-	echo "Deleting gateway database"
+	output "Deleting gateway database"
 	rm -rf /userdata/etc/devicejs/db
 }
 
@@ -132,6 +132,7 @@ execute () {
 			findGatewayServiceAddressFromMDS
 			cd /wigwag/wwrelay-utils/debug_scripts/get_new_gw_identity/developer_gateway_identity
 			./bin/create-dev-identity -g $gatewayAddress -p DEV0
+			mkdir /userdata/edge_gw_config
 			cp identity.json /userdata/edge_gw_config/identity.json
 			cp identity.json /userdata/edge_gw_config/identity_original.json
 		fi
@@ -162,7 +163,7 @@ execute () {
 			createDeviceCertificate
 			if [[ $? -eq 0 ]]; then
 				# Stop edge-core before taking a snapshot of mcc_config
-				echo "Stopping edge core..."
+				output "Stopping edge core..."
 				kill $(ps aux | grep -E 'edge-core|edge_core' | awk '{print $2}');
 
 				resetDatabase

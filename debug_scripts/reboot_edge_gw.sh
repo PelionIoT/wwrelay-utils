@@ -20,7 +20,7 @@ restart_services() {
 		killall check_edge_connection.sh
 
 		echo "Stopping edge core..."
-		killall edge-core
+		#killall edge-core
 		/etc/init.d/wwrelay start
 		/etc/init.d/maestro.sh start
     # else

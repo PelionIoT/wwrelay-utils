@@ -163,8 +163,8 @@ execute () {
 			createDeviceCertificate
 			if [[ $? -eq 0 ]]; then
 				# Stop edge-core before taking a snapshot of mcc_config
-				output "Stopping edge core..."
-				kill $(ps aux | grep -E 'edge-core|edge_core' | awk '{print $2}');
+				#output "Stopping edge core..."
+				#kill $(ps aux | grep -E 'edge-core|edge_core' | awk '{print $2}');
 
 				resetDatabase
 				output "Creating new eeprom with new self signed certificate..."

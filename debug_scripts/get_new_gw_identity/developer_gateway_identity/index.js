@@ -170,7 +170,7 @@ const run = async() => {
     identity_obj.serialNumber = IDGenerator.SerialIDGenerator(program.serialNumberPrefix || 'SOFT', currentSerialNumber, currentSerialNumber + 1)
     identity_obj.OU = uuid.v4().replace(/-/g, "")
     identity_obj.deviceID = uuid.v4().replace(/-/g, "")
-    identity_obj.hardwareVersion = "SOFT_GW"
+    identity_obj.hardwareVersion = "rpi3bplus"
     identity_obj.radioConfig = "00"
     identity_obj.ledConfig = "01"
     identity_obj.category = "development"

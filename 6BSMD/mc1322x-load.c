@@ -1,5 +1,4 @@
 /*
- * Copyright (c) 2015, WigWag.com
  * Copyright (c) 2012, Maxim Osipov <maxim.osipov@gmail.com>
  * Copyright (c) 2010, Mariano Alvira <mar@devl.org> and other contributors
  * to the MC1322x project (http://mc1322x.devl.org)
@@ -28,11 +27,6 @@
  * LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY
  * OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF
  * SUCH DAMAGE.
- *
- * WigWag additions:
- * -will not run perpetually when failing to connect
- * -fixed baud rate setting from command line (was not set before)
- * -made it quieter when not specifying verbose
  */
 
 #include <stdio.h>
